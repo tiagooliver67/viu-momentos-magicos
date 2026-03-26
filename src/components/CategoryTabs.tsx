@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Running, Bike, Trophy, Dumbbell, Mountain, Waves } from "lucide-react";
 
 const categories = [
   { id: "corrida", label: "Corrida de Rua", icon: "🏃" },
