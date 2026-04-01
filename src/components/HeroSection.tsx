@@ -7,7 +7,7 @@ const HeroSection = () => {
   const [searchMode, setSearchMode] = useState<"text" | "face">("text");
 
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[70vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden pt-14 sm:pt-0">
       <img src={heroBg} alt="" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
       <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
 
