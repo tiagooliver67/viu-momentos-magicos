@@ -10,6 +10,7 @@ import Financeiro from "./pages/Financeiro";
 import CriarEvento from "./pages/CriarEvento";
 import VIUPass from "./pages/VIUPass";
 import Pedidos from "./pages/Pedidos";
+import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/dashboard/financeiro" element={<Financeiro />} />
             <Route path="/dashboard/criar-evento" element={<CriarEvento />} />
             <Route path="/dashboard/pedidos" element={<Pedidos />} />
+            <Route path="/dashboard/configuracoes" element={<Configuracoes />} />
             <Route path="/viu-pass" element={<VIUPass />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Overview />} />
