@@ -17,7 +17,7 @@ const HeroSection = () => {
           Plataforma #1 de fotos esportivas do Brasil
         </div>
 
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight mb-4 glow-text" style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}>
+        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight mb-4 glow-text" style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}>
           Viu sua foto?<br />
           <span className="text-primary">Agora é só levar pra casa!</span>
         </h1>
