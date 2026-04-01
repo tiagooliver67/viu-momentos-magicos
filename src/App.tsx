@@ -38,6 +38,7 @@ const App = () => (
             <Route path="/dashboard/financeiro" element={<Financeiro />} />
             <Route path="/dashboard/criar-evento" element={<CriarEvento />} />
             <Route path="/dashboard/pedidos" element={<Pedidos />} />
+            <Route path="/dashboard/configuracoes" element={<Configuracoes />} />
             <Route path="/viu-pass" element={<VIUPass />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Overview />} />
