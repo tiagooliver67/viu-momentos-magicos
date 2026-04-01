@@ -7,7 +7,7 @@ const HeroSection = () => {
   const [searchMode, setSearchMode] = useState<"text" | "face">("text");
 
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[70vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden pt-14 sm:pt-0">
       <img src={heroBg} alt="" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
       <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
 
@@ -17,7 +17,7 @@ const HeroSection = () => {
           Plataforma #1 de fotos esportivas do Brasil
         </div>
 
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight mb-4 glow-text" style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}>
+        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight mb-4 glow-text" style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}>
           Viu sua foto?<br />
           <span className="text-primary">Agora é só levar pra casa!</span>
         </h1>
@@ -49,7 +49,7 @@ const HeroSection = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_rgba(255,77,0,0.4)]">
+            <button className="px-4 sm:px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_rgba(255,77,0,0.4)] min-h-[44px]">
               Buscar
             </button>
           </div>

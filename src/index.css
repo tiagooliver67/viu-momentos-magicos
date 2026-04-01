@@ -140,6 +140,14 @@
   .skeleton-shine {
     @apply animate-pulse bg-muted rounded;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes float {

@@ -555,24 +555,25 @@ const Configuracoes = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 md:p-8 overflow-auto">
+      <main className="flex-1 p-4 pt-18 lg:pt-4 md:p-8 overflow-auto">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar tabs */}
-            <nav className="lg:w-64 flex-shrink-0">
-              <div className="glass-card p-2 lg:sticky lg:top-8 flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+            {/* Sidebar tabs - horizontal scroll on mobile */}
+            <nav className="lg:w-64 flex-shrink-0 -mx-4 px-4 lg:mx-0 lg:px-0">
+              <div className="glass-card p-1.5 sm:p-2 lg:sticky lg:top-8 flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide">
                 {settingsTabs.map(tab => {
                   const isActive = activeTab === tab.id;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all min-h-[44px] ${
                         isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                       }`}
                     >
-                      <tab.icon className="w-5 h-5 flex-shrink-0" />
-                      {tab.label}
+                      <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                      <span className="hidden sm:inline lg:inline">{tab.label}</span>
+                      <span className="sm:hidden lg:hidden">{tab.label.split(' ')[0]}</span>
                       {isActive && <ChevronRight className="w-4 h-4 ml-auto hidden lg:block" />}
                     </button>
                   );
