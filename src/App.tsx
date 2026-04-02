@@ -40,6 +40,7 @@ const App = () => (
             <Route path="/dashboard/criar-evento" element={<CriarEvento />} />
             <Route path="/dashboard/pedidos" element={<Pedidos />} />
             <Route path="/dashboard/configuracoes" element={<Configuracoes />} />
+            <Route path="/dashboard/evento/:id" element={<EventDashboard />} />
             <Route path="/viu-pass" element={<VIUPass />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Overview />} />
