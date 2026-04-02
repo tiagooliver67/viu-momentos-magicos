@@ -431,9 +431,10 @@ const CriarEvento = () => {
           </button>
           <button
             onClick={currentStep === steps.length - 1 ? handleCreateEvent : handleNext}
-            className="px-4 sm:px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all min-h-[44px]"
+            disabled={isCreating}
+            className="px-4 sm:px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all min-h-[44px] disabled:opacity-50"
           >
-            {currentStep === steps.length - 1 ? "🚀 Criar Evento" : "Próximo"}
+            {isCreating ? "Criando..." : currentStep === steps.length - 1 ? "🚀 Criar Evento" : "Próximo"}
           </button>
         </div>
       </main>
