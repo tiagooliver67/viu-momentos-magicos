@@ -11,6 +11,7 @@ import CriarEvento from "./pages/CriarEvento";
 import VIUPass from "./pages/VIUPass";
 import Pedidos from "./pages/Pedidos";
 import Configuracoes from "./pages/Configuracoes";
+import EventDashboard from "./pages/EventDashboard";
 import NotFound from "./pages/NotFound";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
