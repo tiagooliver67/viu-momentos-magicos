@@ -47,6 +47,7 @@ const App = () => (
               <Route path="/recuperar-senha" element={<RecuperarSenha />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/evento/:id" element={<EventPage />} />
+              <Route path="/fotografo/:slug" element={<PhotographerPage />} />
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
