@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      cart_items: {
+        Row: {
+          created_at: string
+          id: string
+          photo_id: string | null
+          price: number
+          resolution: string | null
+          session_id: string
+          video_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          photo_id?: string | null
+          price?: number
+          resolution?: string | null
+          session_id: string
+          video_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          photo_id?: string | null
+          price?: number
+          resolution?: string | null
+          session_id?: string
+          video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cart_items_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "event_photos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "event_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_links: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          sort_order: number | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          sort_order?: number | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          sort_order?: number | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       discount_packages: {
         Row: {
           all_photos_price: number | null
@@ -353,6 +425,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      photographer_sites: {
+        Row: {
+          allow_custom_links: boolean | null
+          avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
+          cnpj: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          display_name: string | null
+          facebook: string | null
+          id: string
+          instagram: string | null
+          linkedin: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          slug: string | null
+          template: string | null
+          tiktok: string | null
+          twitter: string | null
+          updated_at: string
+          user_id: string
+          watermark_url: string | null
+          whatsapp: string | null
+          youtube: string | null
+        }
+        Insert: {
+          allow_custom_links?: boolean | null
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          cnpj?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          display_name?: string | null
+          facebook?: string | null
+          id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
+          template?: string | null
+          tiktok?: string | null
+          twitter?: string | null
+          updated_at?: string
+          user_id: string
+          watermark_url?: string | null
+          whatsapp?: string | null
+          youtube?: string | null
+        }
+        Update: {
+          allow_custom_links?: boolean | null
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          cnpj?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          display_name?: string | null
+          facebook?: string | null
+          id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
+          template?: string | null
+          tiktok?: string | null
+          twitter?: string | null
+          updated_at?: string
+          user_id?: string
+          watermark_url?: string | null
+          whatsapp?: string | null
+          youtube?: string | null
+        }
+        Relationships: []
       }
       price_grids: {
         Row: {
