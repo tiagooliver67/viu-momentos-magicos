@@ -139,54 +139,8 @@ const TabConta = () => {
 };
 
 // ─── Tab: Meu Site ───
-const TabSite = () => (
-  <div className="space-y-6">
-    <div>
-      <h2 className="text-xl font-bold">Meu site</h2>
-      <p className="text-sm text-muted-foreground">Configure sua página pública na plataforma</p>
-    </div>
-    <div className="glass-card p-6 space-y-5">
-      <div>
-        <label className="text-xs text-muted-foreground mb-1 block">URL personalizada</label>
-        <div className="flex items-center gap-0 border border-border rounded-lg overflow-hidden">
-          <span className="bg-secondary/80 px-4 py-2.5 text-sm text-muted-foreground whitespace-nowrap">viufoto.com.br/</span>
-          <input defaultValue="tiagooliverfotografias" className="flex-1 bg-secondary/50 px-4 py-2.5 text-sm outline-none" />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div>
-          <label className="text-xs text-muted-foreground mb-2 block">Foto de perfil</label>
-          <div className="w-32 h-32 rounded-2xl bg-secondary/50 border-2 border-dashed border-border flex items-center justify-center hover:border-primary transition-colors cursor-pointer group">
-            <Upload className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" />
-          </div>
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground mb-2 block">Banner / Capa</label>
-          <div className="h-32 rounded-2xl bg-secondary/50 border-2 border-dashed border-border flex items-center justify-center hover:border-primary transition-colors cursor-pointer group">
-            <div className="text-center">
-              <Upload className="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors mx-auto" />
-              <p className="text-xs text-muted-foreground mt-1">1200 × 400px recomendado</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Bio / Descrição</label>
-        <textarea defaultValue="Fotógrafo esportivo apaixonado por corridas de rua e triathlon. Capturo a emoção de cada quilômetro!" rows={3} className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors resize-none" />
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <InputField label="WhatsApp" value="(74) 99943-9609" />
-        <InputField label="Instagram" value="@tiagooliverfoto" />
-      </div>
-      <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
-        <p className="text-sm font-medium flex items-center gap-2"><Eye className="w-4 h-4 text-primary" /> Seus eventos e fotos serão exibidos automaticamente na página pública.</p>
-      </div>
-    </div>
-    <button onClick={() => toast.success("Site atualizado!")} className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)] flex items-center gap-2">
-      <Save className="w-4 h-4" /> Salvar site
-    </button>
-  </div>
-);
+import MeuSiteTab from "@/components/settings/MeuSiteTab";
+const TabSite = MeuSiteTab;
 
 // ─── Tab: Portfólio ───
 const TabPortfolio = () => {
