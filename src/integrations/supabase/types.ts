@@ -14,16 +14,397 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      discount_packages: {
+        Row: {
+          all_photos_price: number | null
+          created_at: string
+          discount_pct: number
+          event_id: string
+          id: string
+          min_photo_price: number | null
+          min_photos: number
+        }
+        Insert: {
+          all_photos_price?: number | null
+          created_at?: string
+          discount_pct?: number
+          event_id: string
+          id?: string
+          min_photo_price?: number | null
+          min_photos?: number
+        }
+        Update: {
+          all_photos_price?: number | null
+          created_at?: string
+          discount_pct?: number
+          event_id?: string
+          id?: string
+          min_photo_price?: number | null
+          min_photos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_packages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_type: Database["public"]["Enums"]["discount_type"]
+          discount_value: number
+          event_id: string
+          id: string
+          max_uses: number
+          uses: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          event_id: string
+          id?: string
+          max_uses?: number
+          uses?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["discount_type"]
+          discount_value?: number
+          event_id?: string
+          id?: string
+          max_uses?: number
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_coupons_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_photographers: {
+        Row: {
+          commission_pct: number
+          created_at: string
+          event_id: string
+          id: string
+          photographer_id: string
+        }
+        Insert: {
+          commission_pct?: number
+          created_at?: string
+          event_id: string
+          id?: string
+          photographer_id: string
+        }
+        Update: {
+          commission_pct?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          photographer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photographers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_photos: {
+        Row: {
+          album: string | null
+          created_at: string
+          event_id: string
+          file_name: string | null
+          file_url: string
+          id: string
+          identified: boolean
+          photographer_id: string | null
+        }
+        Insert: {
+          album?: string | null
+          created_at?: string
+          event_id: string
+          file_name?: string | null
+          file_url: string
+          id?: string
+          identified?: boolean
+          photographer_id?: string | null
+        }
+        Update: {
+          album?: string | null
+          created_at?: string
+          event_id?: string
+          file_name?: string | null
+          file_url?: string
+          id?: string
+          identified?: boolean
+          photographer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_videos: {
+        Row: {
+          created_at: string
+          event_id: string
+          file_name: string | null
+          file_url: string
+          id: string
+          photographer_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          file_name?: string | null
+          file_url: string
+          id?: string
+          photographer_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          file_name?: string | null
+          file_url?: string
+          id?: string
+          photographer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_videos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          category: string
+          cover_url: string | null
+          created_at: string
+          event_date: string
+          event_time: string | null
+          id: string
+          location: string
+          name: string
+          organizer_id: string
+          password: string | null
+          search_type: string[] | null
+          status: Database["public"]["Enums"]["event_status"]
+          updated_at: string
+          visibility: boolean
+        }
+        Insert: {
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          event_date: string
+          event_time?: string | null
+          id?: string
+          location: string
+          name: string
+          organizer_id: string
+          password?: string | null
+          search_type?: string[] | null
+          status?: Database["public"]["Enums"]["event_status"]
+          updated_at?: string
+          visibility?: boolean
+        }
+        Update: {
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          location?: string
+          name?: string
+          organizer_id?: string
+          password?: string | null
+          search_type?: string[] | null
+          status?: Database["public"]["Enums"]["event_status"]
+          updated_at?: string
+          visibility?: boolean
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          photo_id: string | null
+          price: number
+          video_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          photo_id?: string | null
+          price?: number
+          video_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          photo_id?: string | null
+          price?: number
+          video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "event_photos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "event_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          amount: number
+          client_cpf: string | null
+          client_email: string
+          client_name: string
+          created_at: string
+          event_id: string
+          id: string
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          status: Database["public"]["Enums"]["order_status"]
+          tracking_origin: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          client_cpf?: string | null
+          client_email: string
+          client_name: string
+          created_at?: string
+          event_id: string
+          id?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          status?: Database["public"]["Enums"]["order_status"]
+          tracking_origin?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_cpf?: string | null
+          client_email?: string
+          client_name?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          status?: Database["public"]["Enums"]["order_status"]
+          tracking_origin?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_grids: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          name: string
+          photo_high_price: number
+          photo_low_price: number
+          video_price: number
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          name?: string
+          photo_high_price?: number
+          photo_low_price?: number
+          video_price?: number
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          name?: string
+          photo_high_price?: number
+          photo_low_price?: number
+          video_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_grids_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
+      is_event_photographer: { Args: { _event_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      discount_type: "percentual" | "valor_fixo"
+      event_status: "ativo" | "em_breve" | "inativo"
+      order_status: "aguardando_pagamento" | "pago" | "enviado" | "cancelado"
+      payment_method: "pix" | "cartao"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +531,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      discount_type: ["percentual", "valor_fixo"],
+      event_status: ["ativo", "em_breve", "inativo"],
+      order_status: ["aguardando_pagamento", "pago", "enviado", "cancelado"],
+      payment_method: ["pix", "cartao"],
+    },
   },
 } as const
