@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const steps = ["Modelo", "Informações", "Busca", "Visibilidade", "Resumo"];
 
