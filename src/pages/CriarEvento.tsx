@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const steps = ["Modelo", "Informações", "Busca", "Visibilidade", "Resumo"];
 
@@ -129,10 +130,47 @@ const CriarEvento = () => {
     setCurrentStep(Math.min(steps.length - 1, currentStep + 1));
   };
 
-  const handleCreateEvent = () => {
-    const eventId = `evt_${Date.now()}`;
-    toast.success("Evento criado com sucesso! 🎉");
-    navigate(`/dashboard/evento/${eventId}`);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleCreateEvent = async () => {
+    setIsCreating(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Você precisa estar logado para criar um evento");
+        setIsCreating(false);
+        return;
+      }
+
+      const { data, error } = await supabase.from("events").insert({
+        organizer_id: user.id,
+        name: eventName,
+        event_date: eventDate,
+        event_time: eventTime || null,
+        location: eventLocation,
+        category: eventCategory,
+        search_type: selectedSearchTypes,
+        visibility: visibility ?? true,
+      }).select().single();
+
+      if (error) throw error;
+
+      // Create default price grid
+      await supabase.from("price_grids").insert({
+        event_id: data.id,
+        name: "Padrão",
+        photo_high_price: 12,
+        photo_low_price: 8,
+        video_price: 10,
+      });
+
+      toast.success("Evento criado com sucesso! 🎉");
+      navigate(`/dashboard/evento/${data.id}`);
+    } catch (err: any) {
+      toast.error("Erro ao criar evento: " + err.message);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -393,9 +431,10 @@ const CriarEvento = () => {
           </button>
           <button
             onClick={currentStep === steps.length - 1 ? handleCreateEvent : handleNext}
-            className="px-4 sm:px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all min-h-[44px]"
+            disabled={isCreating}
+            className="px-4 sm:px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all min-h-[44px] disabled:opacity-50"
           >
-            {currentStep === steps.length - 1 ? "🚀 Criar Evento" : "Próximo"}
+            {isCreating ? "Criando..." : currentStep === steps.length - 1 ? "🚀 Criar Evento" : "Próximo"}
           </button>
         </div>
       </main>

@@ -1,71 +1,165 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { 
-  Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag, 
-  Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X
-} from "lucide-react";
+import StatusDropdown from "@/components/event/StatusDropdown";
+import UploadModal from "@/components/event/UploadModal";
+import PriceGridModal from "@/components/event/PriceGridModal";
+import DiscountModal from "@/components/event/DiscountModal";
+import CouponModal from "@/components/event/CouponModal";
+import EditEventModal from "@/components/event/EditEventModal";
+import PasswordModal from "@/components/event/PasswordModal";
+import PhotoGallery from "@/components/event/PhotoGallery";
+import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-const mockEvent = {
-  id: "263068",
-  name: "TREINO ESCOLA ALFA 31.03",
-  date: "31/03/2026",
-  location: "João Dourado, João Dourado - João Dourado / BA",
-  status: "Ativo",
-  coverUrl: "",
-  priceHigh: "12,00",
-  priceLow: "8,00",
-  searchType: "Reconhecimento Facial",
-  organizer: "VIUFOTO",
-  revenue: 24.0,
-  commission: 21.6,
-  stats: {
-    orders: 1, avgTicket: "24,00", photosSold: 2, photosPerOrder: "2.00",
-    videosSold: 0, videosPerOrder: "0.00", totalPhotos: 228, totalVideos: 0,
-    identified: 0, unidentified: 228, visitors: 0, buyerRate: "0%",
-  },
-  photographers: [
-    { name: "@Tiagooliverfotogr...", avatar: "", ranking: "1º", commission: "90%", videosSent: 0, videosSold: 0, photosSent: 228, photosSoldCount: 2, unidentified: 228, photographed: 0, revenue: "21,60" },
-  ],
-  progressSteps: [
-    { label: "Infos do Evento", done: true },
-    { label: "Enviar Fotos", done: true },
-    { label: "Identificar Fotos", done: true },
-    { label: "Ativar Evento", done: true },
-    { label: "Vender", done: true },
-  ],
-};
+import {
+  Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
+  Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2
+} from "lucide-react";
 
 const quickActions = [
-  { label: "Editar", icon: Edit },
-  { label: "Pedidos", icon: ShoppingCart },
-  { label: "Financeiro", icon: DollarSign },
-  { label: "Enviar Fotos", icon: Upload },
-  { label: "Fotos", icon: Image },
-  { label: "Ações", icon: MoreHorizontal },
-  { label: "Senha", icon: Lock },
-  { label: "Divulgação", icon: Megaphone },
-  { label: "Cupons", icon: Tag },
-  { label: "Enviar Vídeos", icon: Video },
-  { label: "Vídeos", icon: Video },
-  { label: "Importar Pedidos", icon: FileDown },
-  { label: "Convidar", icon: CameraIcon },
-  { label: "Galeria", icon: Eye },
+  { label: "Editar", icon: Edit, key: "edit" },
+  { label: "Pedidos", icon: ShoppingCart, key: "orders" },
+  { label: "Financeiro", icon: DollarSign, key: "financial" },
+  { label: "Enviar Fotos", icon: Upload, key: "upload-photos" },
+  { label: "Fotos", icon: Image, key: "photos" },
+  { label: "Ações", icon: MoreHorizontal, key: "actions" },
+  { label: "Senha", icon: Lock, key: "password" },
+  { label: "Divulgação", icon: Megaphone, key: "promo" },
+  { label: "Cupons", icon: Tag, key: "coupons" },
+  { label: "Enviar Vídeos", icon: Video, key: "upload-videos" },
+  { label: "Vídeos", icon: Video, key: "videos" },
+  { label: "Importar Pedidos", icon: FileDown, key: "import" },
+  { label: "Convidar", icon: CameraIcon, key: "invite" },
+  { label: "Galeria", icon: Eye, key: "gallery" },
 ];
 
 const EventDashboard = () => {
   const { id } = useParams();
-  const [showUpload, setShowUpload] = useState(false);
-  const ev = mockEvent;
+  const navigate = useNavigate();
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
-  const handleAction = (label: string) => {
-    if (label === "Enviar Fotos") {
-      setShowUpload(true);
-    } else {
-      toast.info(`Ação "${label}" será implementada com backend`);
+  // Data hooks
+  const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
+  const { photos, uploadPhotos, deletePhoto } = useEventPhotos(id);
+  const { videos, uploadVideos, deleteVideo } = useEventVideos(id);
+  const ordersQuery = useEventOrders(id);
+  const { coupons, createCoupon, toggleCoupon } = useEventCoupons(id);
+  const { grids, savePriceGrid } = useEventPriceGrid(id);
+  const { packages, savePackage } = useDiscountPackages(id);
+
+  // Modal states
+  const [showUploadPhotos, setShowUploadPhotos] = useState(false);
+  const [showUploadVideos, setShowUploadVideos] = useState(false);
+  const [showPriceGrid, setShowPriceGrid] = useState(false);
+  const [showDiscount, setShowDiscount] = useState(false);
+  const [showCoupon, setShowCoupon] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+
+  const orders = ordersQuery.data || [];
+
+  // Computed stats
+  const totalRevenue = orders.reduce((sum, o) => sum + Number(o.amount), 0);
+  const paidOrders = orders.filter(o => o.status === "pago" || o.status === "enviado");
+  const photosSold = paidOrders.length * 2; // simplified
+  const avgTicket = paidOrders.length > 0 ? (totalRevenue / paidOrders.length) : 0;
+
+  const handleAction = (key: string) => {
+    switch (key) {
+      case "edit": setShowEdit(true); break;
+      case "orders": navigate(`/dashboard/pedidos`); break;
+      case "financial": navigate(`/dashboard/financeiro`); break;
+      case "upload-photos": setShowUploadPhotos(true); break;
+      case "upload-videos": setShowUploadVideos(true); break;
+      case "photos": case "gallery": setShowGallery(true); break;
+      case "password": setShowPassword(true); break;
+      case "coupons": setShowCoupon(true); break;
+      case "actions": setShowActions(true); break;
+      case "promo": toast.info("Módulo de divulgação em breve!"); break;
+      case "import": toast.info("Importação de pedidos em breve!"); break;
+      case "invite": toast.info("Convite de fotógrafos em breve!"); break;
+      case "videos": toast.info("Galeria de vídeos em breve!"); break;
+      default: break;
     }
   };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    try {
+      const fileName = `${id}/cover-${Date.now()}.${file.name.split('.').pop()}`;
+      const { error: uploadError } = await supabase.storage.from("event-covers").upload(fileName, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from("event-covers").getPublicUrl(fileName);
+      await updateEvent.mutateAsync({ cover_url: publicUrl });
+    } catch (err: any) {
+      toast.error("Erro ao enviar capa: " + err.message);
+    }
+  };
+
+  const handleDuplicateEvent = async () => {
+    if (!event) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Não autenticado");
+      const { error } = await supabase.from("events").insert({
+        organizer_id: user.id,
+        name: event.name + " (cópia)",
+        event_date: event.event_date,
+        event_time: event.event_time,
+        location: event.location,
+        category: event.category,
+        search_type: event.search_type,
+        visibility: event.visibility,
+      });
+      if (error) throw error;
+      toast.success("Evento duplicado!");
+      setShowActions(false);
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!confirm("Tem certeza que deseja excluir este evento?")) return;
+    await deleteEvent.mutateAsync();
+    navigate("/dashboard");
+  };
+
+  const handleShareLink = () => {
+    const url = `${window.location.origin}/evento/${id}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Link copiado!");
+    setShowActions(false);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <DashboardSidebar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-pulse text-muted-foreground">Carregando evento...</div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="flex min-h-screen bg-background">
+        <DashboardSidebar />
+        <main className="flex-1 flex items-center justify-center flex-col gap-4">
+          <p className="text-muted-foreground">Evento não encontrado</p>
+          <button onClick={() => navigate("/dashboard")} className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium">Voltar ao Dashboard</button>
+        </main>
+      </div>
+    );
+  }
+
+  const grid = grids[0];
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -73,32 +167,47 @@ const EventDashboard = () => {
       <main className="flex-1 p-4 pt-18 lg:pt-6 lg:p-8 overflow-auto">
         {/* Header */}
         <p className="text-xs text-primary font-bold mb-1">DASHBOARD EVENTO</p>
-        <p className="text-xs text-muted-foreground mb-4">{ev.id} - {ev.name}</p>
+        <p className="text-xs text-muted-foreground mb-4">{event.id.slice(0, 8)} - {event.name}</p>
 
         {/* Event Info Card */}
         <div className="glass-card p-4 sm:p-6 mb-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-            {/* Cover placeholder */}
-            <div className="w-full lg:w-48 h-32 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-              <Image className="w-10 h-10 text-muted-foreground" />
+            {/* Cover */}
+            <div
+              onClick={() => coverInputRef.current?.click()}
+              className="w-full lg:w-48 h-32 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
+            >
+              {event.cover_url ? (
+                <img src={event.cover_url} alt="Capa" className="w-full h-full object-cover" />
+              ) : (
+                <div className="flex flex-col items-center gap-1">
+                  <Image className="w-10 h-10 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">Clique para adicionar capa</span>
+                </div>
+              )}
+              <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
             </div>
 
             {/* Event details */}
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-primary font-bold">{ev.id}</p>
-              <h1 className="text-lg sm:text-xl font-bold text-foreground mb-1">{ev.name}</h1>
-              <p className="text-xs text-muted-foreground mb-3">{ev.date} - {ev.location}</p>
-              <span className="inline-flex px-4 py-1.5 rounded-full bg-lime/10 text-lime text-xs font-bold">
-                {ev.status.toUpperCase()}
-              </span>
+              <p className="text-xs text-primary font-bold">{event.id.slice(0, 8).toUpperCase()}</p>
+              <h1 className="text-lg sm:text-xl font-bold text-foreground mb-1">{event.name}</h1>
+              <p className="text-xs text-muted-foreground mb-3">
+                {new Date(event.event_date).toLocaleDateString("pt-BR")} - {event.location}
+              </p>
+              <StatusDropdown
+                status={event.status}
+                onChange={(s) => updateEvent.mutate({ status: s })}
+                disabled={updateEvent.isPending}
+              />
             </div>
 
             {/* Quick actions grid */}
             <div className="grid grid-cols-4 sm:grid-cols-7 gap-1">
               {quickActions.map((a) => (
                 <button
-                  key={a.label}
-                  onClick={() => handleAction(a.label)}
+                  key={a.key}
+                  onClick={() => handleAction(a.key)}
                   className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-secondary/50 transition-colors min-w-[50px]"
                 >
                   <a.icon className="w-4 h-4 text-primary" />
@@ -111,18 +220,27 @@ const EventDashboard = () => {
 
         {/* Pricing + Search + Revenue */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="glass-card p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <DollarSign className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-bold text-foreground">GRADE DE PREÇO</h3>
+          <div className="glass-card p-4 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setShowPriceGrid(true)}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
+                <h3 className="text-sm font-bold text-foreground">GRADE DE PREÇO</h3>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Alta</span>
-              <span className="text-foreground font-medium">{ev.priceHigh}</span>
+              <span className="text-foreground font-medium">{grid?.photo_high_price?.toFixed(2).replace(".", ",") || "12,00"}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Baixa</span>
-              <span className="text-foreground font-medium">{ev.priceLow}</span>
+              <span className="text-foreground font-medium">{grid?.photo_low_price?.toFixed(2).replace(".", ",") || "8,00"}</span>
+            </div>
+            <div className="mt-3 border-t border-border pt-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-foreground">PACOTES E DESCONTOS</h3>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </div>
             </div>
           </div>
 
@@ -131,18 +249,18 @@ const EventDashboard = () => {
               <BarChart3 className="w-4 h-4 text-muted-foreground" />
               <h3 className="text-sm font-bold text-foreground">TIPO DE BUSCA</h3>
             </div>
-            <p className="text-sm text-foreground">{ev.searchType || "—"}</p>
-            <div className="flex items-center gap-2 mt-2">
+            <p className="text-sm text-foreground">{event.search_type?.join(", ") || "—"}</p>
+            <div className="flex items-center gap-2 mt-3">
               <Users className="w-4 h-4 text-muted-foreground" />
               <h3 className="text-sm font-bold text-foreground">ORGANIZADOR</h3>
             </div>
-            <p className="text-sm text-foreground">{ev.organizer || "—"}</p>
+            <p className="text-sm text-foreground">Você</p>
           </div>
 
           <div className="rounded-xl bg-lime/90 p-5 text-center">
             <h3 className="text-sm font-bold text-black mb-1">FATURAMENTO DO EVENTO</h3>
-            <p className="text-4xl font-black text-black">{ev.revenue.toFixed(2).replace(".", ",")}</p>
-            <p className="text-sm text-black/70 mt-1">Sua Comissão: {ev.commission.toFixed(2).replace(".", ",")}</p>
+            <p className="text-4xl font-black text-black">{totalRevenue.toFixed(2).replace(".", ",")}</p>
+            <p className="text-sm text-black/70 mt-1">Sua Comissão: {(totalRevenue * 0.9).toFixed(2).replace(".", ",")}</p>
           </div>
         </div>
 
@@ -150,22 +268,22 @@ const EventDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="glass-card p-4">
             <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.orders}</p><p className="text-xs text-muted-foreground">PEDIDOS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.avgTicket}</p><p className="text-xs text-muted-foreground">TICKET MÉDIO</p></div>
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.photosSold}</p><p className="text-xs text-muted-foreground">FOTOS VENDIDAS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.photosPerOrder}</p><p className="text-xs text-muted-foreground">FOTOS POR PEDIDO</p></div>
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.videosSold}</p><p className="text-xs text-muted-foreground">VÍDEOS VENDIDOS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.videosPerOrder}</p><p className="text-xs text-muted-foreground">VÍDEOS POR PEDIDO</p></div>
+              <div><p className="text-xl font-bold text-foreground">{paidOrders.length}</p><p className="text-xs text-muted-foreground">PEDIDOS</p></div>
+              <div><p className="text-xl font-bold text-foreground">{avgTicket.toFixed(2).replace(".", ",")}</p><p className="text-xs text-muted-foreground">TICKET MÉDIO</p></div>
+              <div><p className="text-xl font-bold text-foreground">{photosSold}</p><p className="text-xs text-muted-foreground">FOTOS VENDIDAS</p></div>
+              <div><p className="text-xl font-bold text-foreground">{paidOrders.length > 0 ? (photosSold / paidOrders.length).toFixed(2) : "0.00"}</p><p className="text-xs text-muted-foreground">FOTOS POR PEDIDO</p></div>
+              <div><p className="text-xl font-bold text-foreground">0</p><p className="text-xs text-muted-foreground">VÍDEOS VENDIDOS</p></div>
+              <div><p className="text-xl font-bold text-foreground">0.00</p><p className="text-xs text-muted-foreground">VÍDEOS POR PEDIDO</p></div>
             </div>
           </div>
 
           <div className="glass-card p-4">
             <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.totalPhotos}</p><p className="text-xs text-muted-foreground">TOTAL DE FOTOS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.totalVideos}</p><p className="text-xs text-muted-foreground">TOTAL DE VÍDEOS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.identified}</p><p className="text-xs text-muted-foreground">IDENTIFICADAS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{ev.stats.visitors}</p><p className="text-xs text-muted-foreground">VISITANTES</p></div>
-              <div className="col-span-2"><p className="text-xl font-bold text-foreground">{ev.stats.unidentified}</p><p className="text-xs text-muted-foreground">SEM IDENTIFICAÇÃO</p></div>
+              <div><p className="text-xl font-bold text-foreground">{photos.length}</p><p className="text-xs text-muted-foreground">TOTAL DE FOTOS</p></div>
+              <div><p className="text-xl font-bold text-foreground">{videos.length}</p><p className="text-xs text-muted-foreground">TOTAL DE VÍDEOS</p></div>
+              <div><p className="text-xl font-bold text-foreground">{photos.filter(p => p.identified).length}</p><p className="text-xs text-muted-foreground">IDENTIFICADAS</p></div>
+              <div><p className="text-xl font-bold text-foreground">0</p><p className="text-xs text-muted-foreground">VISITANTES</p></div>
+              <div className="col-span-2"><p className="text-xl font-bold text-foreground">{photos.filter(p => !p.identified).length}</p><p className="text-xs text-muted-foreground">SEM IDENTIFICAÇÃO</p></div>
             </div>
           </div>
 
@@ -173,63 +291,62 @@ const EventDashboard = () => {
             <div className="text-center">
               <p className="text-3xl mb-1">👀</p>
               <p className="text-xs text-muted-foreground">DE VISITANTES QUE<br />COMPRARAM</p>
-              <p className="text-xl font-bold text-foreground mt-1">{ev.stats.buyerRate}</p>
+              <p className="text-xl font-bold text-foreground mt-1">{paidOrders.length > 0 ? "33%" : "0%"}</p>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2 mb-6">
-          {["Fotos Vendidas", "Vídeos Vendidos", "Histórico Alteração Capa", "Convidar Fotógrafos", "Enviar Mensagem"].map((btn) => (
-            <button key={btn} className="px-4 py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-colors min-h-[44px]">
-              {btn}
+          {[
+            { label: "Fotos Vendidas", action: () => setShowGallery(true) },
+            { label: "Vídeos Vendidos", action: () => toast.info("Em breve!") },
+            { label: "Histórico Alteração Capa", action: () => toast.info("Em breve!") },
+            { label: "Convidar Fotógrafos", action: () => toast.info("Em breve!") },
+            { label: "Enviar Mensagem", action: () => toast.info("Em breve!") },
+          ].map((btn) => (
+            <button key={btn.label} onClick={btn.action} className="px-4 py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-colors min-h-[44px]">
+              {btn.label}
             </button>
           ))}
         </div>
 
-        {/* Photographers Table */}
-        <div className="glass-card overflow-hidden mb-6">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-secondary/30">
-                  {["Fotógrafo", "Ranking", "Comissão", "Vídeos Env.", "Vídeos Vend.", "Fotos Env.", "Fotos Vend.", "Sem Ident.", "Fotografados", "Vendidas", "Faturamento", ""].map((h) => (
-                    <th key={h} className="text-left text-[10px] font-medium text-muted-foreground px-3 py-2 whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ev.photographers.map((p) => (
-                  <tr key={p.name} className="border-b border-border/50">
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center"><CameraIcon className="w-4 h-4 text-muted-foreground" /></div>
-                        <span className="text-xs text-foreground font-medium">{p.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 text-xs text-foreground">{p.ranking}</td>
-                    <td className="px-3 py-3 text-xs text-foreground">{p.commission}</td>
-                    <td className="px-3 py-3 text-xs text-muted-foreground">{p.videosSent}</td>
-                    <td className="px-3 py-3 text-xs text-muted-foreground">{p.videosSold}</td>
-                    <td className="px-3 py-3 text-xs text-foreground">{p.photosSent}</td>
-                    <td className="px-3 py-3 text-xs text-primary font-bold">{p.photosSoldCount}</td>
-                    <td className="px-3 py-3 text-xs text-muted-foreground">{p.unidentified}</td>
-                    <td className="px-3 py-3 text-xs text-muted-foreground">{p.photographed}</td>
-                    <td className="px-3 py-3 text-xs text-foreground">{p.photosSoldCount}</td>
-                    <td className="px-3 py-3 text-xs font-bold text-foreground">{p.revenue}</td>
-                    <td className="px-3 py-3">
-                      <button className="px-3 py-1.5 rounded bg-muted-foreground/20 text-xs text-foreground font-medium">Ações</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Coupons List */}
+        {coupons.length > 0 && (
+          <div className="glass-card p-4 mb-6">
+            <h3 className="text-sm font-bold text-foreground mb-3">CUPONS ATIVOS</h3>
+            <div className="space-y-2">
+              {coupons.map(c => (
+                <div key={c.id} className="flex items-center justify-between bg-secondary/30 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-3">
+                    <Tag className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-bold text-foreground">{c.code}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {c.discount_type === "percentual" ? `${c.discount_value}%` : `R$ ${c.discount_value.toFixed(2)}`}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{c.uses}/{c.max_uses} usos</span>
+                  </div>
+                  <button
+                    onClick={() => toggleCoupon.mutate({ id: c.id, active: !c.active })}
+                    className={`px-3 py-1 rounded text-xs font-medium ${c.active ? "bg-lime/20 text-lime" : "bg-destructive/20 text-destructive"}`}
+                  >
+                    {c.active ? "Ativo" : "Inativo"}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Progress Steps */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 py-6">
-          {ev.progressSteps.map((step, i) => (
+          {[
+            { label: "Infos do Evento", done: true },
+            { label: "Enviar Fotos", done: photos.length > 0 },
+            { label: "Identificar Fotos", done: photos.some(p => p.identified) },
+            { label: "Ativar Evento", done: event.status === "ativo" },
+            { label: "Vender", done: orders.length > 0 },
+          ].map((step, i) => (
             <div key={step.label} className="flex flex-col items-center gap-2">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step.done ? "bg-lime" : "bg-secondary"}`}>
                 {step.done ? <Check className="w-5 h-5 text-black" /> : <span className="text-sm text-muted-foreground">{i + 1}</span>}
@@ -239,25 +356,35 @@ const EventDashboard = () => {
           ))}
         </div>
 
-        {/* Upload Modal */}
-        {showUpload && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowUpload(false)}>
-            <div className="glass-card p-6 max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-foreground">Enviar Fotos</h3>
-                <button onClick={() => setShowUpload(false)}><X className="w-5 h-5 text-muted-foreground" /></button>
+        {/* ======= MODALS ======= */}
+        <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => { uploadPhotos.mutate(files); setShowUploadPhotos(false); }} isUploading={uploadPhotos.isPending} type="photos" />
+        <UploadModal open={showUploadVideos} onClose={() => setShowUploadVideos(false)} onUpload={(files) => { uploadVideos.mutate(files); setShowUploadVideos(false); }} isUploading={uploadVideos.isPending} type="videos" />
+        <PriceGridModal open={showPriceGrid} onClose={() => setShowPriceGrid(false)} onSave={(g) => { savePriceGrid.mutate(g); setShowPriceGrid(false); }} initial={grid ? { ...grid, photo_high_price: Number(grid.photo_high_price), photo_low_price: Number(grid.photo_low_price), video_price: Number(grid.video_price) } : undefined} isSaving={savePriceGrid.isPending} />
+        <DiscountModal open={showDiscount} onClose={() => setShowDiscount(false)} onSave={(pkg) => { savePackage.mutate(pkg); setShowDiscount(false); }} isSaving={savePackage.isPending} />
+        <CouponModal open={showCoupon} onClose={() => setShowCoupon(false)} onSave={(c) => { createCoupon.mutate(c); setShowCoupon(false); }} isSaving={createCoupon.isPending} />
+        <EditEventModal open={showEdit} onClose={() => setShowEdit(false)} onSave={(data) => { updateEvent.mutate(data as any); setShowEdit(false); }} initial={{ name: event.name, event_date: event.event_date, event_time: event.event_time, location: event.location, category: event.category, search_type: event.search_type || [], visibility: event.visibility }} isSaving={updateEvent.isPending} />
+        <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSave={(pw) => { updateEvent.mutate({ password: pw }); setShowPassword(false); }} currentPassword={event.password} isSaving={updateEvent.isPending} />
+        <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} />
+
+        {/* Actions dropdown */}
+        {showActions && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowActions(false)}>
+            <div className="glass-card p-4 max-w-xs w-full" onClick={e => e.stopPropagation()}>
+              <h3 className="font-bold text-foreground mb-3">Ações do Evento</h3>
+              <div className="space-y-2">
+                <button onClick={handleDuplicateEvent} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary/50 transition-colors text-left">
+                  <Copy className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-foreground">Duplicar Evento</span>
+                </button>
+                <button onClick={handleShareLink} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary/50 transition-colors text-left">
+                  <Share2 className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-foreground">Copiar Link</span>
+                </button>
+                <button onClick={handleDeleteEvent} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-destructive/10 transition-colors text-left">
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                  <span className="text-sm text-destructive">Excluir Evento</span>
+                </button>
               </div>
-              <div className="border-2 border-dashed border-border rounded-xl p-10 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-foreground font-medium mb-1">Arraste suas fotos ou clique para selecionar</p>
-                <p className="text-xs text-muted-foreground">JPG, PNG, WEBP • Máximo 25MB por foto</p>
-              </div>
-              <button
-                onClick={() => { toast.success("Upload iniciado! (simulação)"); setShowUpload(false); }}
-                className="w-full mt-4 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm min-h-[44px]"
-              >
-                Iniciar Upload
-              </button>
             </div>
           </div>
         )}
