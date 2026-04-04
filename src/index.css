@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -28,7 +27,6 @@
     --input: 0 0% 15%;
     --ring: 18 100% 50%;
     --radius: 0.75rem;
-
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 85%;
     --sidebar-primary: 18 100% 50%;
@@ -38,8 +36,9 @@
     --sidebar-border: 0 0% 12%;
     --sidebar-ring: 18 100% 50%;
 
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Glassmorphism Variables */
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-border: rgba(255, 255, 255, 0.08);
     --glow-primary: 0 0 30px rgba(255, 77, 0, 0.3);
     --glow-accent: 0 0 30px rgba(0, 240, 255, 0.2);
   }
@@ -67,7 +66,6 @@
     --border: 0 0% 88%;
     --input: 0 0% 88%;
     --ring: 18 100% 50%;
-
     --sidebar-background: 0 0% 97%;
     --sidebar-foreground: 0 0% 30%;
     --sidebar-primary: 18 100% 50%;
@@ -77,8 +75,9 @@
     --sidebar-border: 0 0% 90%;
     --sidebar-ring: 18 100% 50%;
 
-    --glass-bg: rgba(0, 0, 0, 0.03);
-    --glass-border: rgba(0, 0, 0, 0.08);
+    /* Glassmorphism Variables - Clean Theme */
+    --glass-bg: rgba(0, 0, 0, 0.04);
+    --glass-border: rgba(0, 0, 0, 0.09);
     --glow-primary: 0 0 30px rgba(255, 77, 0, 0.15);
     --glow-accent: 0 0 30px rgba(0, 200, 220, 0.1);
   }
@@ -89,20 +88,48 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: "Inter", system-ui, sans-serif;
   }
 }
 
 @layer components {
+  /* ==================== GLASSMORPHISM AVANÇADO ==================== */
+
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.25),
+      inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-strong {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Versão mais suave para cards (já existente no seu código) */
   .glass-card {
-    @apply bg-card/50 backdrop-blur-xl border rounded-xl;
-    border-color: var(--glass-border);
+    @apply glass rounded-2xl;
   }
 
   .glass-card-hover {
-    @apply glass-card transition-all duration-300 hover:border-primary/30 hover:shadow-[0_0_30px_rgba(255,77,0,0.15)] hover:scale-[1.02];
+    @apply glass-card transition-all duration-300 
+           hover:border-primary/30 
+           hover:shadow-[0_0_30px_rgba(255,77,0,0.15)] 
+           hover:scale-[1.02];
   }
 
+  /* ==================== OUTROS COMPONENTES (mantidos e melhorados) ==================== */
   .glow-text {
     text-shadow: 0 0 40px rgba(255, 77, 0, 0.5);
   }
@@ -116,7 +143,9 @@
   }
 
   .neon-border {
-    box-shadow: 0 0 15px rgba(255, 77, 0, 0.2), inset 0 0 15px rgba(255, 77, 0, 0.05);
+    box-shadow:
+      0 0 15px rgba(255, 77, 0, 0.2),
+      inset 0 0 15px rgba(255, 77, 0, 0.05);
   }
 
   .animate-float {
@@ -131,7 +160,7 @@
   }
 
   .badge-live::before {
-    content: '';
+    content: "";
     @apply w-2 h-2 rounded-full animate-pulse;
     background: hsl(18 100% 50%);
     box-shadow: 0 0 8px rgba(255, 77, 0, 0.6);
@@ -145,27 +174,50 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-30px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(255, 77, 0, 0.2); }
-  50% { box-shadow: 0 0 40px rgba(255, 77, 0, 0.4); }
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(255, 77, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 77, 0, 0.4);
+  }
 }
