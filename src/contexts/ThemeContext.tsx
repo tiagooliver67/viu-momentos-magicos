@@ -19,7 +19,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     localStorage.setItem("admin-theme", theme);
-    document.documentElement.classList.toggle("clean-theme", theme === "clean");
+    document.documentElement.classList.toggle("dark-theme", theme === "dark");
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "clean" : "dark"));
