@@ -117,3 +117,9 @@
     padding-right: 16px !important;
   }
 }
+<button 
+  className={`btn-buscar ${isSearching ? 'loading' : ''}`}
+  onClick={handleSearch}
+>
+  {isSearching ? '' : 'Buscar'}
+</button>
