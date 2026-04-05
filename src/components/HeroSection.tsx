@@ -18,7 +18,7 @@ const HeroSection = () => {
       />
 
       {/* 🔥 OVERLAY FORTE (PRINCIPAL AJUSTE) */}
-      <div className="absolute inset-0 bg-black/70" />
+      <div className="absolute inset-0 bg-black/61" />
 
       {/* 🔥 GRADIENTE PROFUNDO (EFEITO PREMIUM) */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/61 to-black/90" />
