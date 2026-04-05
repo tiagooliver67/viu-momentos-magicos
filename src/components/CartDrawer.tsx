@@ -1,10 +1,15 @@
 import { ShoppingCart, X, Trash2, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
+import CheckoutModal from "@/components/checkout/CheckoutModal";
 
 const CartDrawer = () => {
   const [open, setOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const { items, removeItem, clearCart, total, count } = useCart();
+
+  // Derive eventId from first cart item (all items share same event in current flow)
+  const eventId = items.length > 0 ? (items[0] as any).eventId || "" : "";
 
   return (
     <>
@@ -75,7 +80,13 @@ const CartDrawer = () => {
                     <span className="text-muted-foreground">Total</span>
                     <span className="text-xl font-bold text-primary">R$ {total.toFixed(2)}</span>
                   </div>
-                  <button className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all min-h-[48px]">
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      setCheckoutOpen(true);
+                    }}
+                    className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all min-h-[48px]"
+                  >
                     <CreditCard className="w-5 h-5" /> Finalizar compra
                   </button>
                   <button
@@ -90,6 +101,12 @@ const CartDrawer = () => {
           </div>
         </div>
       )}
+
+      <CheckoutModal
+        open={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        eventId={eventId}
+      />
     </>
   );
 };

@@ -148,6 +148,7 @@ const EventPage = () => {
     addItem({
       photoId: photo.id,
       photoUrl: photo.file_url,
+      eventId: id,
       eventName: event.name,
       resolution: res,
       price: res === "high" ? highPrice : lowPrice,
