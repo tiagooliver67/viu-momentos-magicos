@@ -102,10 +102,9 @@
 }
 
 @layer components {
-  /* ==================== GLASS (PADRÃO DARK) ==================== */
+  /* ==================== GLASS (PADRÃO CLEAN) ==================== */
   .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow);
   }
