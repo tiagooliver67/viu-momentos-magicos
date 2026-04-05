@@ -1,8 +1,16 @@
 import { useState } from "react";
 
+const categories = [
+  { id: "corrida", label: "Corrida", icon: "🏃" },
+  { id: "ciclismo", label: "Ciclismo", icon: "🚴" },
+  { id: "natacao", label: "Natação", icon: "🏊" },
+  { id: "triathlon", label: "Triathlon", icon: "🏅" },
+  { id: "outros", label: "Outros", icon: "📸" },
+];
+
 interface CategoryTabsProps {
   onSelect?: (id: string) => void;
-
+}
 
 const CategoryTabs = ({ onSelect }: CategoryTabsProps) => {
   const [active, setActive] = useState("corrida");
