@@ -229,9 +229,16 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
 
           {/* Photo Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {paginatedPhotos.map((photo, idx) => (
+            {paginatedPhotos.map((photo, idx) => {
+              const url = getPhotoUrl(photo);
+              if (!url) return (
+                <div key={photo.id} className="relative rounded-lg overflow-hidden bg-secondary aspect-[4/5] flex items-center justify-center">
+                  <div className="animate-pulse text-xs text-muted-foreground">Carregando...</div>
+                </div>
+              );
+              return (
               <div key={photo.id} className="relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5]">
-                <img src={photo.file_url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
+                <img src={url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
                 
                 {/* Top overlay - Capa badge + actions */}
                 <div className="absolute top-2 left-2 right-2 flex items-start justify-between">
