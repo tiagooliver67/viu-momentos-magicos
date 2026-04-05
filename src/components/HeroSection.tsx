@@ -56,28 +56,28 @@ const HeroSection = () => {
           className="max-w-2xl mx-auto"
           style={{ animation: "fade-in-up 0.6s ease-out 0.3s", animationFillMode: "both" }}
         >
-          <div className="glass-card p-2 flex items-center gap-2">
-            <div className="flex items-center gap-1 pl-2">
+          <div className="glass-card p-1.5 sm:p-2 flex items-center gap-1 sm:gap-2 overflow-hidden">
+            <div className="flex items-center gap-0.5 sm:gap-1 pl-1 sm:pl-2 shrink-0">
               <button
                 onClick={() => setSearchMode("text")}
-                className={`p-2 rounded-lg transition-all ${
+                className={`p-1.5 sm:p-2 rounded-lg transition-all ${
                   searchMode === "text"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Search className="w-5 h-5" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
               <button
                 onClick={() => setSearchMode("face")}
-                className={`p-2 rounded-lg transition-all ${
+                className={`p-1.5 sm:p-2 rounded-lg transition-all ${
                   searchMode === "face"
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <ScanFace className="w-5 h-5" />
+                <ScanFace className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
@@ -85,15 +85,15 @@ const HeroSection = () => {
               type="text"
               placeholder={
                 searchMode === "text"
-                  ? "Digite o nome do evento ou nº de peito..."
-                  : "Envie sua selfie para encontrar suas fotos..."
+                  ? "Digite o nome do evento..."
+                  : "Envie sua selfie..."
               }
-              className="flex-1 bg-transparent text-white placeholder:text-gray-400 outline-none text-sm md:text-base py-3 px-2"
+              className="flex-1 min-w-0 bg-transparent text-white placeholder:text-gray-400 outline-none text-xs sm:text-sm md:text-base py-2.5 sm:py-3 px-1 sm:px-2"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <button className="px-4 sm:px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_rgba(255,77,0,0.3)] min-h-[44px]">
+            <button className="px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs sm:text-sm hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_rgba(255,77,0,0.3)] min-h-[40px] sm:min-h-[44px] shrink-0">
               Buscar
             </button>
           </div>
