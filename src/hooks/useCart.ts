@@ -5,6 +5,7 @@ interface CartItem {
   photoId?: string;
   videoId?: string;
   photoUrl: string;
+  eventId?: string;
   eventName: string;
   resolution: "high" | "low";
   price: number;
