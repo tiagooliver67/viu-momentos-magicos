@@ -20,6 +20,7 @@ import RecuperarSenha from "./pages/RecuperarSenha";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PhotographerPage from "./pages/PhotographerPage";
+import MeusPedidos from "./pages/MeusPedidos";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/evento/:id" element={<EventPage />} />
               <Route path="/fotografo/:slug" element={<PhotographerPage />} />
+              <Route path="/meus-pedidos" element={<MeusPedidos />} />
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
