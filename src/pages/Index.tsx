@@ -1,133 +1,91 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import CategoryTabs from "@/components/CategoryTabs";
+import EventCard from "@/components/EventCard";
+import Footer from "@/components/Footer";
 
-@layer base {
-  :root {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 95%;
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 18 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 186 100% 50%;
-    --accent-foreground: 0 0% 4%;
-    --lime: 82 100% 50%;
-    --lime-foreground: 0 0% 4%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 18 100% 50%;
-    --radius: 0.75rem;
+const mockEvents = [
+  { id: "1", title: "VERÃO RUN IRECÊ 2026", date: "22/03/2026", location: "Irecê, BA", photoCount: 2615, imageUrl: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80", isLive: true },
+  { id: "2", title: "CORRIDA DO SIMTRANS", date: "24/03/2026", location: "Salvador, BA", photoCount: 1830, imageUrl: "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&q=80" },
+  { id: "3", title: "IL RUN EXPERIENCE", date: "22/03/2026", location: "Vitória da Conquista, BA", photoCount: 3200, imageUrl: "https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=600&q=80" },
+  { id: "4", title: "CORRIDA TRILHA", date: "22/03/2026", location: "Alagoinhas, BA", photoCount: 945, imageUrl: "https://images.unsplash.com/photo-1486218119243-13883505764c?w=600&q=80" },
+];
 
-    /* Glassmorphism Avançado */
-    --glass-bg: rgba(255, 255, 255, 0.06);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --glow-primary: 0 0 30px rgba(255, 77, 0, 0.3);
-    --glow-accent: 0 0 30px rgba(0, 240, 255, 0.2);
-  }
+const mockCycling = [
+  { id: "5", title: "Tic Tac e Tri Swim", date: "18/03/2026", location: "Salvador, BA", photoCount: 1200, imageUrl: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&q=80" },
+  { id: "6", title: "DMTB 26 DESAFIO", date: "10/03/2026", location: "Mato de São João, BA", photoCount: 890, imageUrl: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=600&q=80" },
+  { id: "7", title: "2º Cross Duathlon & Trail Run", date: "22/02/2026", location: "Camaçari, BA", photoCount: 2100, imageUrl: "https://images.unsplash.com/photo-1530143584546-02191bc84eb5?w=600&q=80" },
+  { id: "8", title: "DESAFIO PURA BUCHA 2026", date: "08/02/2026", location: "Ouriçangas, BA", photoCount: 1560, imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&q=80" },
+];
 
-  .clean-theme {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 12%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
-    --glass-bg: rgba(0, 0, 0, 0.04);
-    --glass-border: rgba(0, 0, 0, 0.09);
-    --glow-primary: 0 0 30px rgba(255, 77, 0, 0.15);
-  }
+const upcoming = [
+  { id: "9", title: "ECO RUN 2026", date: "28/03/2026", location: "Camaçari, BA", photoCount: 0, imageUrl: "https://images.unsplash.com/photo-1461896836934-bd45ba24e7af?w=600&q=80" },
+  { id: "10", title: "Pedal da Cidade 2026", date: "29/03/2026", location: "Salvador, BA", photoCount: 0, imageUrl: "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?w=600&q=80" },
+  { id: "11", title: "1ª Corrida da Água do SAAE", date: "29/03/2026", location: "Alagoinhas, BA", photoCount: 0, imageUrl: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&q=80" },
+  { id: "12", title: "Iraquara Run", date: "29/03/2026", location: "Iraquara, BA", photoCount: 0, imageUrl: "https://images.unsplash.com/photo-1544899489-a083461b088c?w=600&q=80" },
+];
 
-  * { @apply border-border; }
+const Index = () => {
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <HeroSection />
 
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-}
+      <div className="container mx-auto px-4 -mt-10 relative z-10">
+        {/* Category Tabs */}
+        <div className="mb-8">
+          <CategoryTabs />
+        </div>
 
-@layer components {
-  /* ==================== GLASSMORPHISM PREMIUM ==================== */
-  .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.25),
-      inset 0 1px 1px rgba(255, 255, 255, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+        {/* Corrida de Rua */}
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-foreground">Corrida de Rua</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Bahia</span>
+              <button className="text-sm text-primary hover:underline">Todos os eventos</button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {mockEvents.map((event) => (
+              <EventCard key={event.id} {...event} />
+            ))}
+          </div>
+        </section>
 
-  .glass-strong {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.3),
-      inset 0 1px 1px rgba(255, 255, 255, 0.1);
-  }
+        {/* Ciclismo */}
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-foreground">Ciclismo</h2>
+            <button className="text-sm text-primary hover:underline">Todos os eventos</button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {mockCycling.map((event) => (
+              <EventCard key={event.id} {...event} />
+            ))}
+          </div>
+        </section>
 
-  .glass-card {
-    @apply glass rounded-3xl;
-  }
+        {/* Em Breve */}
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">Confira nossos eventos em breve</h2>
+              <p className="text-sm text-muted-foreground mt-1">Fique por dentro dos eventos que serão lançados dentro da VIUFOTO</p>
+            </div>
+            <button className="text-sm text-primary hover:underline">Todos os eventos</button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {upcoming.map((event) => (
+              <EventCard key={event.id} {...event} />
+            ))}
+          </div>
+        </section>
+      </div>
 
-  .glass-card-hover {
-    @apply glass-card transition-all duration-400 hover:-translate-y-3 hover:scale-[1.03] hover:shadow-[0_0_40px_rgba(255,77,0,0.25)];
-  }
+      <Footer />
+    </div>
+  );
+};
 
-  /* Navbar Premium */
-  nav {
-    background: rgba(10, 10, 10, 0.85) !important;
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  }
-
-  /* Neon & Glow */
-  .glow-text {
-    text-shadow: 0 0 30px #FF4D00,
-                 0 0 60px #FF4D00;
-  }
-
-  .neon-border {
-    box-shadow: 0 0 15px rgba(255, 77, 0, 0.3),
-                inset 0 0 15px rgba(255, 77, 0, 0.1);
-  }
-
-  /* Badge AO VIVO mais premium */
-  .badge-live {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest;
-    background: rgba(255, 77, 0, 0.2);
-    color: #FF4D00;
-    border: 1px solid rgba(255, 77, 0, 0.4);
-  }
-
-  .badge-live::before {
-    content: '';
-    @apply w-2 h-2 rounded-full animate-pulse;
-    background: #FF4D00;
-    box-shadow: 0 0 12px #FF4D00;
-  }
-
-  /* Animações extras */
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
-  }
-  .animate-float { animation: float 6s ease-in-out infinite; }
-}
-
-@layer utilities {
-  .hero-parallax {
-    transition: transform 0.1s ease-out;
-  }
-}
+export default Index;
