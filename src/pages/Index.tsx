@@ -116,7 +116,7 @@ const Index = () => {
       <HeroSection />
 
       <div className="container mx-auto px-4 -mt-10 relative z-10">
-        {/* 🔥 NOVAS CATEGORIAS (ELEGANTES) */}
+        {/* Categorias elegantes */}
         <div className="flex justify-center gap-8 mt-8 mb-12 text-sm text-gray-400">
           <span className="category-item">Corrida</span>
           <span className="category-item">Ciclismo</span>
