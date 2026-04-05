@@ -11,7 +11,7 @@
     --card: 0 0% 7%;
     --card-foreground: 0 0% 95%;
 
-    /* 🔥 MANTENDO SEU LARANJA ORIGINAL */
+    /* 🔥 LARANJA ORIGINAL */
     --primary: 18 100% 50%;
     --primary-foreground: 0 0% 100%;
 
@@ -78,12 +78,12 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
-  /* 🔥 GLOW MAIS CONTROLADO (SEM ALTERAR A COR) */
+  /* 🔥 GLOW CONTROLADO */
   .glow-text {
     text-shadow: 0 0 16px rgba(255, 77, 0, 0.25);
   }
 
-  /* 🔥 BOTÃO MAIS PREMIUM (MESMA COR, MELHOR COMPORTAMENTO) */
+  /* 🔥 BOTÃO PREMIUM */
   .btn-buscar {
     transition: all 0.25s ease;
   }
@@ -95,6 +95,50 @@
 
   .btn-buscar:active {
     transform: scale(0.98);
+  }
+
+  /* 🔥 CATEGORIAS ELEGANTES */
+  .category-item {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .category-item:hover {
+    color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+  }
+
+  .category-item::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    width: 0%;
+    height: 1px;
+    background: rgba(255, 77, 0, 0.6);
+    transition: all 0.25s ease;
+    transform: translateX(-50%);
+  }
+
+  .category-item:hover::after {
+    width: 100%;
+  }
+
+  /* 🔥 ANIMAÇÃO LOGO */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease forwards;
   }
 }
 
