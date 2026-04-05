@@ -55,3 +55,42 @@
     text-shadow: 0 0 30px #ff4d00;
   }
 }
+/* ==================== FIX MOBILE RESPONSIVO ==================== */
+
+/* Botões de categoria no mobile - mais compactos e sem corte */
+@media (max-width: 640px) {
+  .flex.items-center.gap-2.overflow-x-auto button {
+    font-size: 0.875rem !important; /* texto menor */
+    padding: 10px 18px !important; /* padding reduzido */
+    white-space: nowrap !important;
+    flex-shrink: 0;
+    min-width: auto;
+  }
+
+  /* Hero text menor no mobile */
+  .text-5xl,
+  .text-6xl,
+  .text-7xl {
+    font-size: 2.25rem !important; /* 36px no mobile */
+    line-height: 1.1 !important;
+  }
+
+  /* Search bar mais compacta */
+  .glass-strong {
+    padding: 8px !important;
+  }
+
+  /* Remove scroll desnecessário */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Melhora o espaçamento geral no mobile */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
