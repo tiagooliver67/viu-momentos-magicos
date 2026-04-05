@@ -12,16 +12,16 @@ const HeroSection = () => {
       <img
         src={heroBg}
         alt=""
-        className="absolute inset-0 w-full h-full object-cover brightness-[0.65] contrast-[1.1]"
+        className="absolute inset-0 w-full h-full object-cover brightness-[0.6] contrast-[1.1]"
         width={1920}
         height={1080}
       />
 
-      {/* 🔥 OVERLAY AJUSTADO (mais equilibrado) */}
-      <div className="absolute inset-0 bg-black/60" />
+      {/* 🔥 OVERLAY FORTE (PRINCIPAL AJUSTE) */}
+      <div className="absolute inset-0 bg-black/61" />
 
-      {/* 🔥 GRADIENTE MAIS NATURAL */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90" />
+      {/* 🔥 GRADIENTE PROFUNDO (EFEITO PREMIUM) */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/61 to-black/90" />
 
       {/* CONTEÚDO */}
       <div className="relative z-10 container mx-auto px-4 text-center">
@@ -36,17 +36,16 @@ const HeroSection = () => {
 
         {/* Headline */}
         <h1
-          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white/95 leading-tight mb-4"
+          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-4"
           style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}
         >
           Reviva seu momento. <br />
-          {/* 🔥 SHIMMER APLICADO AQUI */}
-          <span className="text-primary shimmer-text">Encontre suas fotos agora.</span>
+          <span className="text-primary">Encontre suas fotos agora.</span>
         </h1>
 
         {/* Sub */}
         <p
-          className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10"
+          className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
           style={{ animation: "fade-in-up 0.6s ease-out 0.2s", animationFillMode: "both" }}
         >
           Encontre suas fotos e vídeos em segundos.
@@ -94,7 +93,7 @@ const HeroSection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <button className="px-4 sm:px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_rgba(255,77,0,0.25)] min-h-[44px]">
+            <button className="px-4 sm:px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_rgba(255,77,0,0.3)] min-h-[44px]">
               Buscar
             </button>
           </div>
