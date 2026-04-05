@@ -98,4 +98,61 @@
     padding: 12px 24px !important;
     border-radius: 9999px !important;
   }
+  /* ==================== ELEMENTOS FLUTUANTES HERO ==================== */
+
+  @keyframes float-slow {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-25px) rotate(8deg);
+    }
+  }
+
+  @keyframes float-medium {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-18px) rotate(-6deg);
+    }
+  }
+
+  @keyframes float-fast {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-30px) rotate(12deg);
+    }
+  }
+
+  /* Ícones flutuantes */
+  .floating-icon {
+    position: absolute;
+    animation: float-slow 8s ease-in-out infinite;
+    opacity: 0.75;
+    pointer-events: none;
+    z-index: 10;
+    font-size: 28px;
+    filter: drop-shadow(0 10px 15px rgba(255, 77, 0, 0.3));
+  }
+
+  .floating-icon-2 {
+    animation: float-medium 6s ease-in-out infinite;
+  }
+  .floating-icon-3 {
+    animation: float-fast 10s ease-in-out infinite;
+  }
+
+  /* Contador AO VIVO flutuante */
+  .live-counter {
+    animation: float-slow 7s ease-in-out infinite;
+    background: rgba(255, 77, 0, 0.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 77, 0, 0.4);
+  }
 }
