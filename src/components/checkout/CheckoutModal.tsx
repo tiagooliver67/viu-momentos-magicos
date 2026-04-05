@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { X, CreditCard, QrCode, Copy, CheckCircle2, Loader2 } from "lucide-react";
 import { useAsaasCheckout } from "@/hooks/useAsaasCheckout";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 interface CheckoutModalProps {
   open: boolean;
@@ -13,8 +16,35 @@ interface CheckoutModalProps {
 const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
   const { createCheckout, loading, pixData, paymentStatus, isPaid, reset } = useAsaasCheckout();
   const { items, total, clearCart } = useCart();
+  const { user } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", cpfCnpj: "" });
   const [step, setStep] = useState<"form" | "pix" | "success">("form");
+
+  // Fetch profile to pre-fill form
+  const { data: profile } = useQuery({
+    queryKey: ["checkout-profile", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, cpf_cnpj")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id && open,
+  });
+
+  // Pre-fill form with user data
+  useEffect(() => {
+    if (open && user) {
+      setForm(prev => ({
+        name: profile?.full_name || prev.name,
+        email: user.email || prev.email,
+        cpfCnpj: profile?.cpf_cnpj || prev.cpfCnpj,
+      }));
+    }
+  }, [open, user, profile]);
 
   // Check if payment is confirmed
   useEffect(() => {
@@ -30,6 +60,14 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.cpfCnpj) {
       toast.error("Preencha todos os campos");
+      return;
+    }
+    if (!eventId) {
+      toast.error("Erro: evento não identificado");
+      return;
+    }
+    if (items.length === 0) {
+      toast.error("Carrinho vazio");
       return;
     }
     try {
@@ -57,7 +95,6 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
       toast.success("Código PIX copiado!");
     }
   };
-
 
   const handleClose = () => {
     reset();
