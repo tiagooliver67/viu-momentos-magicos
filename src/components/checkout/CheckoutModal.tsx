@@ -165,7 +165,7 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
 
           {step === "success" && (
             <div className="space-y-4 text-center py-4">
-              <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+              <CheckCircle2 className="w-16 h-16 text-primary mx-auto" />
               <h3 className="text-xl font-bold">Pagamento confirmado!</h3>
               <p className="text-sm text-muted-foreground">
                 Suas fotos já estão disponíveis para download. Você receberá um e-mail com os links.
