@@ -1,14 +1,10 @@
-import { Search, Camera, ScanFace } from "lucide-react";
-import { useState } from "react";
+import { Camera } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const HeroSection = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchMode, setSearchMode] = useState<"text" | "face">("text");
-
   return (
     <section className="relative min-h-[70vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden pt-14 sm:pt-0">
-      {/* 🔥 IMAGEM COM LEVE PARALLAX (sensação premium) */}
+      {/* IMAGEM */}
       <img
         src={heroBg}
         alt=""
@@ -17,10 +13,10 @@ const HeroSection = () => {
         height={1080}
       />
 
-      {/* 🔥 OVERLAY */}
+      {/* OVERLAY */}
       <div className="absolute inset-0 bg-black/60" />
 
-      {/* 🔥 GRADIENTE */}
+      {/* GRADIENTE */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/90" />
 
       {/* CONTEÚDO */}
@@ -36,77 +32,20 @@ const HeroSection = () => {
 
         {/* Headline */}
         <h1
-          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white/95 leading-tight mb-4"
+          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white/95 leading-tight mb-6"
           style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}
         >
           Reviva seu momento. <br />
-          {/* 🔥 SHIMMER MAIS SUAVE */}
           <span className="text-primary shimmer-text">Encontre suas fotos agora.</span>
         </h1>
 
         {/* Sub */}
         <p
-          className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10"
+          className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto"
           style={{ animation: "fade-in-up 0.6s ease-out 0.2s", animationFillMode: "both" }}
         >
-          Encontre suas fotos e vídeos em segundos.
+          Fotos e vídeos dos seus eventos esportivos, organizados e prontos para você.
         </p>
-
-        {/* Busca */}
-        <div
-          className="max-w-2xl mx-auto"
-          style={{ animation: "fade-in-up 0.6s ease-out 0.3s", animationFillMode: "both" }}
-        >
-          <div className="glass-card p-2 flex items-center gap-2 hover:shadow-[0_0_25px_rgba(255,77,0,0.15)] transition-all">
-            {/* modos */}
-            <div className="flex items-center gap-1 pl-2">
-              <button
-                onClick={() => setSearchMode("text")}
-                className={`p-2 rounded-lg transition-all ${
-                  searchMode === "text"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-                }`}
-              >
-                <Search className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={() => setSearchMode("face")}
-                className={`p-2 rounded-lg transition-all ${
-                  searchMode === "face"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-                }`}
-              >
-                <ScanFace className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* input */}
-            <input
-              type="text"
-              placeholder={
-                searchMode === "text"
-                  ? "Digite o nome do evento ou nº de peito..."
-                  : "Envie sua selfie para encontrar suas fotos..."
-              }
-              className="flex-1 bg-transparent text-white placeholder:text-gray-400 outline-none text-sm md:text-base py-3 px-2 focus:placeholder:text-gray-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-
-            {/* botão */}
-            <button className="px-4 sm:px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm transition-all hover:bg-primary/90 hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(255,77,0,0.3)] active:scale-[0.98] min-h-[44px]">
-              Buscar
-            </button>
-          </div>
-
-          {/* microcopy */}
-          <p className="text-xs text-gray-400 mt-3">
-            Não sabe o nome do evento? <button className="text-primary hover:underline">Clique aqui</button>
-          </p>
-        </div>
       </div>
     </section>
   );
