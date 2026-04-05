@@ -1,14 +1,14 @@
 import { useState } from "react";
 
 const categories = [
-  { id: "corrida", label: "Corrida de Rua", icon:  },
-  { id: "ciclismo", label: "Ciclismo", icon: },
-  { id: "triathlon", label: "Triathlon", icon:  },
-  { id: "futebol", label: "Futebol", icon:  },
-  { id: "treinos", label: "Treinos", icon: },
-  { id: "trail", label: "Trail Run", icon: },
-  { id: "natacao", label: "Natação", icon: },
-  { id: "crossfit", label: "CrossFit", icon:  },
+  { id: "corrida", label: "Corrida de Rua", icon: "🏃" },
+  { id: "ciclismo", label: "Ciclismo", icon: "🚴" },
+  { id: "triathlon", label: "Triathlon", icon: "🏊" },
+  { id: "futebol", label: "Futebol", icon: "⚽" },
+  { id: "treinos", label: "Treinos", icon: "💪" },
+  { id: "trail", label: "Trail Run", icon: "🏔️" },
+  { id: "natacao", label: "Natação", icon: "🏊‍♂️" },
+  { id: "crossfit", label: "CrossFit", icon: "🏋️" },
 ];
 
 interface CategoryTabsProps {
