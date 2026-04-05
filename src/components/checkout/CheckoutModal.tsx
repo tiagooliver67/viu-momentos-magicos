@@ -171,11 +171,17 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
               <CheckCircle2 className="w-16 h-16 text-primary mx-auto" />
               <h3 className="text-xl font-bold">Pagamento confirmado!</h3>
               <p className="text-sm text-muted-foreground">
-                Suas fotos já estão disponíveis para download. Você receberá um e-mail com os links.
+                Suas fotos já estão disponíveis para download.
               </p>
+              <a
+                href="/meus-pedidos"
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+              >
+                Ir para Meus Pedidos
+              </a>
               <button
                 onClick={handleClose}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all"
+                className="w-full py-3 rounded-xl border border-border text-muted-foreground font-medium hover:text-foreground transition-all"
               >
                 Fechar
               </button>
