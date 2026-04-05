@@ -40,24 +40,14 @@ const AnimatedLogo = () => {
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isCleanTheme, setIsCleanTheme] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
   const { user, profile, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const isCleanTheme = theme === "clean";
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
-
-  const toggleTheme = () => {
-    const html = document.documentElement;
-    html.classList.toggle("clean-theme");
-    setIsCleanTheme(html.classList.contains("clean-theme"));
-  };
-
-  useEffect(() => {
-    const html = document.documentElement;
-    setIsCleanTheme(html.classList.contains("clean-theme"));
-  }, []);
 
   const handleSignOut = async () => {
     await signOut();

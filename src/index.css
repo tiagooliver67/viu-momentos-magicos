@@ -125,30 +125,31 @@
     @apply glass-card transition-all duration-300 hover:scale-[1.02] hover:-translate-y-2;
   }
 
-  /* ==================== OVERRIDE CLEAN (🔥 ESSENCIAL) ==================== */
-  .clean-theme .glass-card {
-    background: white;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    backdrop-filter: none;
+  /* ==================== OVERRIDE DARK GLASS ==================== */
+  .dark-theme .glass-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(16px);
   }
 
-  .clean-theme .glass-strong {
-    background: white;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-    backdrop-filter: none;
+  .dark-theme .glass-strong {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(20px);
   }
 
   /* ==================== NAV ==================== */
   nav {
-    background: rgba(10, 10, 10, 0.9) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
-  .clean-theme nav {
-    background: rgba(255, 255, 255, 0.95) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  .dark-theme nav {
+    background: rgba(10, 10, 10, 0.9) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   /* ==================== GLOW ==================== */
