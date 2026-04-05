@@ -8,36 +8,9 @@
     --background: 0 0% 4%;
     --foreground: 0 0% 95%;
     --card: 0 0% 7%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 95%;
     --primary: 18 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 55%;
-    --accent: 186 100% 50%;
-    --accent-foreground: 0 0% 4%;
-    --lime: 82 100% 50%;
-    --lime-foreground: 0 0% 4%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 18 100% 50%;
-    --radius: 0.75rem;
-
-    --glass-bg: rgba(255, 255, 255, 0.06);
-    --glass-border: rgba(255, 255, 255, 0.08);
-  }
-
-  .clean-theme {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 12%;
-    --card: 0 0% 100%;
-    --glass-bg: rgba(0, 0, 0, 0.04);
-    --glass-border: rgba(0, 0, 0, 0.09);
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.12);
   }
 
   * {
@@ -54,17 +27,15 @@
   .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 
   .glass-strong {
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
 
   .glass-card {
@@ -72,34 +43,15 @@
   }
 
   .glass-card-hover {
-    @apply glass-card transition-all duration-400 hover:-translate-y-3 hover:scale-[1.03];
-  }
-  .glass-card-hover:hover {
-    box-shadow: 0 0 40px rgba(255, 77, 0, 0.25);
+    @apply glass-card transition-all duration-300 hover:scale-[1.02] hover:-translate-y-2;
   }
 
   nav {
-    background: rgba(10, 10, 10, 0.85) !important;
+    background: rgba(10, 10, 10, 0.9) !important;
     backdrop-filter: blur(16px);
   }
 
   .glow-text {
-    text-shadow:
-      0 0 30px #ff4d00,
-      0 0 60px #ff4d00;
-  }
-
-  .badge-live {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-orange-500/20 text-orange-500 border border-orange-500/40;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12px);
+    text-shadow: 0 0 30px #ff4d00;
   }
 }
