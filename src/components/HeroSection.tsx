@@ -12,21 +12,33 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background" />
 
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6" style={{ animation: "fade-in-up 0.6s ease-out" }}>
+        <div
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6"
+          style={{ animation: "fade-in-up 0.6s ease-out" }}
+        >
           <Camera className="w-4 h-4" />
           Plataforma #1 de fotos esportivas do Brasil
         </div>
 
-        <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight mb-4 glow-text" style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}>
-          Viu sua foto?<br />
-          <span className="text-primary">Agora é só levar pra casa!</span>
+        <h1
+          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-foreground leading-tight mb-4 glow-text"
+          style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}
+        >
+          Reviva seu momento. <br />
+          <span className="text-primary">Encontre suas fotos agora.</span>
         </h1>
 
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10" style={{ animation: "fade-in-up 0.6s ease-out 0.2s", animationFillMode: "both" }}>
+        <p
+          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
+          style={{ animation: "fade-in-up 0.6s ease-out 0.2s", animationFillMode: "both" }}
+        >
           Encontre suas fotos e vídeos de corridas, ciclismo, triathlon e muito mais.
         </p>
 
-        <div className="max-w-2xl mx-auto" style={{ animation: "fade-in-up 0.6s ease-out 0.3s", animationFillMode: "both" }}>
+        <div
+          className="max-w-2xl mx-auto"
+          style={{ animation: "fade-in-up 0.6s ease-out 0.3s", animationFillMode: "both" }}
+        >
           <div className="glass-card p-2 flex items-center gap-2 neon-border">
             <div className="flex items-center gap-1 pl-2">
               <button
@@ -44,7 +56,11 @@ const HeroSection = () => {
             </div>
             <input
               type="text"
-              placeholder={searchMode === "text" ? "Digite o nome do evento ou nº de peito..." : "Envie sua selfie para encontrar suas fotos..."}
+              placeholder={
+                searchMode === "text"
+                  ? "Digite o nome do evento ou nº de peito..."
+                  : "Envie sua selfie para encontrar suas fotos..."
+              }
               className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-sm md:text-base py-3 px-2"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
