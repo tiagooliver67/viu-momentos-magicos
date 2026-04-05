@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { getSignedReadUrls } from "@/hooks/useS3Upload";
 
 interface Photo {
   id: string;
@@ -36,7 +37,28 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Resolve signed URLs for S3 paths
+  useEffect(() => {
+    if (!open || photos.length === 0) return;
+    const s3Paths = photos
+      .filter(p => p.file_url.startsWith("eventos/"))
+      .map(p => p.file_url)
+      .filter(p => !signedUrls[p]);
+    if (s3Paths.length === 0) return;
+    getSignedReadUrls(s3Paths).then(urls => {
+      setSignedUrls(prev => ({ ...prev, ...urls }));
+    }).catch(console.error);
+  }, [open, photos]);
+
+  const getPhotoUrl = (photo: Photo) => {
+    if (photo.file_url.startsWith("eventos/")) {
+      return signedUrls[photo.file_url] || "";
+    }
+    return photo.file_url; // legacy Supabase Storage URLs
+  };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -207,9 +229,16 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
 
           {/* Photo Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {paginatedPhotos.map((photo, idx) => (
+            {paginatedPhotos.map((photo, idx) => {
+              const url = getPhotoUrl(photo);
+              if (!url) return (
+                <div key={photo.id} className="relative rounded-lg overflow-hidden bg-secondary aspect-[4/5] flex items-center justify-center">
+                  <div className="animate-pulse text-xs text-muted-foreground">Carregando...</div>
+                </div>
+              );
+              return (
               <div key={photo.id} className="relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5]">
-                <img src={photo.file_url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
+                <img src={url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
                 
                 {/* Top overlay - Capa badge + actions */}
                 <div className="absolute top-2 left-2 right-2 flex items-start justify-between">
@@ -242,10 +271,11 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                 {/* Hover expand */}
                 <div
                   className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all cursor-pointer"
-                  onClick={() => setLightbox(photo.file_url)}
+                  onClick={() => setLightbox(url)}
                 />
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {photos.length === 0 && uploadingFiles.length === 0 && (
