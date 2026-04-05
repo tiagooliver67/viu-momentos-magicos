@@ -2,7 +2,6 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import EventCard from "@/components/EventCard";
 import Footer from "@/components/Footer";
-import { useRef } from "react";
 
 const mockEvents = [
   {
@@ -60,58 +59,18 @@ const mockCycling = [
 ];
 
 const Index = () => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const categories = [
-    "Corrida",
-    "Ciclismo",
-    "Triathlon",
-    "Futebol",
-    "Treinos",
-    "Natação",
-    "Crossfit",
-    "Trail Run",
-    "Duathlon",
-  ];
-
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
 
-      <div className="container mx-auto px-4 -mt-10 relative z-10">
-        {/* 🔥 CATEGORIAS COM SCROLL */}
-        <div className="relative mt-8 mb-12">
-          {/* esquerda */}
-          <button
-            onClick={() => scrollRef.current?.scrollBy({ left: -200, behavior: "smooth" })}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur px-2 py-1 rounded-lg border border-border"
-          >
-            ←
-          </button>
-
-          {/* lista */}
-          <div ref={scrollRef} className="flex gap-8 overflow-x-auto no-scrollbar px-10 text-sm">
-            {categories.map((item) => (
-              <span key={item} className="category-item whitespace-nowrap font-medium">
-                {item}
-              </span>
-            ))}
-          </div>
-
-          {/* direita */}
-          <button
-            onClick={() => scrollRef.current?.scrollBy({ left: 200, behavior: "smooth" })}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur px-2 py-1 rounded-lg border border-border"
-          >
-            →
-          </button>
-        </div>
-
+      {/* 🔥 CONTEÚDO AJUSTADO */}
+      <div className="container mx-auto px-4 mt-12 relative z-10">
         {/* Corrida */}
-        <section className="mb-12">
+        <section className="mb-14">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground">Corrida de Rua</h2>
+
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Bahia</span>
               <button className="text-sm text-primary hover:underline">Todos os eventos</button>
@@ -126,9 +85,10 @@ const Index = () => {
         </section>
 
         {/* Ciclismo */}
-        <section className="mb-12">
+        <section className="mb-14">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground">Ciclismo</h2>
+
             <button className="text-sm text-primary hover:underline">Todos os eventos</button>
           </div>
 
