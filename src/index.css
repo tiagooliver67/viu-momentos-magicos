@@ -111,7 +111,6 @@
 
   .glass-strong {
     background: var(--glass-bg);
-    backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow);
   }
