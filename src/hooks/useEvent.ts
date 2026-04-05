@@ -89,36 +89,6 @@ export function useEventVideos(eventId: string | undefined) {
     enabled: !!eventId,
   });
 
-  const uploadVideos = useMutation({
-    mutationFn: async (files: File[]) => {
-      if (!eventId) throw new Error("No event ID");
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Não autenticado");
-
-      const results = [];
-      for (const file of files) {
-        const fileName = `${eventId}/${Date.now()}-${file.name}`;
-        const { error: uploadError } = await supabase.storage.from("event-videos").upload(fileName, file);
-        if (uploadError) throw uploadError;
-        const { data: { publicUrl } } = supabase.storage.from("event-videos").getPublicUrl(fileName);
-        const { data, error } = await supabase.from("event_videos").insert({
-          event_id: eventId,
-          photographer_id: user.id,
-          file_url: publicUrl,
-          file_name: file.name,
-        }).select().single();
-        if (error) throw error;
-        results.push(data);
-      }
-      return results;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["event-videos", eventId] });
-      toast.success(`${data.length} vídeo(s) enviado(s)!`);
-    },
-    onError: (e) => toast.error("Erro no upload: " + e.message),
-  });
-
   const deleteVideo = useMutation({
     mutationFn: async (videoId: string) => {
       const { error } = await supabase.from("event_videos").delete().eq("id", videoId);
@@ -130,7 +100,7 @@ export function useEventVideos(eventId: string | undefined) {
     },
   });
 
-  return { videos: videosQuery.data || [], isLoading: videosQuery.isLoading, uploadVideos, deleteVideo };
+  return { videos: videosQuery.data || [], isLoading: videosQuery.isLoading, deleteVideo };
 }
 
 export function useEventOrders(eventId: string | undefined) {
