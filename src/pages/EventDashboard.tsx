@@ -10,6 +10,7 @@ import EditEventModal from "@/components/event/EditEventModal";
 import PasswordModal from "@/components/event/PasswordModal";
 import PhotoGallery from "@/components/event/PhotoGallery";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
+import { useS3Upload } from "@/hooks/useS3Upload";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
