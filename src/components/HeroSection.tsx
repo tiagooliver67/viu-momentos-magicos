@@ -17,7 +17,7 @@ const HeroSection = () => {
           style={{ animation: "fade-in-up 0.6s ease-out" }}
         >
           <Camera className="w-4 h-4" />
-          Plataforma #1 de fotos esportivas do Brasil
+          Conectando atletas às suas melhores fotos.
         </div>
 
         <h1
