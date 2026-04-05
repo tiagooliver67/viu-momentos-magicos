@@ -379,6 +379,7 @@ export type Database = {
       orders: {
         Row: {
           amount: number
+          asaas_payment_id: string | null
           client_cpf: string | null
           client_email: string
           client_name: string
@@ -392,6 +393,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          asaas_payment_id?: string | null
           client_cpf?: string | null
           client_email: string
           client_name: string
@@ -405,6 +407,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          asaas_payment_id?: string | null
           client_cpf?: string | null
           client_email?: string
           client_name?: string
@@ -553,6 +556,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          asaas_customer_id: string | null
           avatar_url: string | null
           cpf_cnpj: string | null
           created_at: string
@@ -565,6 +569,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          asaas_customer_id?: string | null
           avatar_url?: string | null
           cpf_cnpj?: string | null
           created_at?: string
@@ -577,6 +582,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          asaas_customer_id?: string | null
           avatar_url?: string | null
           cpf_cnpj?: string | null
           created_at?: string
