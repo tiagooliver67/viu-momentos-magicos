@@ -10,21 +10,27 @@
     --foreground: 0 0% 95%;
     --card: 0 0% 7%;
     --card-foreground: 0 0% 95%;
-    --primary: 18 100% 50%;
+
+    /* 🔥 AJUSTE PREMIUM DO LARANJA */
+    --primary: 18 85% 55%;
     --primary-foreground: 0 0% 100%;
+
     --glass-bg: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.12);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
 
   .clean-theme {
-    /* ==================== TEMA CLARO (Clean Premium) ==================== */
+    /* ==================== TEMA CLARO ==================== */
     --background: 0 0% 98%;
     --foreground: 0 0% 12%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 12%;
-    --primary: 18 100% 50%;
+
+    /* 🔥 MESMO AJUSTE NO CLARO */
+    --primary: 18 85% 55%;
     --primary-foreground: 0 0% 100%;
+
     --glass-bg: rgba(255, 255, 255, 0.85);
     --glass-border: rgba(0, 0, 0, 0.08);
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -73,17 +79,19 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
+  /* 🔥 GLOW MAIS PREMIUM (ANTES ESTAVA MUITO FORTE) */
   .glow-text {
-    text-shadow: 0 0 30px #ff4d00;
+    text-shadow: 0 0 18px rgba(255, 77, 0, 0.35);
   }
 
-  /* Botão Buscar otimizado */
+  /* 🔥 BOTÃO MAIS SOFISTICADO */
   .btn-buscar {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
   .btn-buscar:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 25px rgba(255, 77, 0, 0.5);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: 0 8px 25px rgba(255, 77, 0, 0.25);
   }
 }
 
@@ -131,18 +139,19 @@
 .floating-icon-2 {
   animation: float-medium 6s ease-in-out infinite;
 }
+
 .floating-icon-3 {
   animation: float-fast 10s ease-in-out infinite;
 }
 
 .live-counter {
   animation: float-slow 7s ease-in-out infinite;
-  background: rgba(255, 77, 0, 0.15);
+  background: rgba(255, 77, 0, 0.12);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 77, 0, 0.4);
+  border: 1px solid rgba(255, 77, 0, 0.25);
 }
 
-/* ==================== FIX MOBILE ==================== */
+/* ==================== MOBILE ==================== */
 @media (max-width: 640px) {
   .glass-strong {
     padding: 6px 8px !important;
@@ -152,13 +161,5 @@
   .glass-strong button {
     padding: 12px 24px !important;
     border-radius: 9999px !important;
-  }
-
-  /* Botões de categoria mais compactos */
-  .flex.items-center.gap-2.overflow-x-auto button {
-    font-size: 0.875rem !important;
-    padding: 10px 18px !important;
-    white-space: nowrap !important;
-    flex-shrink: 0;
   }
 }
