@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import EventCard from "@/components/EventCard";
 import Footer from "@/components/Footer";
+import { useRef } from "react";
 
 const mockEvents = [
   {
@@ -56,76 +57,58 @@ const mockCycling = [
     photoCount: 890,
     imageUrl: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=600&q=80",
   },
-  {
-    id: "7",
-    title: "2º Cross Duathlon & Trail Run",
-    date: "22/02/2026",
-    location: "Camaçari, BA",
-    photoCount: 2100,
-    imageUrl: "https://images.unsplash.com/photo-1530143584546-02191bc84eb5?w=600&q=80",
-  },
-  {
-    id: "8",
-    title: "DESAFIO PURA BUCHA 2026",
-    date: "08/02/2026",
-    location: "Ouriçangas, BA",
-    photoCount: 1560,
-    imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&q=80",
-  },
-];
-
-const upcoming = [
-  {
-    id: "9",
-    title: "ECO RUN 2026",
-    date: "28/03/2026",
-    location: "Camaçari, BA",
-    photoCount: 0,
-    imageUrl: "https://images.unsplash.com/photo-1461896836934-bd45ba24e7af?w=600&q=80",
-  },
-  {
-    id: "10",
-    title: "Pedal da Cidade 2026",
-    date: "29/03/2026",
-    location: "Salvador, BA",
-    photoCount: 0,
-    imageUrl: "https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?w=600&q=80",
-  },
-  {
-    id: "11",
-    title: "1ª Corrida da Água do SAAE",
-    date: "29/03/2026",
-    location: "Alagoinhas, BA",
-    photoCount: 0,
-    imageUrl: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&q=80",
-  },
-  {
-    id: "12",
-    title: "Iraquara Run",
-    date: "29/03/2026",
-    location: "Iraquara, BA",
-    photoCount: 0,
-    imageUrl: "https://images.unsplash.com/photo-1544899489-a083461b088c?w=600&q=80",
-  },
 ];
 
 const Index = () => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const categories = [
+    "Corrida",
+    "Ciclismo",
+    "Triathlon",
+    "Futebol",
+    "Treinos",
+    "Natação",
+    "Crossfit",
+    "Trail Run",
+    "Duathlon",
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
 
       <div className="container mx-auto px-4 -mt-10 relative z-10">
-        {/* Categorias elegantes */}
-        <div className="flex justify-center gap-8 mt-8 mb-12 text-sm text-gray-400">
-          <span className="category-item">Corrida</span>
-          <span className="category-item">Ciclismo</span>
-          <span className="category-item">Triathlon</span>
-          <span className="category-item">Futebol</span>
-          <span className="category-item">Treinos</span>
+        {/* 🔥 CATEGORIAS COM SCROLL */}
+        <div className="relative mt-8 mb-12">
+          {/* esquerda */}
+          <button
+            onClick={() => scrollRef.current?.scrollBy({ left: -200, behavior: "smooth" })}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur px-2 py-1 rounded-lg border border-border"
+          >
+            ←
+          </button>
+
+          {/* lista */}
+          <div ref={scrollRef} className="flex gap-8 overflow-x-auto no-scrollbar px-10 text-sm">
+            {categories.map((item) => (
+              <span key={item} className="category-item whitespace-nowrap font-medium">
+                {item}
+              </span>
+            ))}
+          </div>
+
+          {/* direita */}
+          <button
+            onClick={() => scrollRef.current?.scrollBy({ left: 200, behavior: "smooth" })}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-background/80 backdrop-blur px-2 py-1 rounded-lg border border-border"
+          >
+            →
+          </button>
         </div>
 
-        {/* Corrida de Rua */}
+        {/* Corrida */}
         <section className="mb-12">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-foreground">Corrida de Rua</h2>
@@ -134,6 +117,7 @@ const Index = () => {
               <button className="text-sm text-primary hover:underline">Todos os eventos</button>
             </div>
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {mockEvents.map((event) => (
               <EventCard key={event.id} {...event} />
@@ -147,26 +131,9 @@ const Index = () => {
             <h2 className="text-2xl font-bold text-foreground">Ciclismo</h2>
             <button className="text-sm text-primary hover:underline">Todos os eventos</button>
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {mockCycling.map((event) => (
-              <EventCard key={event.id} {...event} />
-            ))}
-          </div>
-        </section>
-
-        {/* Em Breve */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">Confira nossos eventos em breve</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Fique por dentro dos eventos que serão lançados dentro da VIUFOTO
-              </p>
-            </div>
-            <button className="text-sm text-primary hover:underline">Todos os eventos</button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {upcoming.map((event) => (
               <EventCard key={event.id} {...event} />
             ))}
           </div>
