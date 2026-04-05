@@ -32,7 +32,7 @@ const HeroSection = () => {
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10"
           style={{ animation: "fade-in-up 0.6s ease-out 0.2s", animationFillMode: "both" }}
         >
-          Encontre suas fotos e vídeos de corridas, ciclismo, triathlon e muito mais.
+          Encontre suas fotos e vídeos em segundos!
         </p>
 
         <div
