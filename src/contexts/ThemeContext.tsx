@@ -14,7 +14,7 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem("admin-theme");
-    return (saved as Theme) || "dark";
+    return (saved as Theme) || "clean";
   });
 
   useEffect(() => {
