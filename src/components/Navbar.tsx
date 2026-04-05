@@ -10,6 +10,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+/* 🔥 COMPONENTE DO LOGO ANIMADO */
+const AnimatedLogo = () => {
+  const [showSecond, setShowSecond] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSecond(true);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="flex items-center text-xl sm:text-2xl font-black tracking-tight">
+      <span className="text-primary animate-fade-in">VIU</span>
+
+      <span
+        className={`ml-1 text-foreground transition-all duration-500 ${
+          showSecond ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+        }`}
+      >
+        FOTO
+      </span>
+    </div>
+  );
+};
+
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isCleanTheme, setIsCleanTheme] = useState(false);
@@ -20,14 +47,12 @@ const Navbar = () => {
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
 
-  // Toggle de Tema
   const toggleTheme = () => {
     const html = document.documentElement;
     html.classList.toggle("clean-theme");
     setIsCleanTheme(html.classList.contains("clean-theme"));
   };
 
-  // Verifica tema inicial
   useEffect(() => {
     const html = document.documentElement;
     setIsCleanTheme(html.classList.contains("clean-theme"));
@@ -45,12 +70,9 @@ const Navbar = () => {
       } border-b border-border`}
     >
       <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
-        {/* Logo */}
+        {/* 🔥 LOGO COM ANIMAÇÃO */}
         <Link to="/" className="flex items-center gap-2">
-          <span className="text-xl sm:text-2xl font-black tracking-tight">
-            <span className="text-primary">VIU</span>
-            <span className="text-foreground">FOTO</span>
-          </span>
+          <AnimatedLogo />
         </Link>
 
         {/* Menu Desktop */}
@@ -75,7 +97,6 @@ const Navbar = () => {
             <Search className="w-5 h-5" />
           </button>
 
-          {/* Toggle Tema */}
           <button
             onClick={toggleTheme}
             className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
@@ -129,21 +150,21 @@ const Navbar = () => {
         <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border p-4 space-y-1">
           <Link
             to="/"
-            className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+            className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
             onClick={() => setMobileOpen(false)}
           >
             Meus Pedidos
           </Link>
           <Link
             to="/dashboard"
-            className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+            className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
             onClick={() => setMobileOpen(false)}
           >
             Sou Fotógrafo
           </Link>
           <Link
             to="/dashboard"
-            className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+            className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
             onClick={() => setMobileOpen(false)}
           >
             Sou Organizador
