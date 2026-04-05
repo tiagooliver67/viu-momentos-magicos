@@ -1,15 +1,39 @@
 import { ShoppingCart, X, Trash2, CreditCard } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/contexts/AuthContext";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
+import { toast } from "sonner";
 
 const CartDrawer = () => {
   const [open, setOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const { items, removeItem, clearCart, total, count } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  // Derive eventId from first cart item (all items share same event in current flow)
-  const eventId = items.length > 0 ? (items[0] as any).eventId || "" : "";
+  // Derive eventId from first cart item
+  const eventId = items.length > 0 ? items[0].eventId || "" : "";
+
+  const handleCheckout = () => {
+    if (items.length === 0) {
+      toast.error("Seu carrinho está vazio");
+      return;
+    }
+    if (!eventId) {
+      toast.error("Erro: evento não identificado");
+      return;
+    }
+    if (!user) {
+      toast.info("Faça login para finalizar a compra");
+      setOpen(false);
+      navigate("/login");
+      return;
+    }
+    setOpen(false);
+    setCheckoutOpen(true);
+  };
 
   return (
     <>
@@ -81,10 +105,7 @@ const CartDrawer = () => {
                     <span className="text-xl font-bold text-primary">R$ {total.toFixed(2)}</span>
                   </div>
                   <button
-                    onClick={() => {
-                      setOpen(false);
-                      setCheckoutOpen(true);
-                    }}
+                    onClick={handleCheckout}
                     className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-all min-h-[48px]"
                   >
                     <CreditCard className="w-5 h-5" /> Finalizar compra
