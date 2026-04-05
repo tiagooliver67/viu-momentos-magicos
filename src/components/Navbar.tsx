@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Menu, X, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
-import { useState } from "react";
+import { Search, Menu, X, User, LogOut, Settings, LayoutDashboard, Sun, Moon } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -12,23 +12,40 @@ import {
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCleanTheme, setIsCleanTheme] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
   const { user, profile, signOut } = useAuth();
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
+
+  // Toggle de Tema
+  const toggleTheme = () => {
+    const html = document.documentElement;
+    html.classList.toggle("clean-theme");
+    setIsCleanTheme(html.classList.contains("clean-theme"));
+  };
+
+  // Verifica tema inicial
+  useEffect(() => {
+    const html = document.documentElement;
+    setIsCleanTheme(html.classList.contains("clean-theme"));
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
   };
 
-  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
-
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isHome ? "bg-background/60 backdrop-blur-xl" : "bg-background/90 backdrop-blur-xl"} border-b border-border`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isHome ? "bg-background/60 backdrop-blur-xl" : "bg-background/90 backdrop-blur-xl"
+      } border-b border-border`}
     >
       <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <span className="text-xl sm:text-2xl font-black tracking-tight">
             <span className="text-primary">VIU</span>
@@ -36,6 +53,7 @@ const Navbar = () => {
           </span>
         </Link>
 
+        {/* Menu Desktop */}
         <div className="hidden md:flex items-center gap-6 text-sm font-medium">
           <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
             Meus Pedidos
@@ -51,9 +69,19 @@ const Navbar = () => {
           </Link>
         </div>
 
+        {/* Ações Desktop */}
         <div className="hidden md:flex items-center gap-3">
           <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all min-w-[44px] min-h-[44px] flex items-center justify-center">
             <Search className="w-5 h-5" />
+          </button>
+
+          {/* Toggle Tema */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+            title="Alternar tema"
+          >
+            {isCleanTheme ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
 
           {user ? (
@@ -87,6 +115,7 @@ const Navbar = () => {
           )}
         </div>
 
+        {/* Menu Mobile Button */}
         <button
           className="md:hidden p-2 text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center"
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -95,6 +124,7 @@ const Navbar = () => {
         </button>
       </div>
 
+      {/* Menu Mobile */}
       {mobileOpen && (
         <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border p-4 space-y-1">
           <Link
@@ -125,6 +155,7 @@ const Navbar = () => {
           >
             VIU Pass
           </Link>
+
           <div className="pt-2 border-t border-border mt-2">
             {user ? (
               <>
@@ -168,11 +199,5 @@ const Navbar = () => {
     </nav>
   );
 };
-<button
-  onclick="document.documentElement.classList.toggle('clean-theme')"
-  class="px-4 py-2 rounded-xl bg-secondary text-foreground hover:bg-primary hover:text-white transition-colors"
->
-  Alternar Tema
-</button>;
 
 export default Navbar;
