@@ -16,6 +16,14 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
   const [form, setForm] = useState({ name: "", email: "", cpfCnpj: "" });
   const [step, setStep] = useState<"form" | "pix" | "success">("form");
 
+  // Check if payment is confirmed
+  useEffect(() => {
+    if (isPaid && step === "pix") {
+      setStep("success");
+      clearCart();
+    }
+  }, [isPaid, step, clearCart]);
+
   if (!open) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
