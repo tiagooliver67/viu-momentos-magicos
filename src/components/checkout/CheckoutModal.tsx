@@ -51,10 +51,12 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
   };
 
   // Check if payment is confirmed
-  if (isPaid && step === "pix") {
-    setStep("success");
-    clearCart();
-  }
+  useEffect(() => {
+    if (isPaid && step === "pix") {
+      setStep("success");
+      clearCart();
+    }
+  }, [isPaid, step, clearCart]);
 
   const handleClose = () => {
     reset();
