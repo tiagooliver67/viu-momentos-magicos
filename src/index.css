@@ -58,48 +58,50 @@
 
 /* ==================== MELHORIA BARRA DE BUSCA MOBILE ==================== */
 @media (max-width: 640px) {
-  /* Barra de busca inteira - glass forte e premium */
+  /* Caixa única da busca - totalmente integrada */
   .glass-strong {
-    padding: 8px 10px !important;
-    border-radius: 9999px !important;
+    padding: 6px 8px !important;
+    border-radius: 9999px !important; /* forma de pílula */
     background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35) !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  /* Input mais limpo */
+  /* Input dentro da caixa */
   .glass-strong input {
     font-size: 15px !important;
     padding-left: 8px !important;
     color: white !important;
+    background: transparent;
+    border: none;
+    outline: none;
+    flex: 1;
   }
   .glass-strong input::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
-    font-size: 15px !important;
+    color: rgba(255, 255, 255, 0.65) !important;
   }
 
-  /* Botão "Buscar" neon e grande */
+  /* Botão "Buscar" agora fica DENTRO da caixa */
   .glass-strong button {
-    padding: 14px 28px !important;
+    padding: 12px 24px !important;
     font-size: 15px !important;
     font-weight: 700 !important;
     border-radius: 9999px !important;
     background: linear-gradient(90deg, #ff4d00, #ff8a00) !important;
+    color: white !important;
     box-shadow: 0 0 20px rgba(255, 77, 0, 0.5) !important;
+    white-space: nowrap;
   }
 
-  .glass-strong button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(255, 77, 0, 0.7) !important;
-  }
-
-  /* Botões de categoria - sem corte de texto */
+  /* Botões de categoria - sem corte */
   .flex.items-center.gap-2.overflow-x-auto button {
     font-size: 0.875rem !important;
     padding: 10px 18px !important;
     white-space: nowrap !important;
     flex-shrink: 0;
-    min-width: auto;
   }
 
   /* Hero text menor no mobile */
@@ -110,7 +112,6 @@
     line-height: 1.1 !important;
   }
 
-  /* Espaçamento geral */
   .container {
     padding-left: 16px !important;
     padding-right: 16px !important;
