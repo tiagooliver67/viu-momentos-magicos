@@ -37,7 +37,28 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Resolve signed URLs for S3 paths
+  useEffect(() => {
+    if (!open || photos.length === 0) return;
+    const s3Paths = photos
+      .filter(p => p.file_url.startsWith("eventos/"))
+      .map(p => p.file_url)
+      .filter(p => !signedUrls[p]);
+    if (s3Paths.length === 0) return;
+    getSignedReadUrls(s3Paths).then(urls => {
+      setSignedUrls(prev => ({ ...prev, ...urls }));
+    }).catch(console.error);
+  }, [open, photos]);
+
+  const getPhotoUrl = (photo: Photo) => {
+    if (photo.file_url.startsWith("eventos/")) {
+      return signedUrls[photo.file_url] || "";
+    }
+    return photo.file_url; // legacy Supabase Storage URLs
+  };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
