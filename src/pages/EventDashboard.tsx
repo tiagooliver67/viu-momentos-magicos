@@ -42,8 +42,10 @@ const EventDashboard = () => {
 
   // Data hooks
   const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
-  const { photos, uploadPhotos, deletePhoto } = useEventPhotos(id);
-  const { videos, uploadVideos, deleteVideo } = useEventVideos(id);
+  const { photos, deletePhoto } = useEventPhotos(id);
+  const { videos, deleteVideo } = useEventVideos(id);
+  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos" });
+  const s3UploadVideos = useS3Upload({ eventId: id || "", type: "videos" });
   const ordersQuery = useEventOrders(id);
   const { coupons, createCoupon, toggleCoupon } = useEventCoupons(id);
   const { grids, savePriceGrid } = useEventPriceGrid(id);
