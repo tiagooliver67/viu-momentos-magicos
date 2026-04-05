@@ -5,13 +5,11 @@
 
 @layer base {
   :root {
-    /* ==================== TEMA ESCURO (padrão) ==================== */
     --background: 0 0% 4%;
     --foreground: 0 0% 95%;
     --card: 0 0% 7%;
     --card-foreground: 0 0% 95%;
 
-    /* 🔥 LARANJA ORIGINAL */
     --primary: 18 100% 50%;
     --primary-foreground: 0 0% 100%;
 
@@ -21,7 +19,6 @@
   }
 
   .clean-theme {
-    /* ==================== TEMA CLARO ==================== */
     --background: 0 0% 98%;
     --foreground: 0 0% 12%;
     --card: 0 0% 100%;
@@ -78,12 +75,12 @@
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
-  /* 🔥 GLOW CONTROLADO */
+  /* Glow */
   .glow-text {
     text-shadow: 0 0 16px rgba(255, 77, 0, 0.25);
   }
 
-  /* 🔥 BOTÃO PREMIUM */
+  /* Botão */
   .btn-buscar {
     transition: all 0.25s ease;
   }
@@ -97,35 +94,7 @@
     transform: scale(0.98);
   }
 
-  /* 🔥 CATEGORIAS ELEGANTES */
-  .category-item {
-    position: relative;
-    cursor: pointer;
-    transition: all 0.25s ease;
-  }
-
-  .category-item:hover {
-    color: rgba(255, 255, 255, 0.9);
-    transform: translateY(-2px);
-  }
-
-  .category-item::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -4px;
-    width: 0%;
-    height: 1px;
-    background: rgba(255, 77, 0, 0.6);
-    transition: all 0.25s ease;
-    transform: translateX(-50%);
-  }
-
-  .category-item:hover::after {
-    width: 100%;
-  }
-
-  /* 🔥 ANIMAÇÃO LOGO */
+  /* Logo */
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -140,9 +109,37 @@
   .animate-fade-in {
     animation: fade-in 0.4s ease forwards;
   }
+
+  /* SHIMMER */
+  .shimmer-text {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+  }
+
+  .shimmer-text::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -120%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    transform: skewX(-20deg);
+    animation: shimmer-move 4.5s infinite;
+  }
+
+  @keyframes shimmer-move {
+    0% {
+      left: -120%;
+    }
+    100% {
+      left: 130%;
+    }
+  }
 }
 
-/* ==================== ELEMENTOS FLUTUANTES HERO ==================== */
+/* Floating */
 @keyframes float-slow {
   0%,
   100% {
@@ -198,7 +195,7 @@
   border: 1px solid rgba(255, 77, 0, 0.2);
 }
 
-/* ==================== MOBILE ==================== */
+/* Mobile */
 @media (max-width: 640px) {
   .glass-strong {
     padding: 6px 8px !important;
