@@ -271,10 +271,11 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                 {/* Hover expand */}
                 <div
                   className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all cursor-pointer"
-                  onClick={() => setLightbox(photo.file_url)}
+                  onClick={() => setLightbox(url)}
                 />
               </div>
-            ))}
+              );
+            })}
           </div>
 
           {photos.length === 0 && uploadingFiles.length === 0 && (
