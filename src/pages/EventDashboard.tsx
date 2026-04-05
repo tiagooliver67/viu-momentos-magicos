@@ -72,7 +72,7 @@ const EventDashboard = () => {
       case "edit": setShowEdit(true); break;
       case "orders": navigate(`/dashboard/pedidos`); break;
       case "financial": navigate(`/dashboard/financeiro`); break;
-      case "upload-photos": setShowUploadPhotos(true); break;
+      case "upload-photos": setShowGallery(true); break;
       case "upload-videos": setShowUploadVideos(true); break;
       case "photos": case "gallery": setShowGallery(true); break;
       case "password": setShowPassword(true); break;
@@ -364,7 +364,7 @@ const EventDashboard = () => {
         <CouponModal open={showCoupon} onClose={() => setShowCoupon(false)} onSave={(c) => { createCoupon.mutate(c); setShowCoupon(false); }} isSaving={createCoupon.isPending} />
         <EditEventModal open={showEdit} onClose={() => setShowEdit(false)} onSave={(data) => { updateEvent.mutate(data as any); setShowEdit(false); }} initial={{ name: event.name, event_date: event.event_date, event_time: event.event_time, location: event.location, category: event.category, search_type: event.search_type || [], visibility: event.visibility }} isSaving={updateEvent.isPending} />
         <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSave={(pw) => { updateEvent.mutate({ password: pw }); setShowPassword(false); }} currentPassword={event.password} isSaving={updateEvent.isPending} />
-        <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} />
+        <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} onUploadFiles={(files) => uploadPhotos.mutate(files)} isUploading={uploadPhotos.isPending} />
 
         {/* Actions dropdown */}
         {showActions && (
