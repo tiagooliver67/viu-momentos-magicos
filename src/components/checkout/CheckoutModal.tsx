@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, CreditCard, QrCode, Copy, CheckCircle2, Loader2 } from "lucide-react";
 import { useAsaasCheckout } from "@/hooks/useAsaasCheckout";
 import { useCart } from "@/hooks/useCart";
