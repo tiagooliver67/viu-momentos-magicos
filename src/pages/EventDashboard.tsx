@@ -72,7 +72,7 @@ const EventDashboard = () => {
       case "edit": setShowEdit(true); break;
       case "orders": navigate(`/dashboard/pedidos`); break;
       case "financial": navigate(`/dashboard/financeiro`); break;
-      case "upload-photos": setShowUploadPhotos(true); break;
+      case "upload-photos": setShowGallery(true); break;
       case "upload-videos": setShowUploadVideos(true); break;
       case "photos": case "gallery": setShowGallery(true); break;
       case "password": setShowPassword(true); break;
