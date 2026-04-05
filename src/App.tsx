@@ -20,6 +20,7 @@ import RecuperarSenha from "./pages/RecuperarSenha";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PhotographerPage from "./pages/PhotographerPage";
+import MeusPedidos from "./pages/MeusPedidos";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
