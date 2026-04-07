@@ -1,47 +1,92 @@
-import { useState } from "react";
-import { Search, CheckCircle, XCircle, Eye, Clock, Camera, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, MapPin, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const mockEvents = [
-  { id: 1, title: "VERÃO RUN IRECÊ 2026", photographer: "Carlos Silva", date: "22/03/2026", location: "Irecê, BA", photos: 2615, status: "live", revenue: "R$ 8.450", moderation: "approved" },
-  { id: 2, title: "CORRIDA DO SIMTRANS", photographer: "Ana Costa", date: "24/03/2026", location: "Salvador, BA", photos: 1830, status: "live", revenue: "R$ 5.200", moderation: "approved" },
-  { id: 3, title: "IL RUN EXPERIENCE", photographer: "Roberto Lima", date: "22/03/2026", location: "V. Conquista, BA", photos: 3200, status: "processing", revenue: "R$ 0", moderation: "pending" },
-  { id: 4, title: "ECO RUN 2026", photographer: "Marina Santos", date: "28/03/2026", location: "Camaçari, BA", photos: 0, status: "upcoming", revenue: "R$ 0", moderation: "pending" },
-  { id: 5, title: "PEDAL DA CIDADE", photographer: "Paulo Oliveira", date: "29/03/2026", location: "Salvador, BA", photos: 0, status: "upcoming", revenue: "R$ 0", moderation: "approved" },
-  { id: 6, title: "NIGHT RUN SPECIAL", photographer: "Carlos Silva", date: "15/03/2026", location: "Lauro de Freitas, BA", photos: 4100, status: "completed", revenue: "R$ 12.800", moderation: "approved" },
-];
+interface EventData {
+  id: string;
+  name: string;
+  location: string;
+  event_date: string;
+  status: string;
+  category: string;
+  photoCount: number;
+  revenue: number;
+}
 
 const statusBadge: Record<string, string> = {
-  live: "badge-live",
-  processing: "bg-amber-500/15 text-amber-500 px-2 py-1 rounded-full text-xs font-semibold",
-  upcoming: "bg-accent/15 text-accent px-2 py-1 rounded-full text-xs font-semibold",
-  completed: "bg-lime/15 text-lime px-2 py-1 rounded-full text-xs font-semibold",
+  ativo: "bg-lime/15 text-lime px-2 py-1 rounded-full text-xs font-semibold",
+  em_breve: "bg-accent/15 text-accent px-2 py-1 rounded-full text-xs font-semibold",
+  inativo: "bg-muted text-muted-foreground px-2 py-1 rounded-full text-xs font-semibold",
+};
+
+const statusLabel: Record<string, string> = {
+  ativo: "Ativo",
+  em_breve: "Em Breve",
+  inativo: "Inativo",
 };
 
 const AdminEvents = () => {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
+  const [events, setEvents] = useState<EventData[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = mockEvents.filter((e) => {
-    const matchSearch = e.title.toLowerCase().includes(search.toLowerCase());
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const [{ data: eventsRaw }, { data: photos }, { data: orders }] = await Promise.all([
+        supabase.from("events").select("id, name, location, event_date, status, category"),
+        supabase.from("event_photos").select("id, event_id"),
+        supabase.from("orders").select("event_id, amount, status").eq("status", "pago"),
+      ]);
+
+      if (eventsRaw) {
+        const mapped: EventData[] = eventsRaw.map(e => ({
+          id: e.id,
+          name: e.name,
+          location: e.location,
+          event_date: e.event_date,
+          status: e.status,
+          category: e.category,
+          photoCount: photos?.filter(p => p.event_id === e.id).length || 0,
+          revenue: orders?.filter(o => o.event_id === e.id).reduce((s, o) => s + Number(o.amount), 0) || 0,
+        }));
+        setEvents(mapped);
+      }
+      setLoading(false);
+    };
+    fetchEvents();
+  }, []);
+
+  const filtered = events.filter((e) => {
+    const matchSearch = e.name.toLowerCase().includes(search.toLowerCase());
     const matchTab = tab === "all" || e.status === tab;
     return matchSearch && matchTab;
   });
+
+  const fmt = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Eventos</h1>
-        <p className="text-sm text-muted-foreground">Moderação e acompanhamento de eventos</p>
+        <p className="text-sm text-muted-foreground">{events.length} eventos cadastrados</p>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2 flex-wrap">
         {[
           { key: "all", label: "Todos" },
-          { key: "live", label: "🔴 Ao Vivo" },
-          { key: "upcoming", label: "📅 Próximos" },
-          { key: "processing", label: "⏳ Processando" },
-          { key: "completed", label: "✅ Finalizados" },
+          { key: "ativo", label: "Ativos" },
+          { key: "em_breve", label: "Em Breve" },
+          { key: "inativo", label: "Inativos" },
         ].map((t) => (
           <button
             key={t.key}
@@ -62,53 +107,44 @@ const AdminEvents = () => {
       </div>
 
       {/* Events grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filtered.map((event) => (
-          <div key={event.id} className="glass-card-hover p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h3 className="font-bold text-sm">{event.title}</h3>
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <MapPin className="w-3 h-3" /> {event.location}
-                </p>
+      {filtered.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filtered.map((event) => (
+            <div key={event.id} className="glass-card-hover p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="font-bold text-sm">{event.name}</h3>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <MapPin className="w-3 h-3" /> {event.location}
+                  </p>
+                </div>
+                <span className={statusBadge[event.status] || "bg-muted text-muted-foreground px-2 py-1 rounded-full text-xs font-semibold"}>
+                  {statusLabel[event.status] || event.status}
+                </span>
               </div>
-              <span className={statusBadge[event.status]}>
-                {event.status === "live" ? "AO VIVO" : event.status}
-              </span>
-            </div>
 
-            <div className="grid grid-cols-3 gap-3 text-center mb-4">
-              <div className="bg-secondary/50 rounded-lg p-2">
-                <p className="text-sm font-bold">{event.photos}</p>
-                <p className="text-[10px] text-muted-foreground">Fotos</p>
-              </div>
-              <div className="bg-secondary/50 rounded-lg p-2">
-                <p className="text-sm font-bold">{event.revenue}</p>
-                <p className="text-[10px] text-muted-foreground">Receita</p>
-              </div>
-              <div className="bg-secondary/50 rounded-lg p-2">
-                <p className="text-sm font-bold">{event.date}</p>
-                <p className="text-[10px] text-muted-foreground">Data</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>📸 {event.photographer}</span>
-              <div className="flex gap-1">
-                <button className="p-1.5 rounded-lg hover:bg-lime/15 transition-colors" title="Aprovar">
-                  <CheckCircle className="w-4 h-4 text-lime" />
-                </button>
-                <button className="p-1.5 rounded-lg hover:bg-destructive/15 transition-colors" title="Reprovar">
-                  <XCircle className="w-4 h-4 text-destructive" />
-                </button>
-                <button className="p-1.5 rounded-lg hover:bg-secondary transition-colors" title="Ver detalhes">
-                  <Eye className="w-4 h-4" />
-                </button>
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-secondary/50 rounded-lg p-2">
+                  <p className="text-sm font-bold">{event.photoCount}</p>
+                  <p className="text-[10px] text-muted-foreground">Fotos</p>
+                </div>
+                <div className="bg-secondary/50 rounded-lg p-2">
+                  <p className="text-sm font-bold">{fmt(event.revenue)}</p>
+                  <p className="text-[10px] text-muted-foreground">Receita</p>
+                </div>
+                <div className="bg-secondary/50 rounded-lg p-2">
+                  <p className="text-sm font-bold">{new Date(event.event_date).toLocaleDateString("pt-BR")}</p>
+                  <p className="text-[10px] text-muted-foreground">Data</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="glass-card p-8 text-center text-muted-foreground">
+          <p className="text-sm">Nenhum evento encontrado</p>
+        </div>
+      )}
     </div>
   );
 };
