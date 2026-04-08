@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock } from "lucide-react";
+import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -229,21 +229,34 @@ const EventPage = () => {
                       />
                     </div>
 
-                    {/* Favorite button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(photo.id);
-                        toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
-                      }}
-                      className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
-                        fav
-                          ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
-                          : "bg-black/40 text-white/80 hover:bg-black/60 hover:text-white"
-                      }`}
-                    >
-                      <Heart className={`w-4 h-4 transition-all ${fav ? "fill-current scale-110" : ""}`} />
-                    </button>
+                    {/* Action buttons */}
+                    <div className="absolute top-2 right-2 flex gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const url = `${window.location.origin}/foto/${photo.id}`;
+                          navigator.clipboard.writeText(url);
+                          toast.success("Link copiado!");
+                        }}
+                        className="p-2 rounded-full bg-black/40 text-white/80 hover:bg-black/60 backdrop-blur-sm transition-all transform active:scale-90"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(photo.id);
+                          toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
+                        }}
+                        className={`p-2 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
+                          fav
+                            ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
+                            : "bg-black/40 text-white/80 hover:bg-black/60 hover:text-white"
+                        }`}
+                      >
+                        <Heart className={`w-4 h-4 transition-all ${fav ? "fill-current scale-110" : ""}`} />
+                      </button>
+                    </div>
 
                     <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-all flex items-end p-2 pointer-events-none">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity w-full">
@@ -275,21 +288,33 @@ const EventPage = () => {
                   watermarkText={photographerSite?.display_name || "VIUFOTO"}
                   className="w-full h-48 sm:h-full sm:min-h-[400px]"
                 />
-                {/* Favorite in lightbox */}
-                <button
-                  onClick={() => {
-                    const fav = isFavorite(selectedPhoto.id);
-                    toggleFavorite(selectedPhoto.id);
-                    toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
-                  }}
-                  className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
-                    isFavorite(selectedPhoto.id)
-                      ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
-                      : "bg-black/40 text-white/80 hover:bg-black/60"
-                  }`}
-                >
-                  <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
-                </button>
+                {/* Favorite & Share in lightbox */}
+                <div className="absolute top-3 right-3 flex gap-2">
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/foto/${selectedPhoto.id}`;
+                      navigator.clipboard.writeText(url);
+                      toast.success("Link copiado!");
+                    }}
+                    className="p-2.5 rounded-full bg-black/40 text-white/80 hover:bg-black/60 backdrop-blur-sm transition-all transform active:scale-90"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const fav = isFavorite(selectedPhoto.id);
+                      toggleFavorite(selectedPhoto.id);
+                      toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
+                    }}
+                    className={`p-2.5 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
+                      isFavorite(selectedPhoto.id)
+                        ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
+                        : "bg-black/40 text-white/80 hover:bg-black/60"
+                    }`}
+                  >
+                    <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
+                  </button>
+                </div>
               </div>
               <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto">
                 <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
