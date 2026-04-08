@@ -1,5 +1,5 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Menu, X, User, LogOut, ShoppingCart, Package, Sun, Moon, Camera } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, Menu, X, User, LogOut, Package, Sun, Moon, Camera, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -53,11 +53,6 @@ const ClientNavbar = () => {
     }
   };
 
-  const navLinks = [
-    { to: "/buscar", label: "Buscar eventos", icon: Search },
-    { to: "/meus-pedidos", label: "Meus pedidos", icon: Package },
-  ];
-
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border">
@@ -67,13 +62,30 @@ const ClientNavbar = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-            {navLinks.map(link => (
-              <Link key={link.to} to={link.to} className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-                <link.icon className="w-4 h-4" />
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center gap-1 text-sm font-medium">
+            <Link
+              to="/meus-pedidos"
+              className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
+            >
+              <Package className="w-4 h-4" />
+              Meus pedidos
+            </Link>
+
+            <Link
+              to="/cadastro/fotografo"
+              className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
+            >
+              <Camera className="w-4 h-4" />
+              Sou fotógrafo
+            </Link>
+
+            <Link
+              to="/cadastro/organizador"
+              className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
+            >
+              <Users className="w-4 h-4" />
+              Sou organizador
+            </Link>
           </div>
 
           {/* Desktop Actions */}
@@ -157,17 +169,35 @@ const ClientNavbar = () => {
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border p-4 space-y-1">
-            {navLinks.map(link => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
-                onClick={() => setMobileOpen(false)}
-              >
-                <link.icon className="w-4 h-4" />
-                {link.label}
-              </Link>
-            ))}
+            <Link
+              to="/meus-pedidos"
+              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
+              onClick={() => setMobileOpen(false)}
+            >
+              <Package className="w-4 h-4" /> Meus pedidos
+            </Link>
+            <Link
+              to="/cadastro/fotografo"
+              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
+              onClick={() => setMobileOpen(false)}
+            >
+              <Camera className="w-4 h-4" /> Sou fotógrafo
+            </Link>
+            <Link
+              to="/cadastro/organizador"
+              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
+              onClick={() => setMobileOpen(false)}
+            >
+              <Users className="w-4 h-4" /> Sou organizador
+            </Link>
+            <Link
+              to="/buscar"
+              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
+              onClick={() => setMobileOpen(false)}
+            >
+              <Search className="w-4 h-4" /> Buscar eventos
+            </Link>
+
             <div className="pt-2 border-t border-border mt-2">
               {user ? (
                 <>
