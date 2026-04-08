@@ -33,7 +33,7 @@ export default function Login() {
       return;
     }
     toast.success("Login realizado!");
-    navigate("/dashboard");
+    navigate("/meus-pedidos");
   };
 
   return (
@@ -49,10 +49,10 @@ export default function Login() {
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="bg-card border border-border rounded-2xl p-8">
-            <h1 className="text-2xl font-bold text-foreground mb-1">Realizar Login</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-1">Faça login</h1>
             <p className="text-muted-foreground text-sm mb-6">
-              Não é cadastrado?{" "}
-              <Link to="/cadastro" className="text-primary font-semibold hover:underline">Efetuar cadastro</Link>
+              Ainda não possui cadastro?{" "}
+              <Link to="/cadastro" className="text-primary font-semibold hover:underline">Clique aqui</Link>
             </p>
 
             <form onSubmit={handleLogin} className="space-y-4">
@@ -88,6 +88,13 @@ export default function Login() {
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Entrar"}
               </Button>
             </form>
+
+            <div className="mt-6 pt-6 border-t border-border text-center">
+              <p className="text-sm text-muted-foreground">Fotógrafo ou Parceiro</p>
+              <Link to="/login/fotografo" className="text-primary font-semibold text-sm hover:underline">
+                ACESSAR PAINEL
+              </Link>
+            </div>
           </div>
         </div>
       </div>

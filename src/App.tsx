@@ -15,7 +15,10 @@ import Pedidos from "./pages/Pedidos";
 import Configuracoes from "./pages/Configuracoes";
 import EventDashboard from "./pages/EventDashboard";
 import Login from "./pages/Login";
+import LoginRole from "./pages/LoginRole";
 import Cadastro from "./pages/Cadastro";
+import CadastroFotografo from "./pages/CadastroFotografo";
+import CadastroOrganizador from "./pages/CadastroOrganizador";
 import RecuperarSenha from "./pages/RecuperarSenha";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
@@ -45,7 +48,10 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/login/:role" element={<LoginRole />} />
               <Route path="/cadastro" element={<Cadastro />} />
+              <Route path="/cadastro/fotografo" element={<CadastroFotografo />} />
+              <Route path="/cadastro/organizador" element={<CadastroOrganizador />} />
               <Route path="/recuperar-senha" element={<RecuperarSenha />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/evento/:id" element={<EventPage />} />
