@@ -25,6 +25,7 @@ import NotFound from "./pages/NotFound";
 import PhotographerPage from "./pages/PhotographerPage";
 import MeusPedidos from "./pages/MeusPedidos";
 import BuscarEventos from "./pages/BuscarEventos";
+import Favoritos from "./pages/Favoritos";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -57,6 +58,7 @@ const App = () => (
               <Route path="/evento/:id" element={<EventPage />} />
               <Route path="/fotografo/:slug" element={<PhotographerPage />} />
               <Route path="/meus-pedidos" element={<MeusPedidos />} />
+              <Route path="/favoritos" element={<Favoritos />} />
               <Route path="/buscar" element={<BuscarEventos />} />
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
