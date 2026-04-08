@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Search, Download, Package, CheckCircle2, Clock, XCircle, Loader2, ArrowLeft, Image } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
+import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
 
 interface OrderItem {
