@@ -98,7 +98,7 @@ const MeusPedidos = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navbar />
+      <ClientNavbar />
       <main className="flex-1 pt-24 pb-12 px-4">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Meus Pedidos</h1>

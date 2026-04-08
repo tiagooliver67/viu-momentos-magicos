@@ -23,7 +23,7 @@ export function usePhotographerSite() {
   });
 
   const upsertSite = useMutation({
-    mutationFn: async (updates: Record<string, any>) => {
+    mutationFn: async (updates: any) => {
       if (!user?.id) throw new Error("Not authenticated");
       const { data: existing } = await supabase
         .from("photographer_sites")

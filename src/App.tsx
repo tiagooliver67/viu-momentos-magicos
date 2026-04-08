@@ -51,6 +51,7 @@ const App = () => (
               <Route path="/evento/:id" element={<EventPage />} />
               <Route path="/fotografo/:slug" element={<PhotographerPage />} />
               <Route path="/meus-pedidos" element={<MeusPedidos />} />
+              <Route path="/buscar" element={<BuscarEventos />} />
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
