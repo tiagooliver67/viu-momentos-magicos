@@ -33,7 +33,7 @@ export default function Login() {
       return;
     }
     toast.success("Login realizado!");
-    navigate("/dashboard");
+    navigate("/meus-pedidos");
   };
 
   return (
