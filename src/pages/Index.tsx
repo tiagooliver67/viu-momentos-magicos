@@ -61,7 +61,7 @@ const mockCycling = [
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <ClientNavbar />
       <HeroSection />
 
       {/* 🔥 CONTEÚDO AJUSTADO */}
