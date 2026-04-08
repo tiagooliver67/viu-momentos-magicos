@@ -49,10 +49,10 @@ export default function Login() {
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="bg-card border border-border rounded-2xl p-8">
-            <h1 className="text-2xl font-bold text-foreground mb-1">Realizar Login</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-1">Faça login</h1>
             <p className="text-muted-foreground text-sm mb-6">
-              Não é cadastrado?{" "}
-              <Link to="/cadastro" className="text-primary font-semibold hover:underline">Efetuar cadastro</Link>
+              Ainda não possui cadastro?{" "}
+              <Link to="/cadastro" className="text-primary font-semibold hover:underline">Clique aqui</Link>
             </p>
 
             <form onSubmit={handleLogin} className="space-y-4">
