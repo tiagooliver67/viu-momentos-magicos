@@ -16,18 +16,21 @@ const Footer = () => (
         <div>
           <h4 className="font-bold text-foreground mb-4">Venda suas fotos</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/dashboard" className="hover:text-primary transition-colors">Fotógrafos</Link></li>
-            <li><Link to="/" className="hover:text-primary transition-colors">Organizadores</Link></li>
-            <li><Link to="/" className="hover:text-primary transition-colors">Escolas</Link></li>
+            <li><Link to="/cadastro/fotografo" className="hover:text-primary transition-colors">Sou Fotógrafo</Link></li>
+            <li><Link to="/cadastro/organizador" className="hover:text-primary transition-colors">Sou Organizador</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="font-bold text-foreground mb-4">Conta</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/" className="hover:text-primary transition-colors">Minha conta</Link></li>
-            <li><Link to="/" className="hover:text-primary transition-colors">Meus pedidos</Link></li>
-            <li><Link to="/" className="hover:text-primary transition-colors">Login</Link></li>
+            <li><Link to="/meus-pedidos" className="hover:text-primary transition-colors">Meus pedidos</Link></li>
+            <li><Link to="/login" className="hover:text-primary transition-colors">Login</Link></li>
           </ul>
+          <div className="mt-4 pt-3 border-t border-border">
+            <Link to="/login/fotografo" className="text-primary font-semibold text-sm hover:underline">
+              📸 Fotógrafo parceiro — acessar painel
+            </Link>
+          </div>
         </div>
         <div>
           <h4 className="font-bold text-foreground mb-4">Ajuda</h4>

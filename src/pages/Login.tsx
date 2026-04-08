@@ -88,6 +88,13 @@ export default function Login() {
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Entrar"}
               </Button>
             </form>
+
+            <div className="mt-6 pt-6 border-t border-border text-center">
+              <p className="text-sm text-muted-foreground">Fotógrafo ou Parceiro</p>
+              <Link to="/login/fotografo" className="text-primary font-semibold text-sm hover:underline">
+                ACESSAR PAINEL
+              </Link>
+            </div>
           </div>
         </div>
       </div>
