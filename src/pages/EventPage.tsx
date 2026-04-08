@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import WatermarkCanvas from "@/components/WatermarkCanvas";
 import CartDrawer from "@/components/CartDrawer";
 import { useCart } from "@/hooks/useCart";
+import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 
 const EventPage = () => {
@@ -18,6 +19,7 @@ const EventPage = () => {
   const [passwordInput, setPasswordInput] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const { addItem } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   // Fetch event
   const { data: event, isLoading: eventLoading } = useQuery({
@@ -211,27 +213,48 @@ const EventPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-              {photoList.map((photo: any) => (
-                <div
-                  key={photo.id}
-                  className="relative group cursor-pointer rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30"
-                  onClick={() => setSelectedPhoto(photo)}
-                >
-                  <WatermarkCanvas
-                    src={photo.file_url}
-                    watermarkUrl={photographerSite?.watermark_url || undefined}
-                    watermarkText={photographerSite?.display_name || "VIUFOTO"}
-                    className="w-full h-full"
-                  />
-                  <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-all flex items-end p-2">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity w-full">
-                      <span className="text-primary font-bold text-xs bg-background/80 px-2 py-1 rounded">
-                        R$ {highPrice.toFixed(2)}
-                      </span>
+              {photoList.map((photo: any) => {
+                const fav = isFavorite(photo.id);
+                return (
+                  <div
+                    key={photo.id}
+                    className="relative group cursor-pointer rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30"
+                  >
+                    <div onClick={() => setSelectedPhoto(photo)} className="w-full h-full">
+                      <WatermarkCanvas
+                        src={photo.file_url}
+                        watermarkUrl={photographerSite?.watermark_url || undefined}
+                        watermarkText={photographerSite?.display_name || "VIUFOTO"}
+                        className="w-full h-full"
+                      />
+                    </div>
+
+                    {/* Favorite button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(photo.id);
+                        toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
+                      }}
+                      className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
+                        fav
+                          ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
+                          : "bg-black/40 text-white/80 hover:bg-black/60 hover:text-white"
+                      }`}
+                    >
+                      <Heart className={`w-4 h-4 transition-all ${fav ? "fill-current scale-110" : ""}`} />
+                    </button>
+
+                    <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-all flex items-end p-2 pointer-events-none">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity w-full">
+                        <span className="text-primary font-bold text-xs bg-background/80 px-2 py-1 rounded">
+                          R$ {highPrice.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -252,6 +275,21 @@ const EventPage = () => {
                   watermarkText={photographerSite?.display_name || "VIUFOTO"}
                   className="w-full h-48 sm:h-full sm:min-h-[400px]"
                 />
+                {/* Favorite in lightbox */}
+                <button
+                  onClick={() => {
+                    const fav = isFavorite(selectedPhoto.id);
+                    toggleFavorite(selectedPhoto.id);
+                    toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
+                  }}
+                  className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
+                    isFavorite(selectedPhoto.id)
+                      ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
+                      : "bg-black/40 text-white/80 hover:bg-black/60"
+                  }`}
+                >
+                  <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
+                </button>
               </div>
               <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto">
                 <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
