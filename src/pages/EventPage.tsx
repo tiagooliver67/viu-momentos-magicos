@@ -288,21 +288,33 @@ const EventPage = () => {
                   watermarkText={photographerSite?.display_name || "VIUFOTO"}
                   className="w-full h-48 sm:h-full sm:min-h-[400px]"
                 />
-                {/* Favorite in lightbox */}
-                <button
-                  onClick={() => {
-                    const fav = isFavorite(selectedPhoto.id);
-                    toggleFavorite(selectedPhoto.id);
-                    toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
-                  }}
-                  className={`absolute top-3 right-3 p-2.5 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
-                    isFavorite(selectedPhoto.id)
-                      ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
-                      : "bg-black/40 text-white/80 hover:bg-black/60"
-                  }`}
-                >
-                  <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
-                </button>
+                {/* Favorite & Share in lightbox */}
+                <div className="absolute top-3 right-3 flex gap-2">
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/foto/${selectedPhoto.id}`;
+                      navigator.clipboard.writeText(url);
+                      toast.success("Link copiado!");
+                    }}
+                    className="p-2.5 rounded-full bg-black/40 text-white/80 hover:bg-black/60 backdrop-blur-sm transition-all transform active:scale-90"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      const fav = isFavorite(selectedPhoto.id);
+                      toggleFavorite(selectedPhoto.id);
+                      toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
+                    }}
+                    className={`p-2.5 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
+                      isFavorite(selectedPhoto.id)
+                        ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
+                        : "bg-black/40 text-white/80 hover:bg-black/60"
+                    }`}
+                  >
+                    <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
+                  </button>
+                </div>
               </div>
               <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto">
                 <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
