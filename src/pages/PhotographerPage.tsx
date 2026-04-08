@@ -2,8 +2,9 @@ import { useParams } from "react-router-dom";
 import { usePhotographerSiteBySlug } from "@/hooks/usePhotographerSite";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, MapPin, Camera, Instagram, Phone, Mail, ExternalLink } from "lucide-react";
+import { Calendar, MapPin, Camera, Instagram, Phone, Mail, ExternalLink, Facebook, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
+import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
 
 const PhotographerPage = () => {
@@ -39,6 +40,21 @@ const PhotographerPage = () => {
     enabled: !!site?.user_id,
   });
 
+  const { data: photoCount } = useQuery({
+    queryKey: ["photographer-photo-count", site?.user_id],
+    queryFn: async () => {
+      if (!site?.user_id) return 0;
+      const eventIds = events?.map((e: any) => e.id) || [];
+      if (eventIds.length === 0) return 0;
+      const { count } = await supabase
+        .from("event_photos")
+        .select("*", { count: "exact", head: true })
+        .in("event_id", eventIds);
+      return count || 0;
+    },
+    enabled: !!events && events.length > 0,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -49,10 +65,15 @@ const PhotographerPage = () => {
 
   if (!site) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">Fotógrafo não encontrado</h1>
-          <Link to="/" className="text-primary hover:underline">Voltar ao início</Link>
+      <div className="min-h-screen bg-background flex flex-col">
+        <ClientNavbar />
+        <div className="flex-1 flex items-center justify-center pt-20">
+          <div className="text-center">
+            <Camera className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-2 text-foreground">Fotógrafo não encontrado</h1>
+            <p className="text-muted-foreground mb-4">O perfil que você procura não existe ou foi removido.</p>
+            <Link to="/" className="text-primary hover:underline font-medium">Voltar ao início</Link>
+          </div>
         </div>
       </div>
     );
@@ -60,44 +81,65 @@ const PhotographerPage = () => {
 
   const primaryColor = site.primary_color || "#FF4D00";
 
+  const socialLinks = [
+    { url: site.instagram, icon: Instagram, label: "Instagram" },
+    { url: site.facebook, icon: Facebook, label: "Facebook" },
+    { url: site.youtube, icon: Youtube, label: "YouTube" },
+    { url: site.whatsapp ? `https://wa.me/${site.whatsapp.replace(/\D/g, "")}` : null, icon: Phone, label: "WhatsApp" },
+    { url: site.contact_email ? `mailto:${site.contact_email}` : null, icon: Mail, label: "Email" },
+  ].filter(s => s.url);
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header
-        className="relative"
-        style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}dd)` }}
-      >
+    <div className="min-h-screen bg-background flex flex-col">
+      <ClientNavbar />
+
+      {/* Hero Header */}
+      <header className="relative pt-16" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)` }}>
         {site.banner_url && (
-          <img src={site.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+          <img src={site.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
         )}
-        <div className="relative container mx-auto px-4 py-8 flex flex-col sm:flex-row items-center gap-4">
-          {site.avatar_url ? (
-            <img src={site.avatar_url} alt="" className="w-20 h-20 rounded-full border-4 border-white/30 object-cover" />
-          ) : (
-            <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl font-bold">
-              {(site.display_name || "?")[0]}
+        <div className="relative container mx-auto px-4 py-12 sm:py-16">
+          <div className="flex flex-col items-center text-center">
+            {site.avatar_url ? (
+              <img src={site.avatar_url} alt={site.display_name || ""} className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white/30 object-cover shadow-lg mb-4" />
+            ) : (
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-lg">
+                {(site.display_name || "?")[0]}
+              </div>
+            )}
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">{site.display_name || "Fotógrafo"}</h1>
+            {site.bio && <p className="text-white/80 text-sm sm:text-base mt-1 max-w-lg">{site.bio}</p>}
+
+            {/* Stats */}
+            <div className="flex gap-6 mt-5 text-white/90 text-sm">
+              <div className="text-center">
+                <p className="text-xl font-bold">{events?.length || 0}</p>
+                <p className="text-white/60 text-xs">Eventos</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl font-bold">{photoCount || 0}</p>
+                <p className="text-white/60 text-xs">Fotos</p>
+              </div>
             </div>
-          )}
-          <div className="text-center sm:text-left text-white">
-            <h1 className="text-2xl font-bold">{site.display_name || "Fotógrafo"}</h1>
-            {site.bio && <p className="text-white/80 text-sm mt-1 max-w-lg">{site.bio}</p>}
+
+            {/* Social */}
+            {socialLinks.length > 0 && (
+              <div className="flex gap-2 mt-5">
+                {socialLinks.map((s, i) => (
+                  <a key={i} href={s.url!} target="_blank" rel="noopener" title={s.label} className="p-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white transition-colors">
+                    <s.icon className="w-5 h-5" />
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="sm:ml-auto flex gap-2">
-            {site.instagram && (
-              <a href={site.instagram} target="_blank" rel="noopener" className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white">
-                <Instagram className="w-5 h-5" />
-              </a>
-            )}
-            {site.whatsapp && (
-              <a href={`https://wa.me/${site.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener" className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white">
-                <Phone className="w-5 h-5" />
-              </a>
-            )}
-            {site.contact_email && (
-              <a href={`mailto:${site.contact_email}`} className="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white">
-                <Mail className="w-5 h-5" />
-              </a>
-            )}
+        </div>
+
+        {/* "Vitrine" indicator */}
+        <div className="relative bg-background border-t border-border">
+          <div className="container mx-auto px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+            <Camera className="w-4 h-4 text-primary" />
+            <span>Você está vendo o portfólio de <strong className="text-foreground">{site.display_name || "Fotógrafo"}</strong></span>
           </div>
         </div>
       </header>
@@ -111,26 +153,29 @@ const PhotographerPage = () => {
               href={link.url}
               target="_blank"
               rel="noopener"
-              className="px-4 py-2 rounded-full border border-border text-sm font-medium hover:bg-secondary/50 transition-colors flex items-center gap-1"
+              className="px-4 py-2 rounded-full border border-border text-sm font-medium hover:bg-secondary/50 transition-colors flex items-center gap-1.5 text-foreground"
             >
-              <ExternalLink className="w-3 h-3" /> {link.label}
+              <ExternalLink className="w-3.5 h-3.5" /> {link.label}
             </a>
           ))}
         </div>
       )}
 
       {/* Events */}
-      <div className="container mx-auto px-4 py-8">
-        <h2 className="text-xl font-bold mb-6">Eventos</h2>
+      <div className="container mx-auto px-4 py-8 flex-1">
+        <h2 className="text-xl font-bold mb-6 text-foreground">Eventos</h2>
         {(!events || events.length === 0) ? (
-          <p className="text-muted-foreground text-center py-12">Nenhum evento publicado ainda.</p>
+          <div className="text-center py-16">
+            <Camera className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-muted-foreground">Nenhum evento publicado ainda.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {events.map((event: any) => (
               <Link
                 key={event.id}
                 to={`/evento/${event.id}`}
-                className="group rounded-xl overflow-hidden border border-border bg-card hover:border-primary/30 transition-all"
+                className="group rounded-xl overflow-hidden border border-border bg-card hover:border-primary/30 hover:shadow-md transition-all"
               >
                 <div className="aspect-[16/10] overflow-hidden bg-secondary/30">
                   {event.cover_url ? (
@@ -142,13 +187,13 @@ const PhotographerPage = () => {
                   )}
                 </div>
                 <div className="p-4">
-                  <h3 className="font-bold text-sm line-clamp-2">{event.name}</h3>
+                  <h3 className="font-bold text-sm line-clamp-2 text-foreground">{event.name}</h3>
                   <div className="flex flex-wrap gap-2 mt-2 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(event.event_date).toLocaleDateString("pt-BR")}</span>
-                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {event.location}</span>
+                    {event.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {event.location}</span>}
                   </div>
                   <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    event.status === "ativo" ? "bg-lime/20 text-lime" : event.status === "em_breve" ? "bg-accent/20 text-accent" : "bg-secondary text-muted-foreground"
+                    event.status === "ativo" ? "bg-green-500/15 text-green-600" : event.status === "em_breve" ? "bg-yellow-500/15 text-yellow-600" : "bg-secondary text-muted-foreground"
                   }`}>
                     {event.status === "ativo" ? "ATIVO" : event.status === "em_breve" ? "EM BREVE" : "INATIVO"}
                   </span>

@@ -1,0 +1,195 @@
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Search, Menu, X, User, LogOut, ShoppingCart, Package, Sun, Moon, Camera } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const AnimatedLogo = () => {
+  const [showSecond, setShowSecond] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSecond(true), 250);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="flex items-center text-xl sm:text-2xl font-black tracking-tight">
+      <span className="text-primary animate-fade-in">VIU</span>
+      <span className={`ml-1 text-foreground transition-all duration-500 ${showSecond ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"}`}>
+        FOTO
+      </span>
+    </div>
+  );
+};
+
+const ClientNavbar = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const isCleanTheme = theme === "clean";
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/buscar?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
+
+  const navLinks = [
+    { to: "/buscar", label: "Buscar eventos", icon: Search },
+    { to: "/meus-pedidos", label: "Meus pedidos", icon: Package },
+  ];
+
+  return (
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border">
+        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <AnimatedLogo />
+          </Link>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+            {navLinks.map(link => (
+              <Link key={link.to} to={link.to} className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                <link.icon className="w-4 h-4" />
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-2">
+            <button
+              onClick={() => setSearchOpen(!searchOpen)}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+            >
+              {isCleanTheme ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-all">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                    <User className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium text-foreground max-w-[120px] truncate">{displayName}</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate("/meus-pedidos")}>
+                    <Package className="w-4 h-4 mr-2" /> Meus Pedidos
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                    <Camera className="w-4 h-4 mr-2" /> Área do Fotógrafo
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" /> Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-all"
+              >
+                Entrar
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile Toggle */}
+          <button
+            className="md:hidden p-2 text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Search Bar (expandable) */}
+        {searchOpen && (
+          <div className="border-t border-border bg-background/95 backdrop-blur-xl px-4 py-3">
+            <form onSubmit={handleSearch} className="container mx-auto max-w-2xl flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Buscar evento, fotógrafo..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition-colors text-sm"
+                />
+              </div>
+              <button type="submit" className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm">
+                Buscar
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Mobile Menu */}
+        {mobileOpen && (
+          <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border p-4 space-y-1">
+            {navLinks.map(link => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
+                onClick={() => setMobileOpen(false)}
+              >
+                <link.icon className="w-4 h-4" />
+                {link.label}
+              </Link>
+            ))}
+            <div className="pt-2 border-t border-border mt-2">
+              {user ? (
+                <>
+                  <div className="py-2 px-3 text-sm text-foreground font-medium">{displayName}</div>
+                  <Link to="/dashboard" className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg" onClick={() => setMobileOpen(false)}>
+                    <Camera className="w-4 h-4" /> Área do Fotógrafo
+                  </Link>
+                  <button onClick={() => { handleSignOut(); setMobileOpen(false); }} className="flex items-center gap-2 w-full text-left py-3 px-3 text-destructive hover:bg-destructive/10 rounded-lg">
+                    <LogOut className="w-4 h-4" /> Sair
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" className="block py-3 px-4 rounded-xl bg-primary text-primary-foreground font-semibold text-center" onClick={() => setMobileOpen(false)}>
+                  Entrar
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
+    </>
+  );
+};
+
+export default ClientNavbar;
