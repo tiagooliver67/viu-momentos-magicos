@@ -1,6 +1,6 @@
 import { ShoppingCart, X, Trash2, CreditCard } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
@@ -12,6 +12,7 @@ const CartDrawer = () => {
   const { items, removeItem, clearCart, total, count } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Derive eventId from first cart item
   const eventId = items.length > 0 ? items[0].eventId || "" : "";
@@ -26,9 +27,9 @@ const CartDrawer = () => {
       return;
     }
     if (!user) {
-      toast.info("Faça login para finalizar a compra");
+      toast.info("Para continuar com a compra, faça login ou crie sua conta");
       setOpen(false);
-      navigate("/login");
+      navigate("/login", { state: { from: location.pathname, fromCheckout: true } });
       return;
     }
     setOpen(false);
