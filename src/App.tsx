@@ -22,6 +22,7 @@ import CadastroOrganizador from "./pages/CadastroOrganizador";
 import RecuperarSenha from "./pages/RecuperarSenha";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import FotoPage from "./pages/FotoPage";
 import PhotographerPage from "./pages/PhotographerPage";
 import MeusPedidos from "./pages/MeusPedidos";
 import BuscarEventos from "./pages/BuscarEventos";

@@ -229,21 +229,34 @@ const EventPage = () => {
                       />
                     </div>
 
-                    {/* Favorite button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleFavorite(photo.id);
-                        toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
-                      }}
-                      className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
-                        fav
-                          ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
-                          : "bg-black/40 text-white/80 hover:bg-black/60 hover:text-white"
-                      }`}
-                    >
-                      <Heart className={`w-4 h-4 transition-all ${fav ? "fill-current scale-110" : ""}`} />
-                    </button>
+                    {/* Action buttons */}
+                    <div className="absolute top-2 right-2 flex gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const url = `${window.location.origin}/foto/${photo.id}`;
+                          navigator.clipboard.writeText(url);
+                          toast.success("Link copiado!");
+                        }}
+                        className="p-2 rounded-full bg-black/40 text-white/80 hover:bg-black/60 backdrop-blur-sm transition-all transform active:scale-90"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(photo.id);
+                          toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
+                        }}
+                        className={`p-2 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
+                          fav
+                            ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
+                            : "bg-black/40 text-white/80 hover:bg-black/60 hover:text-white"
+                        }`}
+                      >
+                        <Heart className={`w-4 h-4 transition-all ${fav ? "fill-current scale-110" : ""}`} />
+                      </button>
+                    </div>
 
                     <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-all flex items-end p-2 pointer-events-none">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity w-full">
