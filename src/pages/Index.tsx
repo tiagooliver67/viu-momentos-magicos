@@ -1,4 +1,4 @@
-import Navbar from "@/components/Navbar";
+import ClientNavbar from "@/components/ClientNavbar";
 import HeroSection from "@/components/HeroSection";
 import EventCard from "@/components/EventCard";
 import Footer from "@/components/Footer";
@@ -61,7 +61,7 @@ const mockCycling = [
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <ClientNavbar />
       <HeroSection />
 
       {/* 🔥 CONTEÚDO AJUSTADO */}
