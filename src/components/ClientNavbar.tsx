@@ -1,8 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Menu, X, User, LogOut, Package, Sun, Moon, Camera, Users } from "lucide-react";
+import { Search, Menu, X, User, LogOut, Package, Sun, Moon, Camera, Users, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useFavorites } from "@/hooks/useFavorites";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,7 @@ const ClientNavbar = () => {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { count: favCount } = useFavorites();
   const isCleanTheme = theme === "clean";
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
@@ -69,6 +71,19 @@ const ClientNavbar = () => {
             >
               <Package className="w-4 h-4" />
               Meus pedidos
+            </Link>
+
+            <Link
+              to="/favoritos"
+              className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5 relative"
+            >
+              <Heart className="w-4 h-4" />
+              Favoritos
+              {favCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 min-w-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1">
+                  {favCount}
+                </span>
+              )}
             </Link>
 
             <Link
@@ -116,6 +131,9 @@ const ClientNavbar = () => {
                   <DropdownMenuItem onClick={() => navigate("/meus-pedidos")}>
                     <Package className="w-4 h-4 mr-2" /> Meus Pedidos
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/favoritos")}>
+                    <Heart className="w-4 h-4 mr-2" /> Favoritos {favCount > 0 && `(${favCount})`}
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                     <Camera className="w-4 h-4 mr-2" /> Área do Fotógrafo
                   </DropdownMenuItem>
@@ -136,12 +154,23 @@ const ClientNavbar = () => {
           </div>
 
           {/* Mobile Toggle */}
-          <button
-            className="md:hidden p-2 text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            {/* Mobile favorites shortcut */}
+            <Link to="/favoritos" className="relative p-2 text-muted-foreground hover:text-foreground">
+              <Heart className="w-5 h-5" />
+              {favCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-0.5">
+                  {favCount}
+                </span>
+              )}
+            </Link>
+            <button
+              className="p-2 text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Search Bar (expandable) */}
@@ -175,6 +204,13 @@ const ClientNavbar = () => {
               onClick={() => setMobileOpen(false)}
             >
               <Package className="w-4 h-4" /> Meus pedidos
+            </Link>
+            <Link
+              to="/favoritos"
+              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
+              onClick={() => setMobileOpen(false)}
+            >
+              <Heart className="w-4 h-4" /> Favoritos {favCount > 0 && `(${favCount})`}
             </Link>
             <Link
               to="/cadastro/fotografo"
