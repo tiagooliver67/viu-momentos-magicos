@@ -1,4 +1,4 @@
-import Navbar from "@/components/Navbar";
+import ClientNavbar from "@/components/ClientNavbar";
 import HeroSection from "@/components/HeroSection";
 import EventCard from "@/components/EventCard";
 import Footer from "@/components/Footer";
