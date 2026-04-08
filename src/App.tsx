@@ -21,6 +21,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import PhotographerPage from "./pages/PhotographerPage";
 import MeusPedidos from "./pages/MeusPedidos";
+import BuscarEventos from "./pages/BuscarEventos";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
