@@ -198,9 +198,9 @@ const CriarEvento = () => {
         {/* Step 0: Model */}
         {currentStep === 0 && (
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-foreground mb-2">Escolha um modelo</h2>
-            <p className="text-sm text-muted-foreground mb-6">De acordo com as configurações, você tem disponível os seguintes pacotes:</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h2 className="text-base sm:text-lg font-bold text-foreground mb-2">Escolha seu plano</h2>
+            <p className="text-sm text-muted-foreground mb-6">Selecione o plano ideal para o seu evento:</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
               {models.map((model) => (
                 <div
                   key={model.name}
@@ -209,8 +209,8 @@ const CriarEvento = () => {
                     selectedModel === model.name ? "border-primary neon-border" : "hover:border-primary/30"
                   } ${model.highlighted ? "ring-1 ring-primary/20" : ""}`}
                 >
-                  {model.highlighted && (
-                    <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold mb-3">POPULAR</span>
+                  {model.highlighted && model.badge && (
+                    <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold mb-3">{model.badge}</span>
                   )}
                   <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">{model.name}</h3>
                   <p className="text-xs text-muted-foreground mb-4">{model.description}</p>
