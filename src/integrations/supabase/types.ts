@@ -288,6 +288,7 @@ export type Database = {
           name: string
           organizer_id: string
           password: string | null
+          plan_type: string
           search_type: string[] | null
           status: Database["public"]["Enums"]["event_status"]
           updated_at: string
@@ -304,6 +305,7 @@ export type Database = {
           name: string
           organizer_id: string
           password?: string | null
+          plan_type?: string
           search_type?: string[] | null
           status?: Database["public"]["Enums"]["event_status"]
           updated_at?: string
@@ -320,6 +322,7 @@ export type Database = {
           name?: string
           organizer_id?: string
           password?: string | null
+          plan_type?: string
           search_type?: string[] | null
           status?: Database["public"]["Enums"]["event_status"]
           updated_at?: string
