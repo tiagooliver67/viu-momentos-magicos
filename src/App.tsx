@@ -40,6 +40,7 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminPayments from "./pages/admin/AdminPayments";
+import AdminStorage from "./pages/admin/AdminStorage";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const App = () => (
                 <Route path="financeiro" element={<AdminFinance />} />
                 <Route path="pagamentos" element={<AdminPayments />} />
                 <Route path="moderacao" element={<AdminModeration />} />
+                <Route path="storage" element={<AdminStorage />} />
                 <Route path="suporte" element={<AdminSupport />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="configuracoes" element={<AdminSettings />} />
