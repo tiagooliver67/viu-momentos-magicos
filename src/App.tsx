@@ -32,6 +32,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminEvents from "./pages/admin/AdminEvents";
+import AdminPhotographers from "./pages/admin/AdminPhotographers";
 import AdminFinance from "./pages/admin/AdminFinance";
 import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSupport from "./pages/admin/AdminSupport";
