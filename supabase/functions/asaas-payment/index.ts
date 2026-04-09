@@ -7,10 +7,22 @@ const corsHeaders = {
 
 const ASAAS_BASE_URL = "https://sandbox.asaas.com/api/v3";
 
+// Commission rates by plan type
+const PLAN_COMMISSION: Record<string, number> = {
+  inicio: 0.12,
+  profissional: 0.10,
+};
+
 function getAsaasKey(): string {
   const key = Deno.env.get("ASAAS_API_KEY");
   if (!key) throw new Error("ASAAS_API_KEY not configured");
   return key;
+}
+
+function getViufotoWalletId(): string {
+  const id = Deno.env.get("VIUFOTO_WALLET_ID");
+  if (!id) throw new Error("VIUFOTO_WALLET_ID not configured");
+  return id;
 }
 
 function getSupabaseAdmin() {
@@ -37,42 +49,46 @@ async function asaasFetch(path: string, options: RequestInit = {}) {
   return data;
 }
 
-// Create or find customer in ASAAS
 async function getOrCreateCustomer(name: string, email: string, cpfCnpj: string) {
-  // Check if customer already exists by cpfCnpj
   const existing = await asaasFetch(`/customers?cpfCnpj=${cpfCnpj}`);
   if (existing.data?.length > 0) {
     return existing.data[0];
   }
-  // Create new customer
   return await asaasFetch("/customers", {
     method: "POST",
     body: JSON.stringify({ name, email, cpfCnpj }),
   });
 }
 
-// Create PIX payment
-async function createPixPayment(customerId: string, value: number, description: string, externalReference: string) {
+async function createPixPaymentWithSplit(
+  customerId: string,
+  value: number,
+  description: string,
+  externalReference: string,
+  split: Array<{ walletId: string; fixedValue?: number; percentualValue?: number; remainingValue?: boolean }>
+) {
   const today = new Date().toISOString().split("T")[0];
+  const body: Record<string, unknown> = {
+    customer: customerId,
+    billingType: "PIX",
+    value,
+    dueDate: today,
+    description,
+    externalReference,
+  };
+  if (split.length > 0) {
+    body.split = split;
+  }
   return await asaasFetch("/payments", {
     method: "POST",
-    body: JSON.stringify({
-      customer: customerId,
-      billingType: "PIX",
-      value,
-      dueDate: today,
-      description,
-      externalReference,
-    }),
+    body: JSON.stringify(body),
   });
 }
 
-// Get PIX QR Code
 async function getPixQrCode(paymentId: string) {
   return await asaasFetch(`/payments/${paymentId}/pixQrCode`);
 }
 
-// Get payment status
 async function getPaymentStatus(paymentId: string) {
   return await asaasFetch(`/payments/${paymentId}`);
 }
@@ -95,10 +111,49 @@ Deno.serve(async (req) => {
         });
       }
 
-      // 1. Create/find ASAAS customer
+      // 1. Get event to determine plan_type and organizer
+      const { data: event, error: eventError } = await supabaseAdmin
+        .from("events")
+        .select("organizer_id, plan_type")
+        .eq("id", eventId)
+        .single();
+
+      if (eventError || !event) {
+        throw new Error("Evento não encontrado");
+      }
+
+      // 2. Get photographer's wallet ID
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("asaas_wallet_id")
+        .eq("user_id", event.organizer_id)
+        .single();
+
+      if (!profile?.asaas_wallet_id) {
+        return new Response(JSON.stringify({
+          error: "Este fotógrafo ainda não configurou recebimento. Entre em contato com o organizador do evento."
+        }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // 3. Calculate split
+      const commissionRate = PLAN_COMMISSION[event.plan_type] ?? 0.12;
+      const platformFee = Math.round(total * commissionRate * 100) / 100;
+
+      const viufotoWalletId = getViufotoWalletId();
+
+      const split = [
+        { walletId: viufotoWalletId, fixedValue: platformFee },
+        { walletId: profile.asaas_wallet_id, remainingValue: true },
+      ];
+
+      console.log(`Split: platform=${platformFee} (${commissionRate * 100}%), photographer wallet=${profile.asaas_wallet_id}, total=${total}`);
+
+      // 4. Create/find ASAAS customer
       const customer = await getOrCreateCustomer(name, email, cpfCnpj.replace(/\D/g, ""));
 
-      // 2. Create order in database
+      // 5. Create order in database
       const { data: order, error: orderError } = await supabaseAdmin
         .from("orders")
         .insert({
@@ -115,7 +170,7 @@ Deno.serve(async (req) => {
 
       if (orderError) throw new Error(`Order error: ${orderError.message}`);
 
-      // 3. Create order items
+      // 6. Create order items
       const orderItems = items.map((item: any) => ({
         order_id: order.id,
         photo_id: item.photoId || null,
@@ -129,21 +184,22 @@ Deno.serve(async (req) => {
 
       if (itemsError) throw new Error(`Items error: ${itemsError.message}`);
 
-      // 4. Create ASAAS PIX payment
-      const payment = await createPixPayment(
+      // 7. Create ASAAS PIX payment with split
+      const payment = await createPixPaymentWithSplit(
         customer.id,
         total,
         `Compra de fotos - Evento ${eventId}`,
-        order.id
+        order.id,
+        split
       );
 
-      // 5. Update order with ASAAS payment ID
+      // 8. Update order with ASAAS payment ID
       await supabaseAdmin
         .from("orders")
         .update({ asaas_payment_id: payment.id })
         .eq("id", order.id);
 
-      // 6. Get PIX QR Code
+      // 9. Get PIX QR Code
       const pixData = await getPixQrCode(payment.id);
 
       return new Response(JSON.stringify({
