@@ -5,22 +5,38 @@ import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-const steps = ["Modelo", "Informações", "Busca", "Visibilidade", "Resumo"];
+const steps = ["Plano", "Informações", "Busca", "Visibilidade", "Resumo"];
 
 const models = [
   {
+    key: "inicio" as const,
     name: "ViuFoto Início",
     description: "Comece a vender suas fotos sem custo inicial.",
     commission: "12%",
-    features: ["Uploads ilimitados", "Reconhecimento facial", "Busca por número", "Corretor com IA"],
+    commissionDesc: "A ViuFoto retém uma pequena porcentagem sobre cada venda realizada. O restante do valor é repassado automaticamente para você.",
+    features: [
+      "Até 20.000 uploads gratuitos",
+      "Reconhecimento facial",
+      "Busca por número de peito",
+      "Organização por pastas",
+    ],
+    uploadInfo: "Após o limite: R$ 0,023/foto · R$ 0,26/vídeo",
   },
   {
+    key: "profissional" as const,
     name: "ViuFoto Profissional",
-    description: "Venda mais pagando menos taxa.",
-    commission: "8%",
-    features: ["Tudo do plano Início", "Menor comissão por venda", "Prioridade na plataforma", "Destaque em eventos"],
+    description: "Comissão reduzida para quem deseja vender mais e ter maior visibilidade na plataforma.",
+    commission: "10%",
+    commissionDesc: "Pague menos por cada venda e ganhe destaque nos resultados da plataforma.",
+    features: [
+      "Tudo do plano Início",
+      "Comissão reduzida por venda",
+      "Prioridade na plataforma",
+      "Destaque em eventos na Home",
+    ],
+    uploadInfo: "Após o limite: R$ 0,023/foto · R$ 0,26/vídeo",
     highlighted: true,
-    badge: "Mais vantajoso",
+    badge: "Mais visibilidade",
   },
 ];
 
