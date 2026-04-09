@@ -224,8 +224,8 @@ const ClientNavbar = () => {
               </Link>
             )}
 
-            {(!user || !isPhotographerOrOrganizer) && (
-              <Link to="/cadastro" state={{ role: "fotografo" }} className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg" onClick={() => setMobileOpen(false)}>
+            {user && !isPhotographerOrOrganizer && (
+              <Link to="/virar-fotografo" className="flex items-center gap-2 py-3 px-3 text-primary hover:bg-primary/10 rounded-lg font-bold" onClick={() => setMobileOpen(false)}>
                 <Camera className="w-4 h-4" /> Sou fotógrafo
               </Link>
             )}
