@@ -666,6 +666,7 @@ export type Database = {
       }
       is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
       is_event_photographer: { Args: { _event_id: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "user" | "photographer" | "organizer" | "super_admin"
