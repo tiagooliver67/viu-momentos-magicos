@@ -589,6 +589,7 @@ export type Database = {
       profiles: {
         Row: {
           asaas_customer_id: string | null
+          asaas_wallet_id: string | null
           avatar_url: string | null
           cpf_cnpj: string | null
           created_at: string
@@ -602,6 +603,7 @@ export type Database = {
         }
         Insert: {
           asaas_customer_id?: string | null
+          asaas_wallet_id?: string | null
           avatar_url?: string | null
           cpf_cnpj?: string | null
           created_at?: string
@@ -615,6 +617,7 @@ export type Database = {
         }
         Update: {
           asaas_customer_id?: string | null
+          asaas_wallet_id?: string | null
           avatar_url?: string | null
           cpf_cnpj?: string | null
           created_at?: string
