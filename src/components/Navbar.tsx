@@ -43,7 +43,8 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, hasRole } = useAuth();
+  const isPhotographer = hasRole("photographer") || hasRole("organizer");
   const { theme, toggleTheme } = useTheme();
   const isCleanTheme = theme === "clean";
 
@@ -74,9 +75,19 @@ const Navbar = () => {
           <Link to="/buscar" className="text-muted-foreground hover:text-foreground transition-colors">
             Buscar Eventos
           </Link>
-          <Link to="/viu-pass" className="text-primary font-bold hover:text-primary/80 transition-colors">
-            VIU Pass
-          </Link>
+          {isPhotographer ? (
+            <Link to="/dashboard" className="text-primary font-bold hover:text-primary/80 transition-colors">
+              Painel
+            </Link>
+          ) : user ? (
+            <Link to="/virar-fotografo" className="text-primary font-bold hover:text-primary/80 transition-colors">
+              Sou Fotógrafo
+            </Link>
+          ) : (
+            <Link to="/viu-pass" className="text-primary font-bold hover:text-primary/80 transition-colors">
+              VIU Pass
+            </Link>
+          )}
         </div>
 
         {/* Ações Desktop */}
