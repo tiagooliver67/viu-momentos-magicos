@@ -2,7 +2,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Link } from "react-router-dom";
 import {
   Camera, Video, DollarSign, ShoppingCart, TrendingUp, PlusCircle,
-  Upload, Eye, Store, MapPin, ImageIcon, Flame, ArrowRight
+  Upload, Eye, Store, MapPin, ImageIcon, Flame, ArrowRight, AlertTriangle
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -167,10 +167,42 @@ const Dashboard = () => {
 
   const isLoading = eventsLoading;
 
+  /* ── wallet status ── */
+  const walletConfigured = !!profile?.asaas_wallet_id;
+
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
       <main className="flex-1 p-4 pt-18 lg:pt-6 lg:p-8 overflow-auto space-y-6">
+        {/* ── WALLET WARNING ── */}
+        {!isLoading && !walletConfigured && (
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-sm text-foreground">Configure seu recebimento para começar a vender</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Suas vendas estão bloqueadas até que você configure os dados de recebimento.
+              </p>
+            </div>
+            <Link
+              to="/dashboard/configuracoes"
+              onClick={() => {
+                // Will navigate to configuracoes with financeiro tab
+                setTimeout(() => {
+                  const el = document.querySelector('[data-tab="financeiro"]');
+                  if (el instanceof HTMLElement) el.click();
+                }, 100);
+              }}
+              className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all whitespace-nowrap flex items-center gap-2"
+            >
+              Configurar recebimento
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+
         {/* ── HEADER ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
