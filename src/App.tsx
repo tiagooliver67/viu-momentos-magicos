@@ -32,6 +32,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminEvents from "./pages/admin/AdminEvents";
+import AdminPhotographers from "./pages/admin/AdminPhotographers";
 import AdminFinance from "./pages/admin/AdminFinance";
 import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSupport from "./pages/admin/AdminSupport";
@@ -71,9 +72,10 @@ const App = () => (
               <Route path="/dashboard/pedidos" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Pedidos /></ProtectedRoute>} />
               <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
               <Route path="/dashboard/evento/:id" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><EventDashboard /></ProtectedRoute>} />
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route path="/admin" element={<ProtectedRoute requiredRoles={["super_admin"]} redirectTo="/"><AdminLayout /></ProtectedRoute>}>
                 <Route index element={<Overview />} />
                 <Route path="usuarios" element={<AdminUsers />} />
+                <Route path="fotografos" element={<AdminPhotographers />} />
                 <Route path="eventos" element={<AdminEvents />} />
                 <Route path="financeiro" element={<AdminFinance />} />
                 <Route path="moderacao" element={<AdminModeration />} />

@@ -666,9 +666,10 @@ export type Database = {
       }
       is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
       is_event_photographer: { Args: { _event_id: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: "user" | "photographer" | "organizer"
+      app_role: "user" | "photographer" | "organizer" | "super_admin"
       discount_type: "percentual" | "valor_fixo"
       event_status: "ativo" | "em_breve" | "inativo"
       order_status: "aguardando_pagamento" | "pago" | "enviado" | "cancelado"
@@ -800,7 +801,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["user", "photographer", "organizer"],
+      app_role: ["user", "photographer", "organizer", "super_admin"],
       discount_type: ["percentual", "valor_fixo"],
       event_status: ["ativo", "em_breve", "inativo"],
       order_status: ["aguardando_pagamento", "pago", "enviado", "cancelado"],

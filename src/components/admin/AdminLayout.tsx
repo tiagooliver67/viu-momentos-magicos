@@ -4,12 +4,13 @@ import { useTheme } from "@/contexts/ThemeContext";
 import {
   BarChart3, Users, Calendar, DollarSign, Shield, Headphones,
   TrendingUp, Settings, Bug, Search, Bell, Sun, Moon, Menu, X,
-  ChevronLeft, LogOut
+  ChevronLeft, LogOut, Camera
 } from "lucide-react";
 
 const navItems = [
   { label: "Overview", icon: BarChart3, path: "/admin" },
   { label: "Usuários", icon: Users, path: "/admin/usuarios" },
+  { label: "Fotógrafos", icon: Camera, path: "/admin/fotografos" },
   { label: "Eventos", icon: Calendar, path: "/admin/eventos" },
   { label: "Financeiro", icon: DollarSign, path: "/admin/financeiro" },
   { label: "Moderação", icon: Shield, path: "/admin/moderacao" },
