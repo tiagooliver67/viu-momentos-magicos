@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Menu, X, User, LogOut, Package, Sun, Moon, Camera, Users, Heart } from "lucide-react";
+import { Search, Menu, X, User, LogOut, Package, Sun, Moon, Camera, Heart, LayoutDashboard } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -34,12 +34,13 @@ const ClientNavbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, hasRole } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { count: favCount } = useFavorites();
   const isCleanTheme = theme === "clean";
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
+  const isPhotographerOrOrganizer = hasRole("photographer") || hasRole("organizer");
 
   const handleSignOut = async () => {
     await signOut();
@@ -80,27 +81,34 @@ const ClientNavbar = () => {
               <Heart className="w-4 h-4" />
               Favoritos
               {favCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 min-w-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1">
+                <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 min-w-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1">
                   {favCount}
                 </span>
               )}
             </Link>
 
-            <Link
-              to="/cadastro/fotografo"
-              className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
-            >
-              <Camera className="w-4 h-4" />
-              Sou fotógrafo
-            </Link>
+            {/* Show dashboard link for photographers/organizers */}
+            {user && isPhotographerOrOrganizer && (
+              <Link
+                to="/dashboard"
+                className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Painel
+              </Link>
+            )}
 
-            <Link
-              to="/cadastro/organizador"
-              className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
-            >
-              <Users className="w-4 h-4" />
-              Sou organizador
-            </Link>
+            {/* Show "Sou fotógrafo" only if not logged in or doesn't have the role */}
+            {(!user || !isPhotographerOrOrganizer) && (
+              <Link
+                to={user ? "/cadastro" : "/cadastro"}
+                state={user ? { role: "fotografo" } : undefined}
+                className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
+              >
+                <Camera className="w-4 h-4" />
+                Sou fotógrafo
+              </Link>
+            )}
           </div>
 
           {/* Desktop Actions */}
@@ -134,9 +142,14 @@ const ClientNavbar = () => {
                   <DropdownMenuItem onClick={() => navigate("/favoritos")}>
                     <Heart className="w-4 h-4 mr-2" /> Favoritos {favCount > 0 && `(${favCount})`}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                    <Camera className="w-4 h-4 mr-2" /> Área do Fotógrafo
-                  </DropdownMenuItem>
+                  {isPhotographerOrOrganizer && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                        <LayoutDashboard className="w-4 h-4 mr-2" /> Painel do Fotógrafo
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="w-4 h-4 mr-2" /> Sair
@@ -155,11 +168,10 @@ const ClientNavbar = () => {
 
           {/* Mobile Toggle */}
           <div className="md:hidden flex items-center gap-2">
-            {/* Mobile favorites shortcut */}
             <Link to="/favoritos" className="relative p-2 text-muted-foreground hover:text-foreground">
               <Heart className="w-5 h-5" />
               {favCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-0.5">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-0.5">
                   {favCount}
                 </span>
               )}
@@ -173,7 +185,7 @@ const ClientNavbar = () => {
           </div>
         </div>
 
-        {/* Search Bar (expandable) */}
+        {/* Search Bar */}
         {searchOpen && (
           <div className="border-t border-border bg-background/95 backdrop-blur-xl px-4 py-3">
             <form onSubmit={handleSearch} className="container mx-auto max-w-2xl flex gap-2">
@@ -198,49 +210,32 @@ const ClientNavbar = () => {
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border p-4 space-y-1">
-            <Link
-              to="/meus-pedidos"
-              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Link to="/meus-pedidos" className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg" onClick={() => setMobileOpen(false)}>
               <Package className="w-4 h-4" /> Meus pedidos
             </Link>
-            <Link
-              to="/favoritos"
-              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Link to="/favoritos" className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg" onClick={() => setMobileOpen(false)}>
               <Heart className="w-4 h-4" /> Favoritos {favCount > 0 && `(${favCount})`}
             </Link>
-            <Link
-              to="/cadastro/fotografo"
-              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
-              onClick={() => setMobileOpen(false)}
-            >
-              <Camera className="w-4 h-4" /> Sou fotógrafo
-            </Link>
-            <Link
-              to="/cadastro/organizador"
-              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
-              onClick={() => setMobileOpen(false)}
-            >
-              <Users className="w-4 h-4" /> Sou organizador
-            </Link>
-            <Link
-              to="/buscar"
-              className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Link to="/buscar" className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg" onClick={() => setMobileOpen(false)}>
               <Search className="w-4 h-4" /> Buscar eventos
             </Link>
+
+            {user && isPhotographerOrOrganizer && (
+              <Link to="/dashboard" className="flex items-center gap-2 py-3 px-3 text-primary hover:bg-primary/10 rounded-lg font-medium" onClick={() => setMobileOpen(false)}>
+                <LayoutDashboard className="w-4 h-4" /> Painel do Fotógrafo
+              </Link>
+            )}
+
+            {(!user || !isPhotographerOrOrganizer) && (
+              <Link to="/cadastro" state={{ role: "fotografo" }} className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg" onClick={() => setMobileOpen(false)}>
+                <Camera className="w-4 h-4" /> Sou fotógrafo
+              </Link>
+            )}
 
             <div className="pt-2 border-t border-border mt-2">
               {user ? (
                 <>
                   <div className="py-2 px-3 text-sm text-foreground font-medium">{displayName}</div>
-                  <Link to="/dashboard" className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg" onClick={() => setMobileOpen(false)}>
-                    <Camera className="w-4 h-4" /> Área do Fotógrafo
-                  </Link>
                   <button onClick={() => { handleSignOut(); setMobileOpen(false); }} className="flex items-center gap-2 w-full text-left py-3 px-3 text-destructive hover:bg-destructive/10 rounded-lg">
                     <LogOut className="w-4 h-4" /> Sair
                   </button>

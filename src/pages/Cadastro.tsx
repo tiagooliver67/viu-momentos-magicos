@@ -4,14 +4,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, EyeOff, Loader2, ShoppingCart } from "lucide-react";
+import { Eye, EyeOff, Loader2, ShoppingCart, Camera, Flag, User } from "lucide-react";
 import { toast } from "sonner";
+
+const ESTADOS_BR = [
+  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG",
+  "PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"
+];
 
 export default function Cadastro() {
   const navigate = useNavigate();
   const location = useLocation();
   const fromCheckout = (location.state as any)?.fromCheckout === true;
   const redirectTo = (location.state as any)?.from || "/login";
+  const preselectedRole = (location.state as any)?.role || "";
+
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -20,7 +27,8 @@ export default function Cadastro() {
     password: "",
     confirmPassword: "",
     experienceLevel: "",
-    interest: "",
+    interest: preselectedRole, // "fotografo", "organizador", "ambos", or ""
+    state: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -28,6 +36,8 @@ export default function Cadastro() {
   const [agreed, setAgreed] = useState(false);
 
   const update = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const isPhotographer = form.interest === "fotografo" || form.interest === "ambos";
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +81,13 @@ export default function Cadastro() {
     navigate("/login", { state: { from: redirectTo, fromCheckout } });
   };
 
+  const roleOptions = [
+    { value: "fotografo", label: "Sou Fotógrafo", icon: Camera, desc: "Quero vender minhas fotos" },
+    { value: "organizador", label: "Sou Organizador", icon: Flag, desc: "Quero gerenciar eventos" },
+    { value: "ambos", label: "Fotógrafo + Organizador", icon: Camera, desc: "Quero fazer os dois" },
+    { value: "", label: "Quero comprar fotos", icon: User, desc: "Sou atleta/cliente" },
+  ];
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <nav className="border-b border-border px-4 h-14 flex items-center justify-between">
@@ -82,7 +99,7 @@ export default function Cadastro() {
       </nav>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
           {fromCheckout && (
             <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-3">
               <ShoppingCart className="w-5 h-5 text-primary flex-shrink-0" />
@@ -93,17 +110,60 @@ export default function Cadastro() {
           )}
 
           <div className="bg-card border border-border rounded-2xl p-8">
-            <h1 className="text-2xl font-bold text-foreground mb-1">Crie sua conta no ViuFoto</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-1">Crie sua conta</h1>
             <p className="text-muted-foreground text-sm mb-6">
               Já é cadastrado?{" "}
               <Link to="/login" state={{ from: redirectTo, fromCheckout }} className="text-primary font-semibold hover:underline">Efetuar login</Link>
             </p>
 
             <form onSubmit={handleSignup} className="space-y-4">
-              <Input placeholder="Digite seu nome completo *" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} className="h-12" />
-              <Input type="email" placeholder="Digite seu email *" value={form.email} onChange={(e) => update("email", e.target.value)} className="h-12" />
+              {/* Role selection */}
+              <div>
+                <p className="text-sm font-medium text-foreground mb-2">Como você quer usar o ViuFoto?</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {roleOptions.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => update("interest", opt.value)}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        form.interest === opt.value
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      <opt.icon className={`w-4 h-4 mb-1 ${form.interest === opt.value ? "text-primary" : "text-muted-foreground"}`} />
+                      <p className="text-xs font-semibold text-foreground">{opt.label}</p>
+                      <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Input placeholder="Nome completo *" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} className="h-12" />
+              <Input type="email" placeholder="E-mail *" value={form.email} onChange={(e) => update("email", e.target.value)} className="h-12" />
               <Input placeholder="CPF ou CNPJ" value={form.cpfCnpj} onChange={(e) => update("cpfCnpj", e.target.value)} className="h-12" />
-              <Input placeholder="Número de celular" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-12" />
+              <Input placeholder="Celular" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-12" />
+
+              {isPhotographer && (
+                <>
+                  <Select value={form.state} onValueChange={(v) => update("state", v)}>
+                    <SelectTrigger className="h-12"><SelectValue placeholder="Estado *" /></SelectTrigger>
+                    <SelectContent>
+                      {ESTADOS_BR.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Select value={form.experienceLevel} onValueChange={(v) => update("experienceLevel", v)}>
+                    <SelectTrigger className="h-12"><SelectValue placeholder="Nível de experiência" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="profissional">Profissional</SelectItem>
+                      <SelectItem value="semiprofissional">Semiprofissional</SelectItem>
+                      <SelectItem value="amador">Amador</SelectItem>
+                      <SelectItem value="entusiasta">Entusiasta</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </>
+              )}
 
               <div className="relative">
                 <Input
@@ -129,24 +189,6 @@ export default function Cadastro() {
                   {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-
-              <Select value={form.experienceLevel} onValueChange={(v) => update("experienceLevel", v)}>
-                <SelectTrigger className="h-12"><SelectValue placeholder="Nível de experiência em fotografia" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="iniciante">Iniciante</SelectItem>
-                  <SelectItem value="intermediario">Intermediário</SelectItem>
-                  <SelectItem value="profissional">Profissional</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={form.interest} onValueChange={(v) => update("interest", v)}>
-                <SelectTrigger className="h-12"><SelectValue placeholder="Qual seu interesse no ViuFoto?" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fotografo">Sou Fotógrafo</SelectItem>
-                  <SelectItem value="organizador">Sou Organizador de Eventos</SelectItem>
-                  <SelectItem value="ambos">Ambos</SelectItem>
-                </SelectContent>
-              </Select>
 
               <label className="flex items-start gap-2 text-sm text-muted-foreground cursor-pointer">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 accent-primary" />
