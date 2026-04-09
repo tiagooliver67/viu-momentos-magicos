@@ -11,6 +11,7 @@ const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
   { id: "site", label: "Meu site", icon: Globe },
   { id: "portfolio", label: "Meu portfólio", icon: Image },
+  { id: "financeiro", label: "Financeiro", icon: Landmark },
   { id: "banco", label: "Dados bancários", icon: Landmark },
   { id: "exclusividade", label: "Exclusividade", icon: Star },
   { id: "smartcard", label: "SmartCard", icon: CreditCard },
@@ -141,6 +142,7 @@ const TabConta = () => {
 // ─── Tab: Meu Site ───
 import MeuSiteTab from "@/components/settings/MeuSiteTab";
 const TabSite = MeuSiteTab;
+import TabFinanceiro from "@/components/settings/TabFinanceiro";
 
 // ─── Tab: Portfólio ───
 const TabPortfolio = () => {
@@ -494,6 +496,7 @@ const tabComponents: Record<string, React.FC> = {
   conta: TabConta,
   site: TabSite,
   portfolio: TabPortfolio,
+  financeiro: TabFinanceiro,
   banco: TabBanco,
   exclusividade: TabExclusividade,
   smartcard: TabSmartCard,

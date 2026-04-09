@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  profile: { full_name: string | null; avatar_url: string | null } | null;
+  profile: { full_name: string | null; avatar_url: string | null; asaas_wallet_id: string | null } | null;
   signOut: () => Promise<void>;
 }
 
@@ -24,10 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null; asaas_wallet_id: string | null } | null>(null);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from("profiles").select("full_name, avatar_url").eq("user_id", userId).single();
+    const { data } = await supabase.from("profiles").select("full_name, avatar_url, asaas_wallet_id").eq("user_id", userId).single();
     setProfile(data);
   };
 
