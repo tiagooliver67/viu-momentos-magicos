@@ -398,7 +398,7 @@ const CriarEvento = () => {
             <p className="text-sm text-muted-foreground mb-6">Confira as informações antes de criar seu evento.</p>
             <div className="glass-card p-5 sm:p-6 space-y-4">
               {[
-                { label: "Modelo", value: selectedModel },
+                { label: "Plano", value: selectedModel },
                 { label: "Nome", value: eventName },
                 { label: "Data", value: eventDate ? new Date(eventDate + "T12:00:00").toLocaleDateString("pt-BR") : "" },
                 { label: "Horário", value: eventTime },
