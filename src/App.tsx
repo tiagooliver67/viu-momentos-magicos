@@ -75,6 +75,7 @@ const App = () => (
               <Route path="/admin" element={<ProtectedRoute requiredRoles={["super_admin"]} redirectTo="/"><AdminLayout /></ProtectedRoute>}>
                 <Route index element={<Overview />} />
                 <Route path="usuarios" element={<AdminUsers />} />
+                <Route path="fotografos" element={<AdminPhotographers />} />
                 <Route path="eventos" element={<AdminEvents />} />
                 <Route path="financeiro" element={<AdminFinance />} />
                 <Route path="moderacao" element={<AdminModeration />} />
