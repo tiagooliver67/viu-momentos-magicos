@@ -68,14 +68,11 @@ const Navbar = () => {
 
         {/* Menu Desktop */}
         <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/meus-pedidos" className="text-muted-foreground hover:text-foreground transition-colors">
             Meus Pedidos
           </Link>
-          <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
-            Sou Fotógrafo
-          </Link>
-          <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
-            Sou Organizador
+          <Link to="/buscar" className="text-muted-foreground hover:text-foreground transition-colors">
+            Buscar Eventos
           </Link>
           <Link to="/viu-pass" className="text-primary font-bold hover:text-primary/80 transition-colors">
             VIU Pass

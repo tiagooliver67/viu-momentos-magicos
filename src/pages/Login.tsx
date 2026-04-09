@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { roles } = useAuth();
   const fromCheckout = (location.state as any)?.fromCheckout === true;
-  const redirectTo = (location.state as any)?.from || "/meus-pedidos";
+  const redirectTo = (location.state as any)?.from || null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +38,25 @@ export default function Login() {
       return;
     }
     toast.success("Login realizado!");
-    navigate(redirectTo);
+
+    // Smart redirect based on roles or origin
+    if (redirectTo) {
+      navigate(redirectTo);
+    } else {
+      // Fetch roles to decide redirect
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: userRoles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+        const roleList = userRoles?.map((r: any) => r.role) || [];
+        if (roleList.includes("photographer") || roleList.includes("organizer")) {
+          navigate("/dashboard");
+        } else {
+          navigate("/meus-pedidos");
+        }
+      } else {
+        navigate("/meus-pedidos");
+      }
+    }
   };
 
   return (
@@ -67,7 +87,7 @@ export default function Login() {
             <h1 className="text-2xl font-bold text-foreground mb-1">Faça login</h1>
             <p className="text-muted-foreground text-sm mb-6">
               Ainda não possui cadastro?{" "}
-              <Link to="/cadastro" state={{ from: redirectTo, fromCheckout }} className="text-primary font-semibold hover:underline">Clique aqui</Link>
+              <Link to="/cadastro" state={{ from: redirectTo, fromCheckout }} className="text-primary font-semibold hover:underline">Crie sua conta</Link>
             </p>
 
             <form onSubmit={handleLogin} className="space-y-4">
@@ -103,13 +123,6 @@ export default function Login() {
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : fromCheckout ? "Entrar e continuar compra" : "Entrar"}
               </Button>
             </form>
-
-            <div className="mt-6 pt-6 border-t border-border text-center">
-              <p className="text-sm text-muted-foreground">Fotógrafo ou Parceiro</p>
-              <Link to="/login/fotografo" className="text-primary font-semibold text-sm hover:underline">
-                ACESSAR PAINEL
-              </Link>
-            </div>
           </div>
         </div>
       </div>
