@@ -9,23 +9,18 @@ const steps = ["Modelo", "Informações", "Busca", "Visibilidade", "Resumo"];
 
 const models = [
   {
-    name: "Standard",
-    description: "Ideal para eventos de pequeno a médio porte que precisam de flexibilidade e custo-benefício.",
-    commission: "10%",
-    features: ["25.000 uploads gratuitos", "Busca por reconhecimento facial", "Busca por número de atleta", "Corretor com IA"],
+    name: "ViuFoto Início",
+    description: "Comece a vender suas fotos sem custo inicial.",
+    commission: "12%",
+    features: ["Uploads ilimitados", "Reconhecimento facial", "Busca por número", "Corretor com IA"],
   },
   {
-    name: "HighVolume",
-    description: "Ideal para eventos grandes ou com alto volume de fotos, como maratonas ou festivais.",
-    commission: "15%",
-    features: ["Uploads ilimitados", "Reconhecimento facial", "Venda de vídeos", "Separador de fotos", "Vendas no local"],
-    highlighted: true,
-  },
-  {
-    name: "Pay as you go",
-    description: "Ideal para eventos pontuais, vendas presenciais ou quem quer pagar somente pelo que usar.",
+    name: "ViuFoto Profissional",
+    description: "Venda mais pagando menos taxa.",
     commission: "8%",
-    features: ["Pague por foto: R$ 0,025", "Reconhecimento facial", "Corretor com IA", "Fotógrafos ilimitados"],
+    features: ["Tudo do plano Início", "Menor comissão por venda", "Prioridade na plataforma", "Destaque em eventos"],
+    highlighted: true,
+    badge: "Mais vantajoso",
   },
 ];
 
