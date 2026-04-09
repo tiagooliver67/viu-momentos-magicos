@@ -27,6 +27,7 @@ import PhotographerPage from "./pages/PhotographerPage";
 import MeusPedidos from "./pages/MeusPedidos";
 import BuscarEventos from "./pages/BuscarEventos";
 import Favoritos from "./pages/Favoritos";
+import VirarFotografo from "./pages/VirarFotografo";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -63,12 +64,13 @@ const App = () => (
               <Route path="/favoritos" element={<Favoritos />} />
               <Route path="/buscar" element={<BuscarEventos />} />
               <Route path="/viu-pass" element={<VIUPass />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/dashboard/financeiro" element={<ProtectedRoute><Financeiro /></ProtectedRoute>} />
-              <Route path="/dashboard/criar-evento" element={<ProtectedRoute><CriarEvento /></ProtectedRoute>} />
-              <Route path="/dashboard/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
-              <Route path="/dashboard/configuracoes" element={<ProtectedRoute><Configuracoes /></ProtectedRoute>} />
-              <Route path="/dashboard/evento/:id" element={<ProtectedRoute><EventDashboard /></ProtectedRoute>} />
+              <Route path="/virar-fotografo" element={<VirarFotografo />} />
+              <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
+              <Route path="/dashboard/financeiro" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Financeiro /></ProtectedRoute>} />
+              <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
+              <Route path="/dashboard/pedidos" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Pedidos /></ProtectedRoute>} />
+              <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
+              <Route path="/dashboard/evento/:id" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><EventDashboard /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Overview />} />
                 <Route path="usuarios" element={<AdminUsers />} />

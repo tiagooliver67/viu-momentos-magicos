@@ -98,12 +98,10 @@ const ClientNavbar = () => {
               </Link>
             )}
 
-            {/* Show "Sou fotógrafo" only if not logged in or doesn't have the role */}
-            {(!user || !isPhotographerOrOrganizer) && (
+            {user && !isPhotographerOrOrganizer && (
               <Link
-                to={user ? "/cadastro" : "/cadastro"}
-                state={user ? { role: "fotografo" } : undefined}
-                className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
+                to="/virar-fotografo"
+                className="px-3 py-2 rounded-lg text-primary font-bold hover:bg-primary/10 transition-colors flex items-center gap-1.5"
               >
                 <Camera className="w-4 h-4" />
                 Sou fotógrafo
@@ -226,8 +224,8 @@ const ClientNavbar = () => {
               </Link>
             )}
 
-            {(!user || !isPhotographerOrOrganizer) && (
-              <Link to="/cadastro" state={{ role: "fotografo" }} className="flex items-center gap-2 py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg" onClick={() => setMobileOpen(false)}>
+            {user && !isPhotographerOrOrganizer && (
+              <Link to="/virar-fotografo" className="flex items-center gap-2 py-3 px-3 text-primary hover:bg-primary/10 rounded-lg font-bold" onClick={() => setMobileOpen(false)}>
                 <Camera className="w-4 h-4" /> Sou fotógrafo
               </Link>
             )}

@@ -43,7 +43,8 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, hasRole } = useAuth();
+  const isPhotographer = hasRole("photographer") || hasRole("organizer");
   const { theme, toggleTheme } = useTheme();
   const isCleanTheme = theme === "clean";
 
@@ -74,9 +75,19 @@ const Navbar = () => {
           <Link to="/buscar" className="text-muted-foreground hover:text-foreground transition-colors">
             Buscar Eventos
           </Link>
-          <Link to="/viu-pass" className="text-primary font-bold hover:text-primary/80 transition-colors">
-            VIU Pass
-          </Link>
+          {isPhotographer ? (
+            <Link to="/dashboard" className="text-primary font-bold hover:text-primary/80 transition-colors">
+              Painel
+            </Link>
+          ) : user ? (
+            <Link to="/virar-fotografo" className="text-primary font-bold hover:text-primary/80 transition-colors">
+              Sou Fotógrafo
+            </Link>
+          ) : (
+            <Link to="/viu-pass" className="text-primary font-bold hover:text-primary/80 transition-colors">
+              VIU Pass
+            </Link>
+          )}
         </div>
 
         {/* Ações Desktop */}
@@ -137,33 +148,44 @@ const Navbar = () => {
       {mobileOpen && (
         <div className="md:hidden bg-background/95 backdrop-blur-xl border-b border-border p-4 space-y-1">
           <Link
-            to="/"
+            to="/meus-pedidos"
             className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
             onClick={() => setMobileOpen(false)}
           >
             Meus Pedidos
           </Link>
           <Link
-            to="/dashboard"
+            to="/buscar"
             className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
             onClick={() => setMobileOpen(false)}
           >
-            Sou Fotógrafo
+            Buscar Eventos
           </Link>
-          <Link
-            to="/dashboard"
-            className="block py-3 px-3 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-lg"
-            onClick={() => setMobileOpen(false)}
-          >
-            Sou Organizador
-          </Link>
-          <Link
-            to="/viu-pass"
-            className="block py-3 px-3 text-primary font-bold hover:bg-primary/10 rounded-lg transition-colors"
-            onClick={() => setMobileOpen(false)}
-          >
-            VIU Pass
-          </Link>
+          {isPhotographer ? (
+            <Link
+              to="/dashboard"
+              className="block py-3 px-3 text-primary font-bold hover:bg-primary/10 rounded-lg transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Painel
+            </Link>
+          ) : user ? (
+            <Link
+              to="/virar-fotografo"
+              className="block py-3 px-3 text-primary font-bold hover:bg-primary/10 rounded-lg transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Sou Fotógrafo
+            </Link>
+          ) : (
+            <Link
+              to="/viu-pass"
+              className="block py-3 px-3 text-primary font-bold hover:bg-primary/10 rounded-lg transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              VIU Pass
+            </Link>
+          )}
 
           <div className="pt-2 border-t border-border mt-2">
             {user ? (
