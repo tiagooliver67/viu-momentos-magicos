@@ -4,7 +4,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import {
   BarChart3, Users, Calendar, DollarSign, Shield, Headphones,
   TrendingUp, Settings, Bug, Search, Bell, Sun, Moon, Menu, X,
-  ChevronLeft, LogOut, Camera, CreditCard
+  ChevronLeft, LogOut, Camera, CreditCard, HardDrive
 } from "lucide-react";
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
   { label: "Financeiro", icon: DollarSign, path: "/admin/financeiro" },
   { label: "Pagamentos", icon: CreditCard, path: "/admin/pagamentos" },
   { label: "Moderação", icon: Shield, path: "/admin/moderacao" },
+  { label: "Storage S3", icon: HardDrive, path: "/admin/storage" },
   { label: "Suporte", icon: Headphones, path: "/admin/suporte" },
   { label: "Analytics", icon: TrendingUp, path: "/admin/analytics" },
   { label: "Configurações", icon: Settings, path: "/admin/configuracoes" },
