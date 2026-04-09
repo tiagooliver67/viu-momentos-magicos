@@ -69,7 +69,7 @@ const searchTypes = [
 const CriarEvento = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<"inicio" | "profissional" | null>(null);
 
   // Form fields
   const [eventName, setEventName] = useState("");
@@ -162,7 +162,8 @@ const CriarEvento = () => {
         category: eventCategory,
         search_type: selectedSearchTypes,
         visibility: visibility ?? true,
-      }).select().single();
+        plan_type: selectedModel || "inicio",
+      } as any).select().single();
 
       if (error) throw error;
 
@@ -219,19 +220,24 @@ const CriarEvento = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
               {models.map((model) => (
                 <div
-                  key={model.name}
-                  onClick={() => setSelectedModel(model.name)}
-                  className={`glass-card p-5 sm:p-6 cursor-pointer transition-all ${
-                    selectedModel === model.name ? "border-primary neon-border" : "hover:border-primary/30"
+                  key={model.key}
+                  onClick={() => setSelectedModel(model.key)}
+                  className={`glass-card p-5 sm:p-6 cursor-pointer transition-all relative ${
+                    selectedModel === model.key ? "border-primary neon-border" : "hover:border-primary/30"
                   } ${model.highlighted ? "ring-1 ring-primary/20" : ""}`}
                 >
                   {model.highlighted && model.badge && (
-                    <span className="inline-flex px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold mb-3">{model.badge}</span>
+                    <span className="absolute -top-3 left-4 inline-flex px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg">
+                      🚀 {model.badge}
+                    </span>
                   )}
-                  <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">{model.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-4">{model.description}</p>
-                  <p className="text-sm text-foreground mb-4">Comissão de <span className="text-primary font-bold">{model.commission}</span> sobre vendas</p>
-                  <ul className="space-y-2">
+                  <h3 className="text-base sm:text-lg font-bold text-foreground mb-1 mt-1">{model.name}</h3>
+                  <p className="text-xs text-muted-foreground mb-3">{model.description}</p>
+                  <p className="text-sm text-foreground mb-1">
+                    Comissão de <span className="text-primary font-bold text-lg">{model.commission}</span> sobre vendas
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mb-4">{model.commissionDesc}</p>
+                  <ul className="space-y-2 mb-3">
                     {model.features.map((f) => (
                       <li key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Check className="w-4 h-4 text-lime flex-shrink-0" />
@@ -239,6 +245,7 @@ const CriarEvento = () => {
                       </li>
                     ))}
                   </ul>
+                  <p className="text-[10px] text-muted-foreground/70 border-t border-border/50 pt-2">{model.uploadInfo}</p>
                 </div>
               ))}
             </div>
@@ -414,7 +421,7 @@ const CriarEvento = () => {
             <p className="text-sm text-muted-foreground mb-6">Confira as informações antes de criar seu evento.</p>
             <div className="glass-card p-5 sm:p-6 space-y-4">
               {[
-                { label: "Plano", value: selectedModel },
+                { label: "Plano", value: models.find((m) => m.key === selectedModel)?.name || selectedModel },
                 { label: "Nome", value: eventName },
                 { label: "Data", value: eventDate ? new Date(eventDate + "T12:00:00").toLocaleDateString("pt-BR") : "" },
                 { label: "Horário", value: eventTime },
