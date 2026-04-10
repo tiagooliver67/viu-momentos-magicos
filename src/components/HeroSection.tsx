@@ -1,34 +1,47 @@
 import { Search, Camera, ScanFace } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const HeroSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<"text" | "face">("text");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setMounted(true));
+  }, []);
 
   return (
     <section className="relative min-h-[70vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden pt-14 sm:pt-0">
-      {/* 🔥 IMAGEM COM TRATAMENTO */}
+      {/* Background image with subtle zoom */}
       <img
         src={heroBg}
         alt=""
-        className="absolute inset-0 w-full h-full object-cover brightness-[0.6] contrast-[1.1]"
+        className="absolute inset-0 w-full h-full object-cover brightness-[0.6] contrast-[1.1] transition-transform duration-[20s] ease-out"
+        style={{ transform: mounted ? "scale(1.05)" : "scale(1)" }}
         width={1920}
         height={1080}
       />
 
-      {/* 🔥 OVERLAY FORTE (PRINCIPAL AJUSTE) */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-black/61" />
 
-      {/* 🔥 GRADIENTE PROFUNDO (EFEITO PREMIUM) */}
+      {/* Animated gradient overlay */}
+      <div className="absolute inset-0 hero-gradient-animated opacity-40" />
+
+      {/* Gradient bottom */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/61 to-black/90" />
 
-      {/* CONTEÚDO */}
+      {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Badge */}
         <div
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6"
-          style={{ animation: "fade-in-up 0.6s ease-out" }}
+          style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(20px)",
+            transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
+          }}
         >
           <Camera className="w-4 h-4" />
           Conectando atletas às suas melhores fotos.
@@ -37,7 +50,11 @@ const HeroSection = () => {
         {/* Headline */}
         <h1
           className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-4"
-          style={{ animation: "fade-in-up 0.6s ease-out 0.1s", animationFillMode: "both" }}
+          style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(24px)",
+            transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+          }}
         >
           Reviva seu momento. <br />
           <span className="text-primary">Encontre suas fotos agora.</span>
@@ -46,24 +63,32 @@ const HeroSection = () => {
         {/* Sub */}
         <p
           className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
-          style={{ animation: "fade-in-up 0.6s ease-out 0.2s", animationFillMode: "both" }}
+          style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0)" : "translateY(20px)",
+            transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s",
+          }}
         >
           Encontre suas fotos e vídeos em segundos.
         </p>
 
-        {/* Busca */}
+        {/* Search */}
         <div
           className="max-w-2xl mx-auto"
-          style={{ animation: "fade-in-up 0.6s ease-out 0.3s", animationFillMode: "both" }}
+          style={{
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? "translateY(0) scale(1)" : "translateY(20px) scale(0.98)",
+            transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s",
+          }}
         >
           <div className="glass-card p-1.5 sm:p-2 flex items-center gap-1 sm:gap-2 overflow-hidden">
             <div className="flex items-center gap-0.5 sm:gap-1 pl-1 sm:pl-2 shrink-0">
               <button
                 onClick={() => setSearchMode("text")}
-                className={`p-1.5 sm:p-2 rounded-lg transition-all ${
+                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                   searchMode === "text"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/10"
                 }`}
               >
                 <Search className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -71,10 +96,10 @@ const HeroSection = () => {
 
               <button
                 onClick={() => setSearchMode("face")}
-                className={`p-1.5 sm:p-2 rounded-lg transition-all ${
+                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                   searchMode === "face"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/10"
                 }`}
               >
                 <ScanFace className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -93,7 +118,7 @@ const HeroSection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <button className="px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs sm:text-sm hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_rgba(255,77,0,0.3)] min-h-[40px] sm:min-h-[44px] shrink-0">
+            <button className="btn-premium px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs sm:text-sm min-h-[40px] sm:min-h-[44px] shrink-0">
               Buscar
             </button>
           </div>
