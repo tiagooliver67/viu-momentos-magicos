@@ -35,15 +35,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<{ full_name: string | null; avatar_url: string | null; asaas_wallet_id: string | null } | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
 
-  const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from("profiles").select("full_name, avatar_url, asaas_wallet_id").eq("user_id", userId).single();
-    setProfile(data);
-  };
-
-  const fetchRoles = async (userId: string) => {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    if (data) {
-      setRoles(data.map((r: any) => r.role as AppRole));
+  const fetchUserData = async (userId: string) => {
+    const [profileRes, rolesRes] = await Promise.all([
+      supabase.from("profiles").select("full_name, avatar_url, asaas_wallet_id").eq("user_id", userId).single(),
+      supabase.from("user_roles").select("role").eq("user_id", userId),
+    ]);
+    setProfile(profileRes.data);
+    if (rolesRes.data) {
+      setRoles(rolesRes.data.map((r: any) => r.role as AppRole));
     }
   };
 
