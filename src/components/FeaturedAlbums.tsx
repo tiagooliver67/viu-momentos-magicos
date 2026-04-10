@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import EventCard from "./EventCard";
-import { Flame } from "lucide-react";
+import { Flame, Camera } from "lucide-react";
 
 interface FeaturedEvent {
   id: string;
@@ -103,19 +103,29 @@ const FeaturedAlbums = () => {
     fetchFeatured();
   }, []);
 
-  // Show mock data if no real events
-  const mockFeatured: FeaturedEvent[] = [
-    { id: "1", title: "VERÃO RUN IRECÊ 2026", date: "22/03/2026", location: "Irecê, BA", photoCount: 2615, imageUrl: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80", isLive: true },
-    { id: "2", title: "CORRIDA DO SIMTRANS", date: "24/03/2026", location: "Salvador, BA", photoCount: 1830, imageUrl: "https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=600&q=80" },
-    { id: "3", title: "IL RUN EXPERIENCE", date: "22/03/2026", location: "Vitória da Conquista, BA", photoCount: 3200, imageUrl: "https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=600&q=80" },
-    { id: "4", title: "CORRIDA TRILHA", date: "22/03/2026", location: "Alagoinhas, BA", photoCount: 945, imageUrl: "https://images.unsplash.com/photo-1486218119243-13883505764c?w=600&q=80" },
-    { id: "5", title: "Tic Tac e Tri Swim", date: "18/03/2026", location: "Salvador, BA", photoCount: 1200, imageUrl: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&q=80" },
-    { id: "6", title: "DMTB 26 DESAFIO", date: "10/03/2026", location: "Mato de São João, BA", photoCount: 890, imageUrl: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=600&q=80" },
-    { id: "7", title: "MARATONA SALVADOR", date: "15/03/2026", location: "Salvador, BA", photoCount: 4100, imageUrl: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80" },
-    { id: "8", title: "PEDAL NORDESTE", date: "08/03/2026", location: "Recife, PE", photoCount: 560, imageUrl: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=600&q=80" },
-  ];
-
-  const displayEvents = events.length > 0 ? events : mockFeatured;
+  if (!loading && events.length === 0) {
+    return (
+      <section className="mb-14">
+        <div className="flex items-center gap-2 mb-6">
+          <Flame className="w-6 h-6 text-primary" />
+          <h2 className="text-2xl font-bold text-foreground">Álbuns em Destaque</h2>
+        </div>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Camera className="w-12 h-12 text-muted-foreground/40 mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum evento disponível ainda</h3>
+          <p className="text-sm text-muted-foreground max-w-md mb-6">
+            Em breve você poderá explorar eventos e encontrar suas fotos aqui.
+          </p>
+          <a
+            href="/cadastro-fotografo"
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            Sou fotógrafo → publicar meu primeiro evento
+          </a>
+        </div>
+      </section>
+    );
+  }
 
   if (loading) {
     return (
@@ -149,7 +159,7 @@ const FeaturedAlbums = () => {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {displayEvents.slice(0, 8).map((event) => (
+        {events.slice(0, 8).map((event) => (
           <EventCard key={event.id} {...event} />
         ))}
       </div>
