@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import EventCard from "./EventCard";
+import EventCardSkeleton from "./EventCardSkeleton";
 import ScrollReveal from "./ScrollReveal";
 import { Flame, Camera } from "lucide-react";
 
