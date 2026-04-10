@@ -44,6 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (rolesRes.data) {
       setRoles(rolesRes.data.map((r: any) => r.role as AppRole));
     }
+    // Track last sign in
+    supabase.from("profiles").update({ last_sign_in_at: new Date().toISOString() }).eq("user_id", userId).then(() => {});
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);

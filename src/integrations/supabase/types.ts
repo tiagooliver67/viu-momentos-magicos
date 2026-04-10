@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          performed_by: string
+          target_user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          performed_by: string
+          target_user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          performed_by?: string
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
@@ -591,12 +618,14 @@ export type Database = {
           asaas_customer_id: string | null
           asaas_wallet_id: string | null
           avatar_url: string | null
+          blocked: boolean
           cpf_cnpj: string | null
           created_at: string
           experience_level: string | null
           full_name: string | null
           id: string
           interest: string | null
+          last_sign_in_at: string | null
           phone: string | null
           updated_at: string
           user_id: string
@@ -605,12 +634,14 @@ export type Database = {
           asaas_customer_id?: string | null
           asaas_wallet_id?: string | null
           avatar_url?: string | null
+          blocked?: boolean
           cpf_cnpj?: string | null
           created_at?: string
           experience_level?: string | null
           full_name?: string | null
           id?: string
           interest?: string | null
+          last_sign_in_at?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
@@ -619,12 +650,14 @@ export type Database = {
           asaas_customer_id?: string | null
           asaas_wallet_id?: string | null
           avatar_url?: string | null
+          blocked?: boolean
           cpf_cnpj?: string | null
           created_at?: string
           experience_level?: string | null
           full_name?: string | null
           id?: string
           interest?: string | null
+          last_sign_in_at?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
