@@ -108,7 +108,7 @@ const FeaturedAlbums = () => {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="aspect-[4/3] rounded-2xl shimmer-skeleton" />
+            <EventCardSkeleton key={i} />
           ))}
         </div>
       </section>
