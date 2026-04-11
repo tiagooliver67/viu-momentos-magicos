@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { resizeImage } from "@/lib/imageResize";
 
 interface UploadProgress {
   fileName: string;
@@ -44,10 +45,49 @@ export async function getSignedReadUrls(paths: string[]): Promise<Record<string,
   return map;
 }
 
+/** Convert an original S3 path to its thumbnail variant */
+export function toThumbPath(originalPath: string): string {
+  // eventos/{eventId}/fotos/filename → eventos/{eventId}/fotos/thumb/filename
+  const lastSlash = originalPath.lastIndexOf("/");
+  if (lastSlash === -1) return originalPath;
+  const dir = originalPath.substring(0, lastSlash);
+  const filename = originalPath.substring(lastSlash + 1);
+  // Replace extension with .jpg since thumbnails are always JPEG
+  const baseName = filename.replace(/\.[^.]+$/, ".jpg");
+  return `${dir}/thumb/${baseName}`;
+}
+
+/** Convert an original S3 path to its medium variant */
+export function toMediumPath(originalPath: string): string {
+  const lastSlash = originalPath.lastIndexOf("/");
+  if (lastSlash === -1) return originalPath;
+  const dir = originalPath.substring(0, lastSlash);
+  const filename = originalPath.substring(lastSlash + 1);
+  const baseName = filename.replace(/\.[^.]+$/, ".jpg");
+  return `${dir}/medium/${baseName}`;
+}
+
+function uploadBlob(url: string, blob: Blob, method: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader("Content-Type", blob.type || "image/jpeg");
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error(`S3 PUT status ${xhr.status}`));
+    };
+    xhr.onerror = () => reject(new Error("Network error"));
+    xhr.timeout = 30000;
+    xhr.ontimeout = () => reject(new Error("Timeout"));
+    xhr.send(blob);
+  });
+}
+
 export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
   const queryClient = useQueryClient();
   const tableName = type === "fotos" ? "event_photos" : "event_videos";
   const queryKey = type === "fotos" ? "event-photos" : "event-videos";
+  const isPhoto = type === "fotos";
 
   return useMutation({
     mutationFn: async (files: File[]) => {
@@ -71,10 +111,11 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
       if (validFiles.length === 0) throw new Error("Nenhum arquivo válido");
 
       // 1. Generate S3 paths
-      const objects = validFiles.map(f => ({
-        path: `eventos/${eventId}/${type}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${f.name}`,
-        file: f,
-      }));
+      const objects = validFiles.map(f => {
+        const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        const originalPath = `eventos/${eventId}/${type}/${uid}-${f.name}`;
+        return { path: originalPath, file: f, uid };
+      });
 
       const progressMap: UploadProgress[] = objects.map(o => ({
         fileName: o.file.name,
@@ -83,10 +124,19 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
       }));
       onProgress?.(progressMap);
 
-      // 2. Get presigned URLs
-      let presigned;
+      // 2. Build all paths we need presigned URLs for (original + thumb + medium for photos)
+      const allPaths: { path: string }[] = [];
+      for (const obj of objects) {
+        allPaths.push({ path: obj.path });
+        if (isPhoto) {
+          allPaths.push({ path: toThumbPath(obj.path) });
+          allPaths.push({ path: toMediumPath(obj.path) });
+        }
+      }
+
+      let presigned: { path: string; url: string; method: string; error?: string }[];
       try {
-        presigned = await getPresignedUrls(objects.map(o => ({ path: o.path })));
+        presigned = await getPresignedUrls(allPaths);
       } catch (err: any) {
         console.error("[S3Upload] Falha ao obter URLs assinadas:", err);
         progressMap.forEach((_, i) => {
@@ -96,24 +146,47 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
         throw new Error("Falha ao gerar URLs de upload. Verifique sua conexão.");
       }
 
-      // 3. Upload each file directly to S3
+      // Build a map path→signed for easy lookup
+      const signedMap = new Map<string, { url: string; method: string }>();
+      for (const s of presigned) {
+        if (!s.error && s.url) signedMap.set(s.path, { url: s.url, method: s.method });
+      }
+
+      // 3. Upload each file
       const results = [];
       for (let i = 0; i < objects.length; i++) {
         const obj = objects[i];
-        const signed = presigned[i];
+        const signed = signedMap.get(obj.path);
 
-        if (signed.error) {
-          console.error(`[S3Upload] Presign error for ${obj.file.name}:`, signed.error);
+        if (!signed) {
           progressMap[i] = { ...progressMap[i], status: "error", progress: 0, errorDetail: "URL de upload inválida" };
           onProgress?.([...progressMap]);
           continue;
         }
 
-        progressMap[i] = { ...progressMap[i], status: "uploading", progress: 10 };
+        progressMap[i] = { ...progressMap[i], status: "uploading", progress: 5 };
         onProgress?.([...progressMap]);
 
         try {
-          // Upload via XMLHttpRequest for real progress tracking
+          // Generate thumbnails for photos (in parallel with nothing — they're fast)
+          let thumbBlob: Blob | null = null;
+          let mediumBlob: Blob | null = null;
+
+          if (isPhoto) {
+            try {
+              [thumbBlob, mediumBlob] = await Promise.all([
+                resizeImage(obj.file, 400, 0.75),
+                resizeImage(obj.file, 1200, 0.82),
+              ]);
+            } catch (resizeErr) {
+              console.warn("[S3Upload] Resize failed, uploading original only:", resizeErr);
+            }
+          }
+
+          progressMap[i] = { ...progressMap[i], progress: 15 };
+          onProgress?.([...progressMap]);
+
+          // Upload original via XHR with progress
           await new Promise<void>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open(signed.method || "PUT", signed.url);
@@ -121,35 +194,45 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
 
             xhr.upload.onprogress = (e) => {
               if (e.lengthComputable) {
-                const pct = Math.round((e.loaded / e.total) * 80) + 10; // 10-90%
+                const pct = Math.round((e.loaded / e.total) * 55) + 15; // 15-70%
                 progressMap[i] = { ...progressMap[i], progress: pct };
                 onProgress?.([...progressMap]);
               }
             };
 
             xhr.onload = () => {
-              if (xhr.status >= 200 && xhr.status < 300) {
-                resolve();
-              } else {
-                console.error(`[S3Upload] S3 PUT failed for ${obj.file.name}: status=${xhr.status}, response=${xhr.responseText?.slice(0, 200)}`);
-                reject(new Error(`S3 retornou status ${xhr.status}`));
-              }
+              if (xhr.status >= 200 && xhr.status < 300) resolve();
+              else reject(new Error(`S3 status ${xhr.status}`));
             };
-
-            xhr.onerror = () => {
-              console.error(`[S3Upload] Network/CORS error for ${obj.file.name}. Verifique CORS do bucket S3.`);
-              reject(new Error("Erro de rede ou CORS. Verifique configuração do bucket S3."));
-            };
-
-            xhr.ontimeout = () => {
-              reject(new Error("Timeout no upload"));
-            };
-
-            xhr.timeout = 120000; // 2 min per file
+            xhr.onerror = () => reject(new Error("Erro de rede ou CORS"));
+            xhr.ontimeout = () => reject(new Error("Timeout no upload"));
+            xhr.timeout = 120000;
             xhr.send(obj.file);
           });
 
-          progressMap[i] = { ...progressMap[i], status: "uploading", progress: 90 };
+          progressMap[i] = { ...progressMap[i], progress: 75 };
+          onProgress?.([...progressMap]);
+
+          // Upload thumb and medium in parallel (fire-and-forget errors — originals are safe)
+          if (isPhoto) {
+            const thumbUploads: Promise<void>[] = [];
+            if (thumbBlob) {
+              const thumbSigned = signedMap.get(toThumbPath(obj.path));
+              if (thumbSigned) {
+                thumbUploads.push(uploadBlob(thumbSigned.url, thumbBlob, thumbSigned.method || "PUT"));
+              }
+            }
+            if (mediumBlob) {
+              const medSigned = signedMap.get(toMediumPath(obj.path));
+              if (medSigned) {
+                thumbUploads.push(uploadBlob(medSigned.url, mediumBlob, medSigned.method || "PUT"));
+              }
+            }
+            // Don't fail the whole upload if thumbnails fail
+            await Promise.allSettled(thumbUploads);
+          }
+
+          progressMap[i] = { ...progressMap[i], progress: 90 };
           onProgress?.([...progressMap]);
 
           // 4. Save to database

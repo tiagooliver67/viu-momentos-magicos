@@ -85,20 +85,55 @@ const EventPage = () => {
   // Stable key: only changes when photo count or IDs actually change
   const photoIds = useMemo(() => photos?.map(p => p.id).sort().join(",") || "", [photos]);
 
-  // Fetch signed URLs for photos
-  const { data: signedUrls, isLoading: urlsLoading, error: urlsError, refetch: refetchUrls } = useQuery({
-    queryKey: ["signed-urls", id, photoIds],
+  // Helper to derive thumb/medium paths from original
+  const toThumbPath = useCallback((originalPath: string) => {
+    const lastSlash = originalPath.lastIndexOf("/");
+    if (lastSlash === -1) return originalPath;
+    const dir = originalPath.substring(0, lastSlash);
+    const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
+    return `${dir}/thumb/${filename}`;
+  }, []);
+
+  const toMediumPath = useCallback((originalPath: string) => {
+    const lastSlash = originalPath.lastIndexOf("/");
+    if (lastSlash === -1) return originalPath;
+    const dir = originalPath.substring(0, lastSlash);
+    const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
+    return `${dir}/medium/${filename}`;
+  }, []);
+
+  // Fetch signed URLs for THUMBNAILS (grid) — much smaller files
+  const { data: thumbUrls, isLoading: urlsLoading, error: urlsError, refetch: refetchUrls } = useQuery({
+    queryKey: ["thumb-urls", id, photoIds],
     queryFn: async () => {
       if (!photos || photos.length === 0) return {};
-      const paths = photos.map((p: any) => p.file_url);
-      return getPublicSignedUrls(paths);
+      // Request thumb URLs; fallback to originals if thumbs don't exist
+      const thumbPaths = photos.map((p: any) => p.file_url).map(toThumbPath);
+      const originalPaths = photos.map((p: any) => p.file_url);
+      const allPaths = [...thumbPaths, ...originalPaths];
+      return getPublicSignedUrls(allPaths);
     },
     enabled: !!photos && photos.length > 0,
-    staleTime: 15 * 60 * 1000, // 15 min — URLs are valid for ~15min
-    gcTime: 30 * 60 * 1000, // keep in cache 30 min
-    refetchOnWindowFocus: false, // prevent mobile tab-switch re-fetch
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     retry: 2,
+  });
+
+  // Fetch medium URL only when a photo is selected (lightbox)
+  const { data: mediumUrl } = useQuery({
+    queryKey: ["medium-url", selectedPhoto?.file_url],
+    queryFn: async () => {
+      if (!selectedPhoto) return "";
+      const medPath = toMediumPath(selectedPhoto.file_url);
+      const res = await getPublicSignedUrls([medPath, selectedPhoto.file_url]);
+      // Prefer medium, fallback to original
+      return res[medPath] || res[selectedPhoto.file_url] || "";
+    },
+    enabled: !!selectedPhoto,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // Fetch price grid
@@ -136,8 +171,10 @@ const EventPage = () => {
   const photoList = photos || [];
 
   const getPhotoUrl = useCallback((photo: any) => {
-    return signedUrls?.[photo.file_url] || "";
-  }, [signedUrls]);
+    // Prefer thumbnail, fallback to original
+    const thumbPath = toThumbPath(photo.file_url);
+    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+  }, [thumbUrls, toThumbPath]);
 
   // Password protection
   if (event?.password && !unlocked) {
@@ -318,7 +355,7 @@ const EventPage = () => {
             <div className="glass-card overflow-hidden rounded-t-2xl sm:rounded-xl flex flex-col sm:flex-row max-h-[90dvh] sm:max-h-none">
               <div className="flex-1 relative bg-black/20">
                 <img
-                  src={getPhotoUrl(selectedPhoto)}
+                  src={mediumUrl || getPhotoUrl(selectedPhoto)}
                   alt=""
                   className="w-full h-48 sm:h-full sm:min-h-[400px] object-contain"
                 />
