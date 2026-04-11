@@ -107,11 +107,9 @@ const EventPage = () => {
     queryKey: ["thumb-urls", id, photoIds],
     queryFn: async () => {
       if (!photos || photos.length === 0) return {};
-      // Request thumb URLs; fallback to originals if thumbs don't exist
+      // ONLY request thumbnail URLs — NEVER originals (security)
       const thumbPaths = photos.map((p: any) => p.file_url).map(toThumbPath);
-      const originalPaths = photos.map((p: any) => p.file_url);
-      const allPaths = [...thumbPaths, ...originalPaths];
-      return getPublicSignedUrls(allPaths);
+      return getPublicSignedUrls(thumbPaths);
     },
     enabled: !!photos && photos.length > 0,
     staleTime: 15 * 60 * 1000,
