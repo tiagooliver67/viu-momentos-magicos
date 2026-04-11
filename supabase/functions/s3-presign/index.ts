@@ -26,33 +26,37 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Verify user auth
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: "Not authenticated" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-  const supabase = createClient(supabaseUrl, supabaseKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: "Invalid token" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
   try {
     const body = await req.json();
     const { action, object_path, objects } = body;
 
+    // Read actions (sign_read, sign_read_batch) can work without auth for public gallery
+    const isReadAction = action === "sign_read" || action === "sign_read_batch";
+
+    // Write actions require authentication
+    if (!isReadAction) {
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: "Not authenticated" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: "Invalid token" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     if (action === "sign_upload") {
-      // Single presigned upload URL
       if (!object_path) {
         return new Response(JSON.stringify({ error: "object_path required" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -84,7 +88,6 @@ Deno.serve(async (req) => {
     }
 
     if (action === "sign_upload_batch") {
-      // Batch presigned upload URLs
       if (!objects || !Array.isArray(objects)) {
         return new Response(JSON.stringify({ error: "objects array required" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -187,8 +190,6 @@ Deno.serve(async (req) => {
     }
 
     if (action === "delete") {
-      // S3 delete not supported via gateway - we'll just remove the DB record
-      // The actual S3 cleanup can be done via lifecycle policies
       return new Response(JSON.stringify({ success: true, message: "DB record will be deleted by client" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

@@ -16,7 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
-  Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2
+  Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
+  ExternalLink, MessageCircle
 } from "lucide-react";
 
 const quickActions = [
@@ -147,8 +148,18 @@ const EventDashboard = () => {
   const handleShareLink = () => {
     const url = `${window.location.origin}/evento/${id}`;
     navigator.clipboard.writeText(url);
-    toast.success("Link copiado!");
+    toast.success("Link copiado! ✅");
     setShowActions(false);
+  };
+
+  const handleShareWhatsApp = () => {
+    const url = `${window.location.origin}/evento/${id}`;
+    const text = encodeURIComponent(`Confira as fotos do evento "${event?.name}":\n${url}`);
+    window.open(`https://wa.me/?text=${text}`, "_blank");
+  };
+
+  const handleOpenGallery = () => {
+    window.open(`/evento/${id}`, "_blank");
   };
 
   if (isLoading) {
@@ -215,6 +226,30 @@ const EventDashboard = () => {
                 onChange={(s) => updateEvent.mutate({ status: s })}
                 disabled={updateEvent.isPending}
               />
+              {/* Prominent action buttons */}
+              <div className="flex flex-wrap gap-2 mt-3">
+                <button
+                  onClick={handleShareLink}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all min-h-[40px]"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Compartilhar evento
+                </button>
+                <button
+                  onClick={handleOpenGallery}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-all min-h-[40px]"
+                >
+                  <Eye className="w-4 h-4" />
+                  Ver galeria
+                </button>
+                <button
+                  onClick={handleShareWhatsApp}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-secondary/50 transition-all min-h-[40px]"
+                >
+                  <MessageCircle className="w-4 h-4 text-green-500" />
+                  WhatsApp
+                </button>
+              </div>
             </div>
 
             {/* Quick actions grid */}
