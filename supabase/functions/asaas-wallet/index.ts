@@ -606,8 +606,6 @@ Deno.serve(async (req) => {
     return json({ error: "Ação inválida" });
   } catch (error: any) {
     console.error("Asaas Wallet Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ error: error.message || "Erro interno do servidor" });
   }
 });
