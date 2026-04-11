@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ export interface UploadFileProgress {
   progress: number;
   status: "pending" | "uploading" | "done" | "error";
   preview?: string;
+  errorDetail?: string;
 }
 
 interface Props {
@@ -28,42 +29,40 @@ interface Props {
   isDeleting: boolean;
   totalPhotos: number;
   onUploadFiles?: (files: File[]) => void;
+  onRetryFiles?: (files: File[]) => void;
   isUploading?: boolean;
   uploadProgress?: UploadFileProgress[];
 }
 
 const PHOTOS_PER_PAGE = 20;
 
-export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, isUploading, uploadProgress = [] }: Props) {
+export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [] }: Props) {
   const [search, setSearch] = useState("");
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  const [failedFiles, setFailedFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [lastUploadResult, setLastUploadResult] = useState<{ total: number; done: number; errors: number } | null>(null);
+  const filesRef = useRef<File[]>([]);
 
   // Track upload completion for toast
   useEffect(() => {
-    if (uploadProgress.length === 0) {
-      // Clean up previews when upload clears
-      if (lastUploadResult) {
-        setTimeout(() => setLastUploadResult(null), 3000);
-      }
-      return;
-    }
+    if (uploadProgress.length === 0) return;
     const allFinished = uploadProgress.every(f => f.status === "done" || f.status === "error");
     if (allFinished) {
       const done = uploadProgress.filter(f => f.status === "done").length;
       const errors = uploadProgress.filter(f => f.status === "error").length;
-      setLastUploadResult({ total: uploadProgress.length, done, errors });
       if (done > 0 && errors === 0) {
         toast.success(`${done} foto(s) enviada(s) com sucesso!`);
       } else if (done > 0 && errors > 0) {
-        toast.warning(`${done} foto(s) enviada(s), ${errors} falharam.`);
-      } else if (errors > 0) {
-        toast.error(`Erro ao enviar ${errors} foto(s). Tente novamente.`);
+        toast.warning(`${done} de ${uploadProgress.length} enviada(s). ${errors} falharam.`);
+      } else if (errors > 0 && done === 0) {
+        toast.error(`Falha ao enviar ${errors} foto(s). Verifique o console para detalhes.`);
       }
+      // Track failed files for retry
+      const failed = filesRef.current.filter((_, i) => uploadProgress[i]?.status === "error");
+      setFailedFiles(failed);
     }
   }, [uploadProgress]);
 
@@ -104,13 +103,28 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   };
 
   const startUpload = (files: File[]) => {
-    // Generate previews
     const newPreviews: Record<string, string> = {};
     files.forEach(f => {
       newPreviews[f.name] = URL.createObjectURL(f);
     });
     setPreviews(prev => ({ ...prev, ...newPreviews }));
+    filesRef.current = files;
+    setFailedFiles([]);
     onUploadFiles?.(files);
+  };
+
+  const handleRetry = () => {
+    if (failedFiles.length === 0) return;
+    const retryPreviews: Record<string, string> = {};
+    failedFiles.forEach(f => {
+      if (!previews[f.name]) {
+        retryPreviews[f.name] = URL.createObjectURL(f);
+      }
+    });
+    setPreviews(prev => ({ ...prev, ...retryPreviews }));
+    filesRef.current = failedFiles;
+    setFailedFiles([]);
+    onUploadFiles?.(failedFiles);
   };
 
   if (!open) return null;
@@ -124,10 +138,23 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   const earnings = 0;
 
   const activeUploads = uploadProgress.filter(f => f.status === "uploading" || f.status === "pending");
+  const doneCount = uploadProgress.filter(f => f.status === "done").length;
+  const errorCount = uploadProgress.filter(f => f.status === "error").length;
   const hasActiveUpload = activeUploads.length > 0;
   const overallProgress = uploadProgress.length > 0
     ? Math.round(uploadProgress.reduce((sum, f) => sum + f.progress, 0) / uploadProgress.length)
     : 0;
+
+  // Summary text
+  const getUploadSummary = () => {
+    if (hasActiveUpload) {
+      return `Enviando ${activeUploads.length} de ${uploadProgress.length} fotos... ${overallProgress}%`;
+    }
+    if (uploadProgress.length === 0) return "";
+    if (errorCount === 0) return `✅ ${doneCount} foto(s) enviada(s) com sucesso`;
+    if (doneCount === 0) return `❌ ${errorCount} foto(s) falharam no envio`;
+    return `${doneCount} enviada(s) com sucesso, ${errorCount} falharam`;
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-auto">
@@ -242,34 +269,47 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-sm font-medium text-foreground">
-                  {hasActiveUpload 
-                    ? `Enviando ${activeUploads.length} de ${uploadProgress.length} fotos...`
-                    : `Upload concluído — ${uploadProgress.filter(f => f.status === "done").length} de ${uploadProgress.length} enviadas`
-                  }
+                  {getUploadSummary()}
                 </p>
+                {!hasActiveUpload && failedFiles.length > 0 && (
+                  <button
+                    onClick={handleRetry}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Reenviar {failedFiles.length} foto(s)
+                  </button>
+                )}
               </div>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                 {uploadProgress.map((uf, i) => (
                   <div key={i} className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
                     {previews[uf.fileName] && (
-                      <img src={previews[uf.fileName]} alt="" className="w-full h-full object-cover opacity-70" />
+                      <img src={previews[uf.fileName]} alt="" className="w-full h-full object-cover" />
                     )}
-                    {/* Progress bar */}
+                    {/* Uploading/pending overlay */}
                     {(uf.status === "uploading" || uf.status === "pending") && (
-                      <div className="absolute inset-x-0 bottom-0 p-1.5 bg-black/50">
-                        <Progress value={uf.progress} className="h-1.5" />
+                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center">
+                        <Loader2 className="w-6 h-6 text-white animate-spin mb-1" />
+                        <span className="text-[10px] text-white font-medium">Enviando... {uf.progress}%</span>
+                        <div className="absolute inset-x-0 bottom-0 p-1.5">
+                          <Progress value={uf.progress} className="h-1.5" />
+                        </div>
                       </div>
                     )}
                     {/* Done overlay */}
                     {uf.status === "done" && (
-                      <div className="absolute inset-0 bg-lime/20 flex items-center justify-center">
-                        <CheckCircle2 className="w-8 h-8 text-lime drop-shadow-md" />
+                      <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
+                        <CheckCircle2 className="w-8 h-8 text-green-500 drop-shadow-md" />
                       </div>
                     )}
                     {/* Error overlay */}
                     {uf.status === "error" && (
-                      <div className="absolute inset-0 bg-destructive/20 flex items-center justify-center">
-                        <AlertCircle className="w-8 h-8 text-destructive drop-shadow-md" />
+                      <div className="absolute inset-0 bg-destructive/30 flex flex-col items-center justify-center gap-1">
+                        <AlertCircle className="w-6 h-6 text-destructive drop-shadow-md" />
+                        <span className="text-[9px] text-white font-medium bg-destructive/80 px-1.5 py-0.5 rounded">
+                          Falhou
+                        </span>
                       </div>
                     )}
                     {/* File name */}
