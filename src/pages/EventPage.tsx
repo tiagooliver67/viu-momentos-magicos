@@ -102,14 +102,17 @@ const EventPage = () => {
     return `${dir}/medium/${filename}`;
   }, []);
 
-  // Fetch signed URLs for THUMBNAILS (grid) — much smaller files
+  // Fetch signed URLs for THUMBNAILS (grid) — with fallback to originals for legacy photos
   const { data: thumbUrls, isLoading: urlsLoading, error: urlsError, refetch: refetchUrls } = useQuery({
     queryKey: ["thumb-urls", id, photoIds],
     queryFn: async () => {
       if (!photos || photos.length === 0) return {};
-      // ONLY request thumbnail URLs — NEVER originals (security)
-      const thumbPaths = photos.map((p: any) => p.file_url).map(toThumbPath);
-      return getPublicSignedUrls(thumbPaths);
+      // Request both thumb AND original paths — thumb preferred, original as fallback
+      const thumbPaths = photos.map((p: any) => toThumbPath(p.file_url));
+      const originalPaths = photos.map((p: any) => p.file_url);
+      // Deduplicate paths
+      const allPaths = [...new Set([...thumbPaths, ...originalPaths])];
+      return getPublicSignedUrls(allPaths);
     },
     enabled: !!photos && photos.length > 0,
     staleTime: 15 * 60 * 1000,
