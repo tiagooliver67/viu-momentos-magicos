@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, Check } from "lucide-react";
+import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -10,6 +10,32 @@ import CartDrawer from "@/components/CartDrawer";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
+
+/** Fetch signed read URLs without requiring auth */
+async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  const res = await fetch(`${supabaseUrl}/functions/v1/s3-presign`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": supabaseKey,
+    },
+    body: JSON.stringify({
+      action: "sign_read_batch",
+      objects: paths.map((p) => ({ path: p })),
+    }),
+  });
+
+  if (!res.ok) throw new Error("Erro ao carregar imagens");
+  const data = await res.json();
+  const urlMap: Record<string, string> = {};
+  for (const r of data.results || []) {
+    if (r.url) urlMap[r.path] = r.url;
+  }
+  return urlMap;
+}
 
 const EventPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,6 +78,19 @@ const EventPage = () => {
     enabled: !!id,
   });
 
+  // Fetch signed URLs for photos
+  const { data: signedUrls, isLoading: urlsLoading, error: urlsError, refetch: refetchUrls } = useQuery({
+    queryKey: ["signed-urls", id, photos?.map(p => p.id).join(",")],
+    queryFn: async () => {
+      if (!photos || photos.length === 0) return {};
+      const paths = photos.map((p: any) => p.file_url);
+      return getPublicSignedUrls(paths);
+    },
+    enabled: !!photos && photos.length > 0,
+    staleTime: 10 * 60 * 1000, // 10 min
+    retry: 2,
+  });
+
   // Fetch price grid
   const { data: priceGrid } = useQuery({
     queryKey: ["public-price", id],
@@ -85,6 +124,10 @@ const EventPage = () => {
   const highPrice = priceGrid?.photo_high_price ?? 15;
   const lowPrice = priceGrid?.photo_low_price ?? 11;
   const photoList = photos || [];
+
+  const getPhotoUrl = useCallback((photo: any) => {
+    return signedUrls?.[photo.file_url] || "";
+  }, [signedUrls]);
 
   // Password protection
   if (event?.password && !unlocked) {
@@ -149,7 +192,7 @@ const EventPage = () => {
   const handleAddToCart = (photo: any, res: "high" | "low") => {
     addItem({
       photoId: photo.id,
-      photoUrl: photo.file_url,
+      photoUrl: getPhotoUrl(photo),
       eventId: id,
       eventName: event.name,
       resolution: res,
@@ -205,29 +248,61 @@ const EventPage = () => {
             </button>
           </div>
 
+          {/* Loading state */}
+          {urlsLoading && photoList.length > 0 && (
+            <div className="text-center py-16">
+              <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
+              <p className="text-muted-foreground text-sm">Carregando fotos...</p>
+            </div>
+          )}
+
+          {/* Error state */}
+          {urlsError && (
+            <div className="text-center py-16">
+              <Camera className="w-12 h-12 mx-auto mb-3 text-destructive opacity-50" />
+              <p className="text-muted-foreground mb-3">Erro ao carregar imagens. Tente novamente.</p>
+              <button
+                onClick={() => refetchUrls()}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Tentar novamente
+              </button>
+            </div>
+          )}
+
           {/* Photo Grid with watermarks */}
-          {photoList.length === 0 ? (
+          {!urlsLoading && !urlsError && photoList.length === 0 && (
             <div className="text-center py-16 text-muted-foreground">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>Nenhuma foto publicada neste evento ainda.</p>
             </div>
-          ) : (
+          )}
+
+          {!urlsLoading && !urlsError && photoList.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
               {photoList.map((photo: any) => {
                 const fav = isFavorite(photo.id);
+                const photoUrl = getPhotoUrl(photo);
                 return (
                   <div
                     key={photo.id}
                     className="relative group cursor-pointer rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30"
                   >
-                    <div onClick={() => setSelectedPhoto(photo)} className="w-full h-full">
-                      <WatermarkCanvas
-                        src={photo.file_url}
-                        watermarkUrl={photographerSite?.watermark_url || undefined}
-                        watermarkText={photographerSite?.display_name || "VIUFOTO"}
-                        className="w-full h-full"
-                      />
-                    </div>
+                    {photoUrl ? (
+                      <div onClick={() => setSelectedPhoto(photo)} className="w-full h-full">
+                        <WatermarkCanvas
+                          src={photoUrl}
+                          watermarkUrl={photographerSite?.watermark_url || undefined}
+                          watermarkText={photographerSite?.display_name || "VIUFOTO"}
+                          className="w-full h-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+                      </div>
+                    )}
 
                     {/* Action buttons */}
                     <div className="absolute top-2 right-2 flex gap-1.5">
@@ -283,7 +358,7 @@ const EventPage = () => {
             <div className="glass-card overflow-hidden rounded-t-2xl sm:rounded-xl flex flex-col sm:flex-row max-h-[90dvh] sm:max-h-none">
               <div className="flex-1 relative bg-black/20">
                 <WatermarkCanvas
-                  src={selectedPhoto.file_url}
+                  src={getPhotoUrl(selectedPhoto)}
                   watermarkUrl={photographerSite?.watermark_url || undefined}
                   watermarkText={photographerSite?.display_name || "VIUFOTO"}
                   className="w-full h-48 sm:h-full sm:min-h-[400px]"
