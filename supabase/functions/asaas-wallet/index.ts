@@ -172,66 +172,30 @@ Deno.serve(async (req) => {
         walletId = account.walletId || account.id;
       } catch (createError: any) {
         const errMsg = (createError.message || "").toLowerCase();
-        const isDuplicate = errMsg.includes("já está em uso") || errMsg.includes("already") || errMsg.includes("duplicat");
+        const isEmailDuplicate = errMsg.includes("email") && errMsg.includes("já está em uso");
+        const isCpfDuplicate = errMsg.includes("cpf") && errMsg.includes("já está em uso");
+        const isDuplicate = isEmailDuplicate || isCpfDuplicate || errMsg.includes("already") || errMsg.includes("duplicat");
 
         if (!isDuplicate) throw createError;
 
-        // Account already exists — try to find it
-        console.log("Account already exists, searching for existing account...");
-        let existingAccount = null;
-        const searchHeaders = { "Content-Type": "application/json", access_token: getAsaasKey() };
+        // Account exists outside our scope — retry with unique loginEmail
+        console.log("Account already exists externally. Retrying with unique loginEmail...");
 
-        // Try multiple search strategies
-        const searchUrls = [
-          `${ASAAS_BASE_URL}/accounts?email=${encodeURIComponent(email)}`,
-          `${ASAAS_BASE_URL}/accounts?cpfCnpj=${cleanCpfCnpj}`,
-          `${ASAAS_BASE_URL}/accounts?loginEmail=${encodeURIComponent(email)}`,
-          `${ASAAS_BASE_URL}/accounts?name=${encodeURIComponent(name)}`,
-        ];
+        const uniqueEmail = email.replace("@", `+viufoto_${user.id.substring(0, 8)}@`);
+        const retryData = {
+          ...accountData,
+          loginEmail: uniqueEmail,
+          ...(isEmailDuplicate ? { email: uniqueEmail } : {}),
+        };
 
-        for (const url of searchUrls) {
-          if (existingAccount) break;
-          try {
-            const res = await fetch(url, { headers: searchHeaders });
-            const body = await res.json();
-            console.log(`Search ${url.split('?')[1]}: ${body.totalCount || 0} results`);
-            if (res.ok && body.data?.length > 0) {
-              // Verify match by cpfCnpj or email
-              existingAccount = body.data.find((a: any) =>
-                a.cpfCnpj?.replace(/\D/g, "") === cleanCpfCnpj ||
-                a.email === email ||
-                a.loginEmail === email
-              ) || body.data[0];
-            }
-          } catch (e) { console.error("Search failed:", e); }
+        try {
+          const account = await asaasFetch("/accounts", { method: "POST", body: JSON.stringify(retryData) });
+          walletId = account.walletId || account.id;
+          console.log("Created account with unique email, walletId:", walletId);
+        } catch (retryError: any) {
+          console.error("Retry also failed:", retryError.message);
+          return json({ error: retryError.message || "Não foi possível criar sua conta de recebimento. Entre em contato com o suporte." });
         }
-
-        // Last resort: list all and find manually
-        if (!existingAccount) {
-          try {
-            const res = await fetch(`${ASAAS_BASE_URL}/accounts?limit=100`, { headers: searchHeaders });
-            const body = await res.json();
-            console.log(`Listing all accounts: ${body.totalCount || 0} total`);
-            if (res.ok && body.data?.length > 0) {
-              existingAccount = body.data.find((a: any) =>
-                a.cpfCnpj?.replace(/\D/g, "") === cleanCpfCnpj ||
-                a.email === email ||
-                a.loginEmail === email
-              );
-            }
-          } catch (e) { console.error("List all failed:", e); }
-        }
-
-        if (!existingAccount) {
-          return json({ error: "Conta já existe no sistema de pagamentos, mas não foi possível localizá-la automaticamente. Entre em contato com o suporte." });
-        }
-
-        walletId = existingAccount.walletId || existingAccount.id;
-        if (!walletId) {
-          return json({ error: "Conta encontrada mas sem identificador válido. Entre em contato com o suporte." });
-        }
-
-        console.log("Found existing account, linking walletId:", walletId);
       }
 
       await supabaseAdmin.from("profiles")
