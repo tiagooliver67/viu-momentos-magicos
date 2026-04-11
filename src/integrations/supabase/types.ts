@@ -685,6 +685,143 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_accounts: {
+        Row: {
+          account_holder: string | null
+          account_number: string | null
+          account_type: string
+          account_type_bank: string | null
+          activated_at: string | null
+          agency: string | null
+          bank_code: string | null
+          bank_name: string | null
+          cpf_cnpj: string
+          created_at: string
+          id: string
+          label: string | null
+          pix_key: string | null
+          pix_key_type: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          account_holder?: string | null
+          account_number?: string | null
+          account_type?: string
+          account_type_bank?: string | null
+          activated_at?: string | null
+          agency?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
+          cpf_cnpj: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          account_holder?: string | null
+          account_number?: string | null
+          account_type?: string
+          account_type_bank?: string | null
+          activated_at?: string | null
+          agency?: string | null
+          bank_code?: string | null
+          bank_name?: string | null
+          cpf_cnpj?: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          pix_key?: string | null
+          pix_key_type?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawal_logs: {
+        Row: {
+          account_id: string | null
+          amount: number
+          asaas_transfer_id: string | null
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          status: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          asaas_transfer_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          asaas_transfer_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_logs_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "withdrawal_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      withdrawal_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          notification_type: string
+          read: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          notification_type: string
+          read?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          notification_type?: string
+          read?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
