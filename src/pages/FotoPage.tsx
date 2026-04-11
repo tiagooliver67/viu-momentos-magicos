@@ -178,12 +178,7 @@ const FotoPage = () => {
                 alt=""
                 className="w-full h-full object-contain"
               />
-              <WatermarkOverlay
-                watermarkUrl={photographerSite?.watermark_url || undefined}
-                position={(photographerSite?.watermark_position as any) || "tile"}
-                opacity={photographerSite?.watermark_opacity ?? 25}
-                size={photographerSite?.watermark_size ?? 30}
-              />
+              <WatermarkOverlay watermarkUrl={photographerSite?.watermark_url || undefined} />
 
               {/* Action buttons overlay */}
               <div className="absolute top-3 right-3 flex gap-2">
@@ -339,12 +334,7 @@ const FotoPage = () => {
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
-                      <WatermarkOverlay
-                        watermarkUrl={photographerSite?.watermark_url || undefined}
-                        position="tile"
-                        opacity={25}
-                        size={30}
-                      />
+                      <WatermarkOverlay watermarkUrl={photographerSite?.watermark_url || undefined} />
                     </div>
                     <div className="absolute inset-0 bg-background/0 group-hover:bg-background/30 transition-all" />
                   </Link>

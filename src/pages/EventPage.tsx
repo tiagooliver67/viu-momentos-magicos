@@ -298,9 +298,6 @@ const EventPage = () => {
                   photoId={photo.id}
                   photoUrl={getPhotoUrl(photo)}
                   watermarkUrl={photographerSite?.watermark_url || undefined}
-                  watermarkPosition={(photographerSite?.watermark_position as any) || "tile"}
-                  watermarkOpacity={photographerSite?.watermark_opacity ?? 25}
-                  watermarkSize={photographerSite?.watermark_size ?? 30}
                   isFav={isFavorite(photo.id)}
                   onToggleFavorite={toggleFavorite}
                   onClick={() => setSelectedPhoto(photo)}
@@ -325,12 +322,7 @@ const EventPage = () => {
                   alt=""
                   className="w-full h-48 sm:h-full sm:min-h-[400px] object-contain"
                 />
-                <WatermarkOverlay
-                  watermarkUrl={photographerSite?.watermark_url || undefined}
-                  position={(photographerSite?.watermark_position as any) || "tile"}
-                  opacity={photographerSite?.watermark_opacity ?? 25}
-                  size={photographerSite?.watermark_size ?? 30}
-                />
+                <WatermarkOverlay watermarkUrl={photographerSite?.watermark_url || undefined} />
                 {/* Favorite & Share in lightbox */}
                 <div className="absolute top-3 right-3 flex gap-2">
                   <button
