@@ -148,8 +148,18 @@ const EventDashboard = () => {
   const handleShareLink = () => {
     const url = `${window.location.origin}/evento/${id}`;
     navigator.clipboard.writeText(url);
-    toast.success("Link copiado!");
+    toast.success("Link copiado! ✅");
     setShowActions(false);
+  };
+
+  const handleShareWhatsApp = () => {
+    const url = `${window.location.origin}/evento/${id}`;
+    const text = encodeURIComponent(`Confira as fotos do evento "${event?.name}":\n${url}`);
+    window.open(`https://wa.me/?text=${text}`, "_blank");
+  };
+
+  const handleOpenGallery = () => {
+    window.open(`/evento/${id}`, "_blank");
   };
 
   if (isLoading) {
