@@ -2,19 +2,16 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import {
-  User, Globe, Image, Landmark, Star, CreditCard, Ticket, MessageSquare, Smartphone,
+  User, Globe, Image, Wallet, Star, CreditCard, Ticket, MessageSquare, Smartphone,
   Save, Eye, EyeOff, Plus, Trash2, QrCode, Share2, Shield, LogOut, Copy, Check,
   Upload, ChevronRight, Lock, Bell, Mail, Phone
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Wallet } from "lucide-react";
-
 const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
   { id: "site", label: "Meu site", icon: Globe },
   { id: "portfolio", label: "Meu portfólio", icon: Image },
-  { id: "financeiro", label: "Financeiro", icon: Landmark },
   { id: "carteira", label: "Carteira", icon: Wallet },
   { id: "exclusividade", label: "Exclusividade", icon: Star },
   { id: "smartcard", label: "SmartCard", icon: CreditCard },
@@ -145,7 +142,6 @@ const TabConta = () => {
 // ─── Tab: Meu Site ───
 import MeuSiteTab from "@/components/settings/MeuSiteTab";
 const TabSite = MeuSiteTab;
-import TabFinanceiro from "@/components/settings/TabFinanceiro";
 import TabCarteira from "@/components/settings/TabCarteira";
 
 // ─── Tab: Portfólio ───
@@ -463,7 +459,6 @@ const tabComponents: Record<string, React.FC> = {
   conta: TabConta,
   site: TabSite,
   portfolio: TabPortfolio,
-  financeiro: TabFinanceiro,
   carteira: TabCarteira,
   exclusividade: TabExclusividade,
   smartcard: TabSmartCard,

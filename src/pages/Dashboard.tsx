@@ -264,7 +264,7 @@ const Dashboard = () => {
               Enviar fotos
             </Link>
             <Link
-              to="/dashboard/financeiro"
+              to="/dashboard/configuracoes?tab=carteira"
               className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background text-foreground font-medium text-sm hover:bg-muted transition-all"
             >
               <Eye className="w-5 h-5 text-primary" />
