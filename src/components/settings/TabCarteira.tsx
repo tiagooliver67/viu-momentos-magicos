@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Wallet, CheckCircle2, AlertTriangle, Loader2, Save, Shield, ArrowRight,
   Eye, EyeOff, Info, Clock, Ban, CheckCircle, CreditCard, Plus, Trash2,
-  Lock, Bell, Mail, RefreshCw
+  Lock, Bell, Mail, RefreshCw, User as UserIcon
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
