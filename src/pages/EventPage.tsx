@@ -321,6 +321,9 @@ const EventPage = () => {
                   src={getPhotoUrl(selectedPhoto)}
                   watermarkUrl={photographerSite?.watermark_url || undefined}
                   watermarkText={photographerSite?.display_name || "VIUFOTO"}
+                  watermarkPosition={(photographerSite as any)?.watermark_position || "tile"}
+                  watermarkOpacity={(photographerSite as any)?.watermark_opacity ?? 25}
+                  watermarkSize={(photographerSite as any)?.watermark_size ?? 30}
                   className="w-full h-48 sm:h-full sm:min-h-[400px]"
                 />
                 {/* Favorite & Share in lightbox */}
