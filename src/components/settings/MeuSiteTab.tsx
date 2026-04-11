@@ -364,17 +364,19 @@ const MeuSiteTab = () => {
 
           {/* Marca d'água */}
           {activeSubTab === "marcadagua" && (
-            <div className="glass-card p-6 space-y-4">
+            <div className="glass-card p-6 space-y-6">
               <h3 className="text-lg font-bold">Marca d'água</h3>
               <p className="text-sm text-muted-foreground">
-                Você pode alterar a sua marca d'água para deixá-la com o visual que desejar.
+                Personalize sua marca d'água para proteger suas fotos na galeria.
               </p>
+
+              {/* Upload */}
               <div className="flex gap-3 flex-wrap">
                 <button
                   onClick={() => watermarkRef.current?.click()}
                   className="px-5 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm"
                 >
-                  Fazer upload de uma marca d'água
+                  Fazer upload (PNG)
                 </button>
                 <button
                   onClick={() => {
@@ -387,19 +389,86 @@ const MeuSiteTab = () => {
                 </button>
                 <input ref={watermarkRef} type="file" accept="image/png" className="hidden" onChange={handleWatermarkUpload} />
               </div>
+
+              {/* Position */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">Posição</label>
+                <div className="flex gap-2 flex-wrap">
+                  {[
+                    { value: "tile", label: "Repetida (tile)" },
+                    { value: "center", label: "Centro" },
+                    { value: "corner", label: "Canto inferior" },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => set("watermark_position", opt.value)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+                        (val("watermark_position") || "tile") === opt.value
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Opacity */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">
+                  Opacidade: {val("watermark_opacity") || 25}%
+                </label>
+                <input
+                  type="range"
+                  min={10}
+                  max={50}
+                  step={5}
+                  value={val("watermark_opacity") || 25}
+                  onChange={(e) => set("watermark_opacity", Number(e.target.value))}
+                  className="w-full max-w-xs accent-primary"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground max-w-xs">
+                  <span>Sutil (10%)</span>
+                  <span>Forte (50%)</span>
+                </div>
+              </div>
+
+              {/* Size */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">
+                  Tamanho: {val("watermark_size") || 30}% da imagem
+                </label>
+                <input
+                  type="range"
+                  min={10}
+                  max={60}
+                  step={5}
+                  value={val("watermark_size") || 30}
+                  onChange={(e) => set("watermark_size", Number(e.target.value))}
+                  className="w-full max-w-xs accent-primary"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground max-w-xs">
+                  <span>Pequena (10%)</span>
+                  <span>Grande (60%)</span>
+                </div>
+              </div>
+
+              {/* Preview */}
               {val("watermark_url") && (
                 <div>
                   <h4 className="font-semibold mb-2">Visualização</h4>
-                  <div className="relative inline-block">
+                  <div className="relative inline-block rounded-xl overflow-hidden">
                     <img
                       src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80"
                       alt="Preview"
-                      className="rounded-xl max-w-md"
+                      className="max-w-md rounded-xl"
                     />
                     <img
                       src={val("watermark_url")}
                       alt="Watermark"
-                      className="absolute inset-0 w-full h-full object-contain opacity-40 pointer-events-none"
+                      className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                      style={{ opacity: (val("watermark_opacity") || 25) / 100 }}
                     />
                   </div>
                 </div>
