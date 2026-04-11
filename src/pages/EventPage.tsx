@@ -355,7 +355,7 @@ const EventPage = () => {
             <div className="glass-card overflow-hidden rounded-t-2xl sm:rounded-xl flex flex-col sm:flex-row max-h-[90dvh] sm:max-h-none">
               <div className="flex-1 relative bg-black/20">
                 <img
-                  src={getPhotoUrl(selectedPhoto)}
+                  src={mediumUrl || getPhotoUrl(selectedPhoto)}
                   alt=""
                   className="w-full h-48 sm:h-full sm:min-h-[400px] object-contain"
                 />
