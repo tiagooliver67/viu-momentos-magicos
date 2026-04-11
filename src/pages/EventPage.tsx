@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WatermarkOverlay from "@/components/WatermarkOverlay";
+// Watermark is baked into thumbnails — no overlay needed
 import CartDrawer from "@/components/CartDrawer";
 import LazyPhotoCard from "@/components/LazyPhotoCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -127,9 +127,10 @@ const EventPage = () => {
     queryFn: async () => {
       if (!selectedPhoto) return "";
       const medPath = toMediumPath(selectedPhoto.file_url);
-      const res = await getPublicSignedUrls([medPath, selectedPhoto.file_url]);
-      // Prefer medium, fallback to original
-      return res[medPath] || res[selectedPhoto.file_url] || "";
+      const thumbPath = toThumbPath(selectedPhoto.file_url);
+      const res = await getPublicSignedUrls([medPath, thumbPath]);
+      // Use medium (watermarked), fallback to thumb — NEVER original
+      return res[medPath] || res[thumbPath] || "";
     },
     enabled: !!selectedPhoto,
     staleTime: 15 * 60 * 1000,
@@ -359,7 +360,7 @@ const EventPage = () => {
                   alt=""
                   className="w-full h-48 sm:h-full sm:min-h-[400px] object-contain"
                 />
-                <WatermarkOverlay watermarkUrl={photographerSite?.watermark_url || undefined} />
+                {/* Watermark is baked into the image — no overlay needed */}
                 {/* Favorite & Share in lightbox */}
                 <div className="absolute top-3 right-3 flex gap-2">
                   <button
