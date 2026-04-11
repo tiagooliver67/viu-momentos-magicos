@@ -481,7 +481,7 @@ Deno.serve(async (req) => {
         const hoursLeft = Math.ceil((activatedAt.getTime() - Date.now()) / (1000 * 60 * 60));
         return json({
           error: `Esta conta está em período de segurança. Saques serão liberados em ${hoursLeft > 0 ? hoursLeft : 1} hora(s).`,
-        }, 400);
+        });
       }
 
       // Titularity check
