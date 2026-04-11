@@ -170,9 +170,9 @@ const EventPage = () => {
   const photoList = photos || [];
 
   const getPhotoUrl = useCallback((photo: any) => {
-    // Prefer thumbnail, fallback to original
+    // ONLY thumbnails — originals never exposed to frontend
     const thumbPath = toThumbPath(photo.file_url);
-    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+    return thumbUrls?.[thumbPath] || "";
   }, [thumbUrls, toThumbPath]);
 
   // Password protection
