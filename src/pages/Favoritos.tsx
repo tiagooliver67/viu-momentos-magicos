@@ -7,8 +7,8 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
-import WatermarkOverlay from "@/components/WatermarkOverlay";
 import { toast } from "sonner";
+import { toThumbPath, getSignedReadUrls } from "@/hooks/useS3Upload";
 
 interface FavPhoto {
   id: string;
@@ -25,6 +25,7 @@ export default function Favoritos() {
   const { addItem } = useCart();
   const { user } = useAuth();
   const [photos, setPhotos] = useState<FavPhoto[]>([]);
+  const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -60,18 +61,32 @@ export default function Favoritos() {
       const eventMap = Object.fromEntries((events || []).map(e => [e.id, e.name]));
       const priceMap = Object.fromEntries((prices || []).map(p => [p.event_id, p]));
 
-      setPhotos(
-        photoData.map(p => ({
-          ...p,
-          event_name: eventMap[p.event_id] || "Evento",
-          high_price: priceMap[p.event_id]?.photo_high_price ?? 15,
-          low_price: priceMap[p.event_id]?.photo_low_price ?? 11,
-        }))
-      );
+      const enriched = photoData.map(p => ({
+        ...p,
+        event_name: eventMap[p.event_id] || "Evento",
+        high_price: priceMap[p.event_id]?.photo_high_price ?? 15,
+        low_price: priceMap[p.event_id]?.photo_low_price ?? 11,
+      }));
+
+      setPhotos(enriched);
+
+      // Fetch thumbnail signed URLs (watermarked, NOT originals)
+      try {
+        const thumbPaths = enriched.map(p => toThumbPath(p.file_url));
+        const urls = await getSignedReadUrls(thumbPaths);
+        setThumbUrls(urls);
+      } catch (err) {
+        console.error("Failed to fetch thumb URLs for favorites:", err);
+      }
+
       setLoading(false);
     };
     load();
   }, [favorites]);
+
+  const getThumbUrl = (photo: FavPhoto) => {
+    return thumbUrls[toThumbPath(photo.file_url)] || "";
+  };
 
   const toggleSelect = (id: string) => {
     setSelected(prev => {
@@ -98,7 +113,7 @@ export default function Favoritos() {
     toAdd.forEach(p => {
       addItem({
         photoId: p.id,
-        photoUrl: p.file_url,
+        photoUrl: getThumbUrl(p),
         eventId: p.event_id,
         eventName: p.event_name || "Evento",
         resolution: "high",
@@ -113,7 +128,7 @@ export default function Favoritos() {
     photos.forEach(p => {
       addItem({
         photoId: p.id,
-        photoUrl: p.file_url,
+        photoUrl: getThumbUrl(p),
         eventId: p.event_id,
         eventName: p.event_name || "Evento",
         resolution: "high",
@@ -198,7 +213,7 @@ export default function Favoritos() {
               </button>
             </div>
 
-            {/* Photo Grid */}
+            {/* Photo Grid — watermark baked into thumbnails */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
               {photos.map(photo => (
                 <div
@@ -208,8 +223,7 @@ export default function Favoritos() {
                   }`}
                 >
                   <div className="relative w-full h-full">
-                    <img src={photo.file_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    <WatermarkOverlay />
+                    <img src={getThumbUrl(photo)} alt="" className="w-full h-full object-cover" loading="lazy" />
                   </div>
 
                   {/* Select checkbox */}
@@ -243,7 +257,7 @@ export default function Favoritos() {
                         onClick={() => {
                           addItem({
                             photoId: photo.id,
-                            photoUrl: photo.file_url,
+                            photoUrl: getThumbUrl(photo),
                             eventId: photo.event_id,
                             eventName: photo.event_name || "Evento",
                             resolution: "high",
