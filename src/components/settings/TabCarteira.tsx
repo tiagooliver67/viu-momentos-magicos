@@ -636,8 +636,6 @@ const TabCarteira = () => {
               </div>
         </div>
       )}
-        </div>
-      )}
 
       {/* ─── TRANSFER HISTORY ─── */}
       {transfers.length > 0 && (
