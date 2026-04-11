@@ -375,7 +375,7 @@ const TabCarteira = () => {
         {/* Seção 1 — Dados necessários */}
         <div className="glass-card p-6 space-y-0">
           <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
-            <User className="w-5 h-5 text-primary" />
+            <UserIcon className="w-5 h-5 text-primary" />
             <h3 className="font-semibold">Dados necessários</h3>
           </div>
           <InputField label="Nome completo" value={name} onChange={setName} placeholder="Seu nome completo" required />
