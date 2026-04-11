@@ -571,11 +571,9 @@ const TabCarteira = () => {
         )}
       </div>
 
-      {/* ─── WITHDRAWAL FORM (SECURE with 2FA) ─── */}
+      {/* ─── WITHDRAWAL FORM ─── */}
       {showWithdraw && (
         <div className="glass-card p-6 space-y-4 animate-in slide-in-from-top-2 border-2 border-primary/20">
-          {withdrawStep === "form" ? (
-            <>
               <h3 className="font-semibold flex items-center gap-2">
                 <Lock className="w-4 h-4 text-primary" /> Solicitar saque seguro
               </h3>
@@ -621,81 +619,19 @@ const TabCarteira = () => {
               <div className="p-3 rounded-xl bg-secondary/50 border border-border">
                 <p className="text-xs text-muted-foreground flex items-start gap-2">
                   <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                  Para sua segurança, confirmamos esta operação com um código enviado ao seu e-mail.
+                  Por segurança, os saques só podem ser realizados para contas de mesma titularidade do fotógrafo.
                 </p>
               </div>
 
               <div className="flex gap-3">
-                <button onClick={handleWithdrawStep1} disabled={sending2FA || activeAccounts.length === 0}
-                  className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50">
-                  {sending2FA ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
-                  {sending2FA ? "Enviando código..." : "Continuar e enviar código"}
-                </button>
-                <button onClick={() => { setShowWithdraw(false); setWithdrawPassword(""); }}
-                  className="px-6 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-secondary transition-colors">
-                  Cancelar
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* 2FA Verification Step */}
-              <h3 className="font-semibold flex items-center gap-2">
-                <Shield className="w-4 h-4 text-primary" /> Verificação de segurança
-              </h3>
-
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center space-y-3">
-                <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                  <Mail className="w-7 h-7 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Código enviado por e-mail</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Enviamos um código de 6 dígitos para <span className="font-medium text-foreground">{maskedEmail}</span>
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex justify-center py-4">
-                <InputOTP maxLength={6} value={twoFactorCode} onChange={setTwoFactorCode}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              <div className="flex items-center justify-center gap-2">
-                <button onClick={handleResend2FA} disabled={resendCooldown > 0 || sending2FA}
-                  className="text-xs text-primary hover:underline disabled:text-muted-foreground disabled:no-underline flex items-center gap-1">
-                  {sending2FA ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-3 h-3" />
-                  )}
-                  {resendCooldown > 0 ? `Reenviar código (${resendCooldown}s)` : "Reenviar código"}
-                </button>
-              </div>
-
-              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
-                <p className="text-xs text-amber-800 dark:text-amber-300">
-                  ⏱️ O código expira em 5 minutos. Se não recebeu, verifique sua caixa de spam ou solicite um novo código.
-                </p>
-              </div>
-
-              <div className="flex gap-3">
-                <button onClick={handleWithdrawStep2} disabled={withdrawing || twoFactorCode.length !== 6}
+                <button onClick={handleWithdrawSubmit} disabled={withdrawing || activeAccounts.length === 0}
                   className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50">
                   {withdrawing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                   {withdrawing ? "Processando saque..." : "Confirmar saque"}
                 </button>
-                <button onClick={() => { setWithdrawStep("form"); setTwoFactorCode(""); }}
+                <button onClick={() => { setShowWithdraw(false); setWithdrawPassword(""); }}
                   className="px-6 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-secondary transition-colors">
-                  Voltar
+                  Cancelar
                 </button>
               </div>
             </>
