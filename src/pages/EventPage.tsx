@@ -301,7 +301,6 @@ const EventPage = () => {
                   isFav={isFavorite(photo.id)}
                   onToggleFavorite={toggleFavorite}
                   onClick={() => setSelectedPhoto(photo)}
-                  price={highPrice}
                 />
               ))}
             </div>
