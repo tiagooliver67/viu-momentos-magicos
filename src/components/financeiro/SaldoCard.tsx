@@ -1,5 +1,6 @@
 import { ArrowRight, ChevronDown, Eye, EyeOff, Info } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCountUp } from "./useCountUp";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -9,6 +10,7 @@ interface SaldoCardProps {
 }
 
 const SaldoCard = ({ saldoReceber, saldoDisponivel }: SaldoCardProps) => {
+  const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
   const total = saldoReceber + saldoDisponivel;
   const animDisponivel = useCountUp(saldoDisponivel, 1000, visible);
@@ -76,7 +78,7 @@ const SaldoCard = ({ saldoReceber, saldoDisponivel }: SaldoCardProps) => {
               </TooltipProvider>
             </div>
 
-            <button className="w-full flex items-center justify-center gap-2 bg-white text-primary rounded-xl px-5 py-3.5 font-bold text-sm hover:bg-white/90 transition-all hover:shadow-lg min-h-[48px]">
+            <button onClick={() => navigate("/dashboard/configuracoes?tab=carteira")} className="w-full flex items-center justify-center gap-2 bg-white text-primary rounded-xl px-5 py-3.5 font-bold text-sm hover:bg-white/90 transition-all hover:shadow-lg min-h-[48px]">
               <span>Sacar agora</span>
               <ArrowRight className="w-5 h-5" />
             </button>
