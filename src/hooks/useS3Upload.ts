@@ -6,6 +6,7 @@ interface UploadProgress {
   fileName: string;
   progress: number;
   status: "pending" | "uploading" | "done" | "error";
+  errorDetail?: string;
 }
 
 interface UploadOptions {
@@ -53,9 +54,25 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
+      // Validate files
+      const MAX_SIZE = 30 * 1024 * 1024; // 30MB
+      const validFiles: File[] = [];
+      const invalidFiles: string[] = [];
+      for (const f of files) {
+        if (f.size > MAX_SIZE) {
+          invalidFiles.push(`${f.name} (${(f.size / 1024 / 1024).toFixed(1)}MB)`);
+        } else {
+          validFiles.push(f);
+        }
+      }
+      if (invalidFiles.length > 0) {
+        toast.error(`Arquivos acima de 30MB: ${invalidFiles.join(", ")}`);
+      }
+      if (validFiles.length === 0) throw new Error("Nenhum arquivo válido");
+
       // 1. Generate S3 paths
-      const objects = files.map(f => ({
-        path: `eventos/${eventId}/${type}/${Date.now()}-${f.name}`,
+      const objects = validFiles.map(f => ({
+        path: `eventos/${eventId}/${type}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}-${f.name}`,
         file: f,
       }));
 
@@ -67,7 +84,17 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
       onProgress?.(progressMap);
 
       // 2. Get presigned URLs
-      const presigned = await getPresignedUrls(objects.map(o => ({ path: o.path })));
+      let presigned;
+      try {
+        presigned = await getPresignedUrls(objects.map(o => ({ path: o.path })));
+      } catch (err: any) {
+        console.error("[S3Upload] Falha ao obter URLs assinadas:", err);
+        progressMap.forEach((_, i) => {
+          progressMap[i] = { ...progressMap[i], status: "error", errorDetail: "Falha ao gerar URL de upload" };
+        });
+        onProgress?.([...progressMap]);
+        throw new Error("Falha ao gerar URLs de upload. Verifique sua conexão.");
+      }
 
       // 3. Upload each file directly to S3
       const results = [];
@@ -76,7 +103,8 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
         const signed = presigned[i];
 
         if (signed.error) {
-          progressMap[i] = { ...progressMap[i], status: "error", progress: 0 };
+          console.error(`[S3Upload] Presign error for ${obj.file.name}:`, signed.error);
+          progressMap[i] = { ...progressMap[i], status: "error", progress: 0, errorDetail: "URL de upload inválida" };
           onProgress?.([...progressMap]);
           continue;
         }
@@ -85,27 +113,50 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
         onProgress?.([...progressMap]);
 
         try {
-          // Direct PUT to S3 presigned URL
-          const uploadRes = await fetch(signed.url, {
-            method: signed.method || "PUT",
-            body: obj.file,
-            headers: {
-              "Content-Type": obj.file.type,
-            },
+          // Upload via XMLHttpRequest for real progress tracking
+          await new Promise<void>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open(signed.method || "PUT", signed.url);
+            xhr.setRequestHeader("Content-Type", obj.file.type);
+
+            xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                const pct = Math.round((e.loaded / e.total) * 80) + 10; // 10-90%
+                progressMap[i] = { ...progressMap[i], progress: pct };
+                onProgress?.([...progressMap]);
+              }
+            };
+
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                resolve();
+              } else {
+                console.error(`[S3Upload] S3 PUT failed for ${obj.file.name}: status=${xhr.status}, response=${xhr.responseText?.slice(0, 200)}`);
+                reject(new Error(`S3 retornou status ${xhr.status}`));
+              }
+            };
+
+            xhr.onerror = () => {
+              console.error(`[S3Upload] Network/CORS error for ${obj.file.name}. Verifique CORS do bucket S3.`);
+              reject(new Error("Erro de rede ou CORS. Verifique configuração do bucket S3."));
+            };
+
+            xhr.ontimeout = () => {
+              reject(new Error("Timeout no upload"));
+            };
+
+            xhr.timeout = 120000; // 2 min per file
+            xhr.send(obj.file);
           });
 
-          if (!uploadRes.ok) {
-            throw new Error(`Upload failed: ${uploadRes.status}`);
-          }
-
-          progressMap[i] = { ...progressMap[i], status: "uploading", progress: 80 };
+          progressMap[i] = { ...progressMap[i], status: "uploading", progress: 90 };
           onProgress?.([...progressMap]);
 
-          // 4. Save to database with S3 path (not a public URL)
+          // 4. Save to database
           const insertData: any = {
             event_id: eventId,
             photographer_id: user.id,
-            file_url: obj.path, // Store S3 object path
+            file_url: obj.path,
             file_name: obj.file.name,
           };
 
@@ -115,15 +166,20 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
             .select()
             .single();
 
-          if (error) throw error;
+          if (error) {
+            console.error(`[S3Upload] DB insert error for ${obj.file.name}:`, error);
+            progressMap[i] = { ...progressMap[i], status: "error", progress: 0, errorDetail: "Erro ao salvar no banco" };
+            onProgress?.([...progressMap]);
+            continue;
+          }
 
           progressMap[i] = { ...progressMap[i], status: "done", progress: 100 };
           onProgress?.([...progressMap]);
           results.push(data);
         } catch (err: any) {
-          progressMap[i] = { ...progressMap[i], status: "error", progress: 0 };
+          progressMap[i] = { ...progressMap[i], status: "error", progress: 0, errorDetail: err.message };
           onProgress?.([...progressMap]);
-          console.error(`Upload error for ${obj.file.name}:`, err);
+          console.error(`[S3Upload] Upload error for ${obj.file.name}:`, err);
         }
       }
 
@@ -132,7 +188,7 @@ export function useS3Upload({ eventId, type, onProgress }: UploadOptions) {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [queryKey, eventId] });
       if (data.length > 0) {
-        toast.success(`${data.length} ${type === "fotos" ? "foto(s)" : "vídeo(s)"} enviado(s) para o S3!`);
+        toast.success(`${data.length} ${type === "fotos" ? "foto(s)" : "vídeo(s)"} enviado(s) com sucesso!`);
       }
     },
     onError: (e) => toast.error("Erro no upload: " + e.message),
