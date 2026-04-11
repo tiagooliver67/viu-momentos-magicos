@@ -4,9 +4,11 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   User, Globe, Image, Wallet, Star, CreditCard, Ticket, MessageSquare, Smartphone,
   Save, Eye, EyeOff, Plus, Trash2, QrCode, Share2, Shield, LogOut, Copy, Check,
-  Upload, ChevronRight, Lock, Bell, Mail, Phone
+  Upload, ChevronRight, Lock, Bell, Mail, Phone, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
