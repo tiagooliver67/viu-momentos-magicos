@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WatermarkCanvas from "@/components/WatermarkCanvas";
 import CartDrawer from "@/components/CartDrawer";
+import LazyPhotoCard from "@/components/LazyPhotoCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
@@ -78,16 +80,22 @@ const EventPage = () => {
     enabled: !!id,
   });
 
+  // Stable key: only changes when photo count or IDs actually change
+  const photoIds = useMemo(() => photos?.map(p => p.id).sort().join(",") || "", [photos]);
+
   // Fetch signed URLs for photos
   const { data: signedUrls, isLoading: urlsLoading, error: urlsError, refetch: refetchUrls } = useQuery({
-    queryKey: ["signed-urls", id, photos?.map(p => p.id).join(",")],
+    queryKey: ["signed-urls", id, photoIds],
     queryFn: async () => {
       if (!photos || photos.length === 0) return {};
       const paths = photos.map((p: any) => p.file_url);
       return getPublicSignedUrls(paths);
     },
     enabled: !!photos && photos.length > 0,
-    staleTime: 10 * 60 * 1000, // 10 min
+    staleTime: 15 * 60 * 1000, // 15 min — URLs are valid for ~15min
+    gcTime: 30 * 60 * 1000, // keep in cache 30 min
+    refetchOnWindowFocus: false, // prevent mobile tab-switch re-fetch
+    refetchOnReconnect: false,
     retry: 2,
   });
 
