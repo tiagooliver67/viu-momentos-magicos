@@ -106,8 +106,9 @@ const FotoPage = () => {
       if (!photo?.file_url) return "";
       const medPath = toMediumPath(photo.file_url);
       const thumbPath = toThumbPath(photo.file_url);
-      const res = await getPublicSignedUrls([medPath, thumbPath]);
-      return res[medPath] || res[thumbPath] || "";
+      // Also request original as fallback for legacy photos
+      const res = await getPublicSignedUrls([medPath, thumbPath, photo.file_url]);
+      return res[medPath] || res[thumbPath] || res[photo.file_url] || "";
     },
     enabled: !!photo?.file_url,
     staleTime: 15 * 60 * 1000,
@@ -131,13 +132,15 @@ const FotoPage = () => {
     enabled: !!photo?.event_id,
   });
 
-  // Fetch thumbnail signed URLs for related photos
+  // Fetch thumbnail signed URLs for related photos (with original fallback)
   const { data: relatedThumbUrls } = useQuery({
     queryKey: ["related-thumb-urls", relatedPhotos?.map(p => p.id).join(",")],
     queryFn: async () => {
       if (!relatedPhotos || relatedPhotos.length === 0) return {};
-      const paths = relatedPhotos.map(p => toThumbPath(p.file_url));
-      return getPublicSignedUrls(paths);
+      const thumbPaths = relatedPhotos.map(p => toThumbPath(p.file_url));
+      const originalPaths = relatedPhotos.map(p => p.file_url);
+      const allPaths = [...new Set([...thumbPaths, ...originalPaths])];
+      return getPublicSignedUrls(allPaths);
     },
     enabled: !!relatedPhotos && relatedPhotos.length > 0,
     staleTime: 15 * 60 * 1000,
@@ -368,7 +371,7 @@ const FotoPage = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                 {relatedPhotos.map((rp: any) => {
                   const thumbPath = toThumbPath(rp.file_url);
-                  const thumbUrl = relatedThumbUrls?.[thumbPath] || "";
+                  const thumbUrl = relatedThumbUrls?.[thumbPath] || relatedThumbUrls?.[rp.file_url] || "";
                   return (
                     <Link
                       key={rp.id}
