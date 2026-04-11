@@ -8,7 +8,6 @@ import { useAuth } from "@/contexts/AuthContext";
 const menuItems = [
   { label: "Eventos", icon: Calendar, path: "/dashboard" },
   { label: "Oportunidades", icon: Briefcase, path: "/dashboard/oportunidades" },
-  { label: "Financeiro", icon: DollarSign, path: "/dashboard/financeiro" },
   { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes" },
   { label: "Ajuda", icon: HelpCircle, path: "/dashboard/ajuda" },
 ];

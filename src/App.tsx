@@ -9,7 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import EventPage from "./pages/EventPage";
 import Dashboard from "./pages/Dashboard";
-import Financeiro from "./pages/Financeiro";
+// Financeiro page removed — unified into Carteira tab in Configuracoes
 import CriarEvento from "./pages/CriarEvento";
 import VIUPass from "./pages/VIUPass";
 import Pedidos from "./pages/Pedidos";
@@ -71,7 +71,7 @@ const App = () => (
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/virar-fotografo" element={<VirarFotografo />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
-              <Route path="/dashboard/financeiro" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Financeiro /></ProtectedRoute>} />
+              {/* Financeiro route removed — unified into Carteira */}
               <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
               <Route path="/dashboard/pedidos" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Pedidos /></ProtectedRoute>} />
               <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
