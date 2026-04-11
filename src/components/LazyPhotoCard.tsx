@@ -1,18 +1,33 @@
 import { useState, useRef, useEffect, memo } from "react";
 import { Heart, Share2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import WatermarkOverlay from "@/components/WatermarkOverlay";
 import { toast } from "sonner";
 
 interface LazyPhotoCardProps {
   photoId: string;
   photoUrl: string;
-  watermarkText: string;
+  /** Watermark PNG URL (photographer custom or undefined for default) */
+  watermarkUrl?: string;
+  watermarkPosition?: "center" | "tile" | "corner";
+  watermarkOpacity?: number;
+  watermarkSize?: number;
   isFav: boolean;
   onToggleFavorite: (id: string) => void;
   onClick: () => void;
 }
 
-const LazyPhotoCard = memo(({ photoId, photoUrl, watermarkText, isFav, onToggleFavorite, onClick }: LazyPhotoCardProps) => {
+const LazyPhotoCard = memo(({
+  photoId,
+  photoUrl,
+  watermarkUrl,
+  watermarkPosition = "tile",
+  watermarkOpacity = 25,
+  watermarkSize = 30,
+  isFav,
+  onToggleFavorite,
+  onClick,
+}: LazyPhotoCardProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -40,9 +55,7 @@ const LazyPhotoCard = memo(({ photoId, photoUrl, watermarkText, isFav, onToggleF
     >
       {isVisible && photoUrl ? (
         <>
-          {!loaded && (
-            <Skeleton className="absolute inset-0 rounded-none" />
-          )}
+          {!loaded && <Skeleton className="absolute inset-0 rounded-none" />}
           <div onClick={onClick} className="w-full h-full relative">
             <img
               src={photoUrl}
@@ -51,32 +64,13 @@ const LazyPhotoCard = memo(({ photoId, photoUrl, watermarkText, isFav, onToggleF
               onLoad={() => setLoaded(true)}
               className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
             />
-            {/* CSS watermark overlay */}
             {loaded && (
-              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, 120px)",
-                    gridTemplateRows: "repeat(auto-fill, 80px)",
-                    gap: "20px",
-                    padding: "10px",
-                    transform: "rotate(-25deg) scale(1.5)",
-                    transformOrigin: "center",
-                  }}
-                >
-                  {Array.from({ length: 20 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className="text-white/20 font-bold text-xs whitespace-nowrap select-none"
-                      style={{ fontSize: "11px", letterSpacing: "1px" }}
-                    >
-                      {watermarkText}
-                    </span>
-                  ))}
-                </div>
-              </div>
+              <WatermarkOverlay
+                watermarkUrl={watermarkUrl}
+                position={watermarkPosition}
+                opacity={watermarkOpacity}
+                size={watermarkSize}
+              />
             )}
           </div>
 
@@ -109,7 +103,6 @@ const LazyPhotoCard = memo(({ photoId, photoUrl, watermarkText, isFav, onToggleF
             </button>
           </div>
 
-          {/* Hover overlay without price */}
           <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-all pointer-events-none" />
         </>
       ) : (

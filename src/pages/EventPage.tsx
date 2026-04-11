@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WatermarkCanvas from "@/components/WatermarkCanvas";
+import WatermarkOverlay from "@/components/WatermarkOverlay";
 import CartDrawer from "@/components/CartDrawer";
 import LazyPhotoCard from "@/components/LazyPhotoCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -297,7 +297,10 @@ const EventPage = () => {
                   key={photo.id}
                   photoId={photo.id}
                   photoUrl={getPhotoUrl(photo)}
-                  watermarkText={photographerSite?.display_name || "VIUFOTO"}
+                  watermarkUrl={photographerSite?.watermark_url || undefined}
+                  watermarkPosition={(photographerSite?.watermark_position as any) || "tile"}
+                  watermarkOpacity={photographerSite?.watermark_opacity ?? 25}
+                  watermarkSize={photographerSite?.watermark_size ?? 30}
                   isFav={isFavorite(photo.id)}
                   onToggleFavorite={toggleFavorite}
                   onClick={() => setSelectedPhoto(photo)}
@@ -317,14 +320,16 @@ const EventPage = () => {
             </button>
             <div className="glass-card overflow-hidden rounded-t-2xl sm:rounded-xl flex flex-col sm:flex-row max-h-[90dvh] sm:max-h-none">
               <div className="flex-1 relative bg-black/20">
-                <WatermarkCanvas
+                <img
                   src={getPhotoUrl(selectedPhoto)}
+                  alt=""
+                  className="w-full h-48 sm:h-full sm:min-h-[400px] object-contain"
+                />
+                <WatermarkOverlay
                   watermarkUrl={photographerSite?.watermark_url || undefined}
-                  watermarkText={photographerSite?.display_name || "VIUFOTO"}
-                  watermarkPosition={(photographerSite as any)?.watermark_position || "tile"}
-                  watermarkOpacity={(photographerSite as any)?.watermark_opacity ?? 25}
-                  watermarkSize={(photographerSite as any)?.watermark_size ?? 30}
-                  className="w-full h-48 sm:h-full sm:min-h-[400px]"
+                  position={(photographerSite?.watermark_position as any) || "tile"}
+                  opacity={photographerSite?.watermark_opacity ?? 25}
+                  size={photographerSite?.watermark_size ?? 30}
                 />
                 {/* Favorite & Share in lightbox */}
                 <div className="absolute top-3 right-3 flex gap-2">
