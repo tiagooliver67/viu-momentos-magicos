@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
+import { toast } from "sonner";
 
 interface Photo {
   id: string;
@@ -12,11 +13,11 @@ interface Photo {
   created_at: string;
 }
 
-interface UploadingFile {
-  file: File;
-  preview: string;
+export interface UploadFileProgress {
+  fileName: string;
   progress: number;
-  status: "uploading" | "done" | "error";
+  status: "pending" | "uploading" | "done" | "error";
+  preview?: string;
 }
 
 interface Props {
@@ -28,17 +29,43 @@ interface Props {
   totalPhotos: number;
   onUploadFiles?: (files: File[]) => void;
   isUploading?: boolean;
+  uploadProgress?: UploadFileProgress[];
 }
 
 const PHOTOS_PER_PAGE = 20;
 
-export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, isUploading }: Props) {
+export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, isUploading, uploadProgress = [] }: Props) {
   const [search, setSearch] = useState("");
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
+  const [previews, setPreviews] = useState<Record<string, string>>({});
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const inputRef = useRef<HTMLInputElement>(null);
+  const [lastUploadResult, setLastUploadResult] = useState<{ total: number; done: number; errors: number } | null>(null);
+
+  // Track upload completion for toast
+  useEffect(() => {
+    if (uploadProgress.length === 0) {
+      // Clean up previews when upload clears
+      if (lastUploadResult) {
+        setTimeout(() => setLastUploadResult(null), 3000);
+      }
+      return;
+    }
+    const allFinished = uploadProgress.every(f => f.status === "done" || f.status === "error");
+    if (allFinished) {
+      const done = uploadProgress.filter(f => f.status === "done").length;
+      const errors = uploadProgress.filter(f => f.status === "error").length;
+      setLastUploadResult({ total: uploadProgress.length, done, errors });
+      if (done > 0 && errors === 0) {
+        toast.success(`${done} foto(s) enviada(s) com sucesso!`);
+      } else if (done > 0 && errors > 0) {
+        toast.warning(`${done} foto(s) enviada(s), ${errors} falharam.`);
+      } else if (errors > 0) {
+        toast.error(`Erro ao enviar ${errors} foto(s). Tente novamente.`);
+      }
+    }
+  }, [uploadProgress]);
 
   // Resolve signed URLs for S3 paths
   useEffect(() => {
@@ -57,16 +84,18 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
     if (photo.file_url.startsWith("eventos/")) {
       return signedUrls[photo.file_url] || "";
     }
-    return photo.file_url; // legacy Supabase Storage URLs
+    return photo.file_url;
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    if (isUploading) return;
     const dropped = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
     if (dropped.length > 0) startUpload(dropped);
-  }, [onUploadFiles]);
+  }, [onUploadFiles, isUploading]);
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isUploading) return;
     if (e.target.files) {
       const files = Array.from(e.target.files);
       startUpload(files);
@@ -75,30 +104,13 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   };
 
   const startUpload = (files: File[]) => {
-    const newUploading: UploadingFile[] = files.map(file => ({
-      file,
-      preview: URL.createObjectURL(file),
-      progress: 0,
-      status: "uploading" as const,
-    }));
-    setUploadingFiles(prev => [...prev, ...newUploading]);
-
-    // Simulate progress while actual upload runs
-    const interval = setInterval(() => {
-      setUploadingFiles(prev => prev.map(f =>
-        f.status === "uploading" ? { ...f, progress: Math.min(f.progress + 15, 90) } : f
-      ));
-    }, 400);
-
+    // Generate previews
+    const newPreviews: Record<string, string> = {};
+    files.forEach(f => {
+      newPreviews[f.name] = URL.createObjectURL(f);
+    });
+    setPreviews(prev => ({ ...prev, ...newPreviews }));
     onUploadFiles?.(files);
-
-    // Mark done after a delay (the real upload completes via mutation)
-    setTimeout(() => {
-      clearInterval(interval);
-      setUploadingFiles(prev => prev.map(f => ({ ...f, progress: 100, status: "done" as const })));
-      // Clean up after animation
-      setTimeout(() => setUploadingFiles([]), 2000);
-    }, files.length * 800 + 1000);
   };
 
   if (!open) return null;
@@ -106,11 +118,16 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   const totalPages = Math.ceil(photos.length / PHOTOS_PER_PAGE);
   const paginatedPhotos = photos.slice((page - 1) * PHOTOS_PER_PAGE, page * PHOTOS_PER_PAGE);
 
-  // Stats
   const sold = 0;
   const revenue = 0;
   const avgTicket = 0;
   const earnings = 0;
+
+  const activeUploads = uploadProgress.filter(f => f.status === "uploading" || f.status === "pending");
+  const hasActiveUpload = activeUploads.length > 0;
+  const overallProgress = uploadProgress.length > 0
+    ? Math.round(uploadProgress.reduce((sum, f) => sum + f.progress, 0) / uploadProgress.length)
+    : 0;
 
   return (
     <div className="fixed inset-0 z-50 bg-background overflow-auto">
@@ -185,14 +202,30 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
           <div
             onDragOver={e => e.preventDefault()}
             onDrop={handleDrop}
-            onClick={() => inputRef.current?.click()}
-            className="border-2 border-dashed border-border rounded-xl p-10 sm:p-16 text-center hover:border-primary/50 transition-colors cursor-pointer mb-6"
+            onClick={() => !isUploading && inputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-10 sm:p-16 text-center transition-colors mb-6 ${
+              isUploading 
+                ? "border-primary/30 bg-primary/5 cursor-not-allowed" 
+                : "border-border hover:border-primary/50 cursor-pointer"
+            }`}
           >
-            <p className="text-sm text-foreground">
-              Arraste aqui ou{" "}
-              <span className="text-primary font-medium hover:underline">Selecione as fotos</span>
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">Apenas JPEG</p>
+            {isUploading ? (
+              <>
+                <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
+                <p className="text-sm text-foreground font-medium">
+                  Enviando {uploadProgress.length} foto(s)... {overallProgress}%
+                </p>
+                <Progress value={overallProgress} className="h-2 mt-3 max-w-xs mx-auto" />
+              </>
+            ) : (
+              <>
+                <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-foreground">
+                  Arraste ou selecione suas fotos para começar o envio
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WEBP • Máximo 30MB por arquivo</p>
+              </>
+            )}
             <input
               ref={inputRef}
               type="file"
@@ -200,27 +233,51 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
               accept="image/jpeg,image/png,image/webp"
               onChange={handleSelect}
               className="hidden"
+              disabled={isUploading}
             />
           </div>
 
-          {/* Uploading progress */}
-          {uploadingFiles.length > 0 && (
+          {/* Per-file upload progress */}
+          {uploadProgress.length > 0 && (
             <div className="mb-6">
-              <p className="text-sm font-medium text-foreground mb-3">
-                Enviando {uploadingFiles.filter(f => f.status === "uploading").length} de {uploadingFiles.length} fotos...
-              </p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-foreground">
+                  {hasActiveUpload 
+                    ? `Enviando ${activeUploads.length} de ${uploadProgress.length} fotos...`
+                    : `Upload concluído — ${uploadProgress.filter(f => f.status === "done").length} de ${uploadProgress.length} enviadas`
+                  }
+                </p>
+              </div>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {uploadingFiles.map((uf, i) => (
+                {uploadProgress.map((uf, i) => (
                   <div key={i} className="relative rounded-lg overflow-hidden aspect-square bg-secondary">
-                    <img src={uf.preview} alt="" className="w-full h-full object-cover opacity-70" />
-                    <div className="absolute inset-x-0 bottom-0 p-1.5 bg-black/50">
-                      <Progress value={uf.progress} className="h-1.5" />
-                    </div>
-                    {uf.status === "done" && (
-                      <div className="absolute inset-0 bg-lime/20 flex items-center justify-center">
-                        <span className="text-lime text-xl font-bold">✓</span>
+                    {previews[uf.fileName] && (
+                      <img src={previews[uf.fileName]} alt="" className="w-full h-full object-cover opacity-70" />
+                    )}
+                    {/* Progress bar */}
+                    {(uf.status === "uploading" || uf.status === "pending") && (
+                      <div className="absolute inset-x-0 bottom-0 p-1.5 bg-black/50">
+                        <Progress value={uf.progress} className="h-1.5" />
                       </div>
                     )}
+                    {/* Done overlay */}
+                    {uf.status === "done" && (
+                      <div className="absolute inset-0 bg-lime/20 flex items-center justify-center">
+                        <CheckCircle2 className="w-8 h-8 text-lime drop-shadow-md" />
+                      </div>
+                    )}
+                    {/* Error overlay */}
+                    {uf.status === "error" && (
+                      <div className="absolute inset-0 bg-destructive/20 flex items-center justify-center">
+                        <AlertCircle className="w-8 h-8 text-destructive drop-shadow-md" />
+                      </div>
+                    )}
+                    {/* File name */}
+                    <div className="absolute top-1 left-1 right-1">
+                      <span className="text-[9px] text-white bg-black/40 px-1 rounded truncate block">
+                        {uf.fileName.length > 15 ? `...${uf.fileName.slice(-15)}` : uf.fileName}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -229,7 +286,7 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
 
           {/* Photo Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {paginatedPhotos.map((photo, idx) => {
+            {paginatedPhotos.map((photo) => {
               const url = getPhotoUrl(photo);
               if (!url) return (
                 <div key={photo.id} className="relative rounded-lg overflow-hidden bg-secondary aspect-[4/5] flex items-center justify-center">
@@ -240,7 +297,6 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
               <div key={photo.id} className="relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5]">
                 <img src={url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
                 
-                {/* Top overlay - Capa badge + actions */}
                 <div className="absolute top-2 left-2 right-2 flex items-start justify-between">
                   <button className="flex items-center gap-1 px-2 py-1 rounded bg-primary/80 text-primary-foreground text-[10px] font-medium backdrop-blur-sm">
                     <Image className="w-3 h-3" />
@@ -256,7 +312,6 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                   </div>
                 </div>
 
-                {/* Bottom overlay - file name + checkbox */}
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
@@ -268,7 +323,6 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                   </div>
                 </div>
 
-                {/* Hover expand */}
                 <div
                   className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all cursor-pointer"
                   onClick={() => setLightbox(url)}
@@ -278,7 +332,7 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
             })}
           </div>
 
-          {photos.length === 0 && uploadingFiles.length === 0 && (
+          {photos.length === 0 && uploadProgress.length === 0 && (
             <div className="text-center py-16 text-muted-foreground">
               <Upload className="w-10 h-10 mx-auto mb-3 opacity-30" />
               <p>Nenhuma foto enviada ainda. Arraste fotos acima para começar.</p>

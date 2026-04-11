@@ -11,6 +11,7 @@ import PasswordModal from "@/components/event/PasswordModal";
 import PhotoGallery from "@/components/event/PhotoGallery";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
 import { useS3Upload } from "@/hooks/useS3Upload";
+import type { UploadFileProgress } from "@/components/event/PhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -39,12 +40,23 @@ const EventDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const [photoUploadProgress, setPhotoUploadProgress] = useState<UploadFileProgress[]>([]);
 
   // Data hooks
   const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
-  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos" });
+  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos", onProgress: (files) => {
+    setPhotoUploadProgress(files.map(f => ({
+      fileName: f.fileName,
+      progress: f.progress,
+      status: f.status,
+    })));
+    // Clear progress after all done
+    if (files.every(f => f.status === "done" || f.status === "error")) {
+      setTimeout(() => setPhotoUploadProgress([]), 5000);
+    }
+  }});
   const s3UploadVideos = useS3Upload({ eventId: id || "", type: "videos" });
   const ordersQuery = useEventOrders(id);
   const { coupons, createCoupon, toggleCoupon } = useEventCoupons(id);
@@ -367,7 +379,7 @@ const EventDashboard = () => {
         <CouponModal open={showCoupon} onClose={() => setShowCoupon(false)} onSave={(c) => { createCoupon.mutate(c); setShowCoupon(false); }} isSaving={createCoupon.isPending} />
         <EditEventModal open={showEdit} onClose={() => setShowEdit(false)} onSave={(data) => { updateEvent.mutate(data as any); setShowEdit(false); }} initial={{ name: event.name, event_date: event.event_date, event_time: event.event_time, location: event.location, category: event.category, search_type: event.search_type || [], visibility: event.visibility }} isSaving={updateEvent.isPending} />
         <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSave={(pw) => { updateEvent.mutate({ password: pw }); setShowPassword(false); }} currentPassword={event.password} isSaving={updateEvent.isPending} />
-        <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} onUploadFiles={(files) => s3UploadPhotos.mutate(files)} isUploading={s3UploadPhotos.isPending} />
+        <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} onUploadFiles={(files) => s3UploadPhotos.mutate(files)} isUploading={s3UploadPhotos.isPending} uploadProgress={photoUploadProgress} />
 
         {/* Actions dropdown */}
         {showActions && (
