@@ -513,6 +513,9 @@ export type Database = {
           twitter: string | null
           updated_at: string
           user_id: string
+          watermark_opacity: number | null
+          watermark_position: string | null
+          watermark_size: number | null
           watermark_url: string | null
           whatsapp: string | null
           youtube: string | null
@@ -541,6 +544,9 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           user_id: string
+          watermark_opacity?: number | null
+          watermark_position?: string | null
+          watermark_size?: number | null
           watermark_url?: string | null
           whatsapp?: string | null
           youtube?: string | null
@@ -569,6 +575,9 @@ export type Database = {
           twitter?: string | null
           updated_at?: string
           user_id?: string
+          watermark_opacity?: number | null
+          watermark_position?: string | null
+          watermark_size?: number | null
           watermark_url?: string | null
           whatsapp?: string | null
           youtube?: string | null
