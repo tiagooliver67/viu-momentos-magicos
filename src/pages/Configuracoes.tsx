@@ -22,27 +22,7 @@ const settingsTabs = [
   { id: "dispositivos", label: "Dispositivos", icon: Smartphone },
 ];
 
-// ─── Mock Data ───
-const mockProfile = {
-  nome: "Tiago Oliver",
-  email: "tiagooliver@gmail.com",
-  cpf: "051.153.435-33",
-  rg: "05115343533",
-  sexo: "Masculino",
-  nascimento: "1988-11-21",
-  celular: "(74) 99943-9609",
-  fuso: "(GMT-03:00) Brasília",
-  cep: "44920-000",
-  endereco: "Rua Carmosina Carneiro",
-  numero: "105",
-  complemento: "",
-  referencia: "casa",
-  bairro: "Centro",
-  estado: "Bahia",
-  cidade: "João Dourado",
-  interesse: "Fotografar eventos esportivos",
-  experiencia: "Profissional",
-};
+// Mock data for other tabs
 
 const mockCupons = [
   { id: 1, code: "VERAO10", tipo: "percentual", valor: 10, validade: "2026-06-30", usos: 24, limite: 100, ativo: true },
