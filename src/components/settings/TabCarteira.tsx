@@ -49,6 +49,7 @@ const TabCarteira = () => {
   const [email, setEmail] = useState("");
   const [cpfCnpj, setCpfCnpj] = useState("");
   const [phone, setPhone] = useState("");
+  const [birthDate, setBirthDate] = useState("");
 
   // Wallet data
   const [balance, setBalance] = useState(0);
@@ -122,7 +123,7 @@ const TabCarteira = () => {
     setSaving(true);
     try {
       const { data, error } = await supabase.functions.invoke("asaas-wallet", {
-        body: { action: "create_wallet", name: name.trim(), email: email.trim(), cpfCnpj: cpfCnpj.trim(), phone: phone.trim() || undefined },
+        body: { action: "create_wallet", name: name.trim(), email: email.trim(), cpfCnpj: cpfCnpj.trim(), phone: phone.trim() || undefined, birthDate: birthDate || undefined },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
@@ -217,6 +218,7 @@ const TabCarteira = () => {
           <InputField label="Nome completo / Razão social" value={name} onChange={setName} placeholder="Seu nome ou razão social" required />
           <InputField label="E-mail" value={email} onChange={setEmail} placeholder="seu@email.com" required />
           <InputField label="CPF ou CNPJ" value={cpfCnpj} onChange={setCpfCnpj} placeholder="000.000.000-00" required />
+          <InputField label="Data de nascimento" value={birthDate} onChange={setBirthDate} placeholder="1990-01-31" required type="date" />
           <InputField label="Telefone" value={phone} onChange={setPhone} placeholder="(00) 00000-0000" />
         </div>
 

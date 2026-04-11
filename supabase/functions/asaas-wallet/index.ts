@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
 
     // ─── CREATE WALLET ───
     if (action === "create_wallet") {
-      const { name, email, cpfCnpj, phone } = params;
+      const { name, email, cpfCnpj, phone, birthDate } = params;
 
       if (!name || !email || !cpfCnpj) {
         return json({ error: "Nome, e-mail e CPF/CNPJ são obrigatórios" }, 400);
@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
         companyType: cleanCpfCnpj.length > 11 ? "LIMITED" : "MEI",
         loginEmail: email,
         ...(phone ? { phone: phone.replace(/\D/g, "") } : {}),
+        ...(birthDate ? { birthDate } : {}),
       };
 
       console.log("Creating Asaas subaccount for user:", user.id);
