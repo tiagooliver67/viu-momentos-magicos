@@ -634,8 +634,8 @@ const TabCarteira = () => {
                   Cancelar
                 </button>
               </div>
-            </>
-          )}
+        </div>
+      )}
         </div>
       )}
 
