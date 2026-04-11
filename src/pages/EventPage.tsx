@@ -78,6 +78,8 @@ const EventPage = () => {
       return data || [];
     },
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // Stable key: only changes when photo count or IDs actually change
