@@ -407,13 +407,19 @@ const EventPage = () => {
                   >
                     Continuar comprando
                   </button>
-                  <Link
-                    to={`/evento/${id}`}
-                    onClick={() => setSelectedPhoto(null)}
-                    className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all text-center"
+                  <button
+                    onClick={() => {
+                      setSelectedPhoto(null);
+                      // Trigger cart drawer open by clicking the cart button
+                      setTimeout(() => {
+                        const cartBtn = document.querySelector('[data-cart-trigger]') as HTMLElement;
+                        cartBtn?.click();
+                      }, 100);
+                    }}
+                    className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all"
                   >
                     Ir para o carrinho
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
