@@ -348,48 +348,63 @@ const EventPage = () => {
 
       {/* Lightbox */}
       {selectedPhoto && (
-        <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex items-end sm:items-center justify-center" onClick={() => setSelectedPhoto(null)}>
-          <div className="relative w-full sm:max-w-4xl sm:mx-4 max-h-[100dvh] sm:max-h-[90vh]" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedPhoto(null)} className="absolute top-3 right-3 sm:-top-12 sm:right-0 p-2 text-muted-foreground hover:text-foreground z-10 min-w-[44px] min-h-[44px] flex items-center justify-center bg-background/50 sm:bg-transparent rounded-full">
-              <X className="w-6 h-6" />
-            </button>
-            <div className="glass-card overflow-hidden rounded-t-2xl sm:rounded-xl flex flex-col sm:flex-row max-h-[90dvh] sm:max-h-none">
-              <div className="flex-1 relative bg-black/20">
-                <img
-                  src={mediumUrl || getPhotoUrl(selectedPhoto)}
-                  alt=""
-                  className="w-full h-48 sm:h-full sm:min-h-[400px] object-contain"
-                />
-                {/* Watermark is baked into the image — no overlay needed */}
-                {/* Favorite & Share in lightbox */}
-                <div className="absolute top-3 right-3 flex gap-2">
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/foto/${selectedPhoto.id}`;
-                      navigator.clipboard.writeText(url);
-                      toast.success("Link copiado!");
-                    }}
-                    className="p-2.5 rounded-full bg-black/40 text-white/80 hover:bg-black/60 backdrop-blur-sm transition-all transform active:scale-90"
-                  >
-                    <Share2 className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      const fav = isFavorite(selectedPhoto.id);
-                      toggleFavorite(selectedPhoto.id);
-                      toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
-                    }}
-                    className={`p-2.5 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
-                      isFavorite(selectedPhoto.id)
-                        ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
-                        : "bg-black/40 text-white/80 hover:bg-black/60"
-                    }`}
-                  >
-                    <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
-                  </button>
-                </div>
+        <div
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col sm:items-center sm:justify-center"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          {/* Close button — always visible */}
+          <button
+            onClick={() => setSelectedPhoto(null)}
+            className="absolute top-3 right-3 z-20 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <div
+            className="relative w-full sm:max-w-4xl sm:mx-4 flex flex-col sm:flex-row max-h-[100dvh] sm:max-h-[90vh] overflow-hidden sm:rounded-xl"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Image area — fills available space on mobile */}
+            <div className="flex-1 relative bg-black flex items-center justify-center min-h-0">
+              {!(mediumUrl || getPhotoUrl(selectedPhoto)) && (
+                <Loader2 className="w-8 h-8 text-white/60 animate-spin" />
+              )}
+              <img
+                src={mediumUrl || getPhotoUrl(selectedPhoto)}
+                alt=""
+                className="w-full h-full object-contain max-h-[55dvh] sm:max-h-[80vh] sm:min-h-[400px]"
+              />
+              {/* Favorite & Share in lightbox */}
+              <div className="absolute top-3 left-3 flex gap-2">
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/foto/${selectedPhoto.id}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success("Link copiado!");
+                  }}
+                  className="p-2.5 rounded-full bg-black/40 text-white/80 hover:bg-black/60 backdrop-blur-sm transition-all transform active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                >
+                  <Share2 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => {
+                    const fav = isFavorite(selectedPhoto.id);
+                    toggleFavorite(selectedPhoto.id);
+                    toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
+                  }}
+                  className={`p-2.5 rounded-full backdrop-blur-sm transition-all transform active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center ${
+                    isFavorite(selectedPhoto.id)
+                      ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
+                      : "bg-black/40 text-white/80 hover:bg-black/60"
+                  }`}
+                >
+                  <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
+                </button>
               </div>
-              <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto">
+            </div>
+
+            {/* Purchase panel */}
+            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0">
                 <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
                 <div className="space-y-2">
