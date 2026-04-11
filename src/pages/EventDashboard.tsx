@@ -48,13 +48,13 @@ const EventDashboard = () => {
   const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
-  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos", onProgress: (files) => {
+  const { site: photographerSite } = usePhotographerSite();
+  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
       fileName: f.fileName,
       progress: f.progress,
       status: f.status,
     })));
-    // Clear progress after all done
     if (files.every(f => f.status === "done" || f.status === "error")) {
       setTimeout(() => setPhotoUploadProgress([]), 5000);
     }
