@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   User, Globe, Image, Landmark, Star, CreditCard, Ticket, MessageSquare, Smartphone,
@@ -472,7 +473,11 @@ const tabComponents: Record<string, React.FC> = {
 };
 
 const Configuracoes = () => {
-  const [activeTab, setActiveTab] = useState("conta");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = searchParams.get("tab");
+    return tab && tabComponents[tab] ? tab : "conta";
+  });
   const ActiveComponent = tabComponents[activeTab];
 
   return (
