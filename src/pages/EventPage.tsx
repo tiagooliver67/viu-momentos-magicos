@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WatermarkOverlay from "@/components/WatermarkOverlay";
+// Watermark is baked into thumbnails — no overlay needed
 import CartDrawer from "@/components/CartDrawer";
 import LazyPhotoCard from "@/components/LazyPhotoCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -107,11 +107,9 @@ const EventPage = () => {
     queryKey: ["thumb-urls", id, photoIds],
     queryFn: async () => {
       if (!photos || photos.length === 0) return {};
-      // Request thumb URLs; fallback to originals if thumbs don't exist
+      // ONLY request thumbnail URLs — NEVER originals (security)
       const thumbPaths = photos.map((p: any) => p.file_url).map(toThumbPath);
-      const originalPaths = photos.map((p: any) => p.file_url);
-      const allPaths = [...thumbPaths, ...originalPaths];
-      return getPublicSignedUrls(allPaths);
+      return getPublicSignedUrls(thumbPaths);
     },
     enabled: !!photos && photos.length > 0,
     staleTime: 15 * 60 * 1000,
@@ -127,9 +125,10 @@ const EventPage = () => {
     queryFn: async () => {
       if (!selectedPhoto) return "";
       const medPath = toMediumPath(selectedPhoto.file_url);
-      const res = await getPublicSignedUrls([medPath, selectedPhoto.file_url]);
-      // Prefer medium, fallback to original
-      return res[medPath] || res[selectedPhoto.file_url] || "";
+      const thumbPath = toThumbPath(selectedPhoto.file_url);
+      const res = await getPublicSignedUrls([medPath, thumbPath]);
+      // Use medium (watermarked), fallback to thumb — NEVER original
+      return res[medPath] || res[thumbPath] || "";
     },
     enabled: !!selectedPhoto,
     staleTime: 15 * 60 * 1000,
@@ -171,9 +170,9 @@ const EventPage = () => {
   const photoList = photos || [];
 
   const getPhotoUrl = useCallback((photo: any) => {
-    // Prefer thumbnail, fallback to original
+    // ONLY thumbnails — originals never exposed to frontend
     const thumbPath = toThumbPath(photo.file_url);
-    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+    return thumbUrls?.[thumbPath] || "";
   }, [thumbUrls, toThumbPath]);
 
   // Password protection
@@ -334,7 +333,6 @@ const EventPage = () => {
                   key={photo.id}
                   photoId={photo.id}
                   photoUrl={getPhotoUrl(photo)}
-                  watermarkUrl={photographerSite?.watermark_url || undefined}
                   isFav={isFavorite(photo.id)}
                   onToggleFavorite={toggleFavorite}
                   onClick={() => setSelectedPhoto(photo)}
@@ -359,7 +357,7 @@ const EventPage = () => {
                   alt=""
                   className="w-full h-48 sm:h-full sm:min-h-[400px] object-contain"
                 />
-                <WatermarkOverlay watermarkUrl={photographerSite?.watermark_url || undefined} />
+                {/* Watermark is baked into the image — no overlay needed */}
                 {/* Favorite & Share in lightbox */}
                 <div className="absolute top-3 right-3 flex gap-2">
                   <button

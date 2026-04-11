@@ -11,6 +11,7 @@ import PasswordModal from "@/components/event/PasswordModal";
 import PhotoGallery from "@/components/event/PhotoGallery";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
 import { useS3Upload } from "@/hooks/useS3Upload";
+import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import type { UploadFileProgress } from "@/components/event/PhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -47,13 +48,13 @@ const EventDashboard = () => {
   const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
-  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos", onProgress: (files) => {
+  const { site: photographerSite } = usePhotographerSite();
+  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
       fileName: f.fileName,
       progress: f.progress,
       status: f.status,
     })));
-    // Clear progress after all done
     if (files.every(f => f.status === "done" || f.status === "error")) {
       setTimeout(() => setPhotoUploadProgress([]), 5000);
     }

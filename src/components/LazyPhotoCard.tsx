@@ -1,23 +1,23 @@
 import { useState, useRef, useEffect, memo } from "react";
 import { Heart, Share2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import WatermarkOverlay from "@/components/WatermarkOverlay";
 import { toast } from "sonner";
 
 interface LazyPhotoCardProps {
   photoId: string;
   photoUrl: string;
-  /** Watermark PNG URL (photographer custom or undefined for default) */
-  watermarkUrl?: string;
   isFav: boolean;
   onToggleFavorite: (id: string) => void;
   onClick: () => void;
 }
 
+/**
+ * Lazy-loaded photo card for gallery grid.
+ * Watermark is baked into the image — no CSS overlay needed.
+ */
 const LazyPhotoCard = memo(({
   photoId,
   photoUrl,
-  watermarkUrl,
   isFav,
   onToggleFavorite,
   onClick,
@@ -58,9 +58,6 @@ const LazyPhotoCard = memo(({
               onLoad={() => setLoaded(true)}
               className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
             />
-            {loaded && (
-              <WatermarkOverlay watermarkUrl={watermarkUrl} />
-            )}
           </div>
 
           {/* Action buttons */}

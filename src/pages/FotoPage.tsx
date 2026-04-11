@@ -5,11 +5,29 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WatermarkOverlay from "@/components/WatermarkOverlay";
 import CartDrawer from "@/components/CartDrawer";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
+import { toThumbPath, toMediumPath } from "@/hooks/useS3Upload";
+
+/** Fetch signed read URLs without requiring auth */
+async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const res = await fetch(`${supabaseUrl}/functions/v1/s3-presign`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: supabaseKey },
+    body: JSON.stringify({ action: "sign_read_batch", objects: paths.map(p => ({ path: p })) }),
+  });
+  if (!res.ok) throw new Error("Erro ao carregar imagens");
+  const data = await res.json();
+  const urlMap: Record<string, string> = {};
+  for (const r of data.results || []) {
+    if (r.url) urlMap[r.path] = r.url;
+  }
+  return urlMap;
+}
 
 const FotoPage = () => {
   const { photoId } = useParams<{ photoId: string }>();
@@ -66,14 +84,14 @@ const FotoPage = () => {
     enabled: !!photo?.event_id,
   });
 
-  // Fetch photographer site for watermark
+  // Fetch photographer site for display name/slug only
   const { data: photographerSite } = useQuery({
     queryKey: ["shared-photo-photographer", event?.organizer_id],
     queryFn: async () => {
       if (!event?.organizer_id) return null;
       const { data } = await supabase
         .from("photographer_sites")
-        .select("watermark_url, display_name, slug, watermark_position, watermark_opacity, watermark_size")
+        .select("display_name, slug")
         .eq("user_id", event.organizer_id)
         .maybeSingle();
       return data;
@@ -81,7 +99,22 @@ const FotoPage = () => {
     enabled: !!event?.organizer_id,
   });
 
-  // Fetch related photos (same event, excluding current)
+  // Fetch MEDIUM signed URL for the main photo (watermarked, NOT original)
+  const { data: photoSignedUrl } = useQuery({
+    queryKey: ["foto-medium-url", photo?.file_url],
+    queryFn: async () => {
+      if (!photo?.file_url) return "";
+      const medPath = toMediumPath(photo.file_url);
+      const thumbPath = toThumbPath(photo.file_url);
+      const res = await getPublicSignedUrls([medPath, thumbPath]);
+      return res[medPath] || res[thumbPath] || "";
+    },
+    enabled: !!photo?.file_url,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Fetch related photos thumbnails
   const { data: relatedPhotos } = useQuery({
     queryKey: ["related-photos", photo?.event_id, photoId],
     queryFn: async () => {
@@ -96,6 +129,19 @@ const FotoPage = () => {
       return data || [];
     },
     enabled: !!photo?.event_id,
+  });
+
+  // Fetch thumbnail signed URLs for related photos
+  const { data: relatedThumbUrls } = useQuery({
+    queryKey: ["related-thumb-urls", relatedPhotos?.map(p => p.id).join(",")],
+    queryFn: async () => {
+      if (!relatedPhotos || relatedPhotos.length === 0) return {};
+      const paths = relatedPhotos.map(p => toThumbPath(p.file_url));
+      return getPublicSignedUrls(paths);
+    },
+    enabled: !!relatedPhotos && relatedPhotos.length > 0,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const highPrice = priceGrid?.photo_high_price ?? 15;
@@ -113,7 +159,7 @@ const FotoPage = () => {
     if (!photo || !event) return;
     addItem({
       photoId: photo.id,
-      photoUrl: photo.file_url,
+      photoUrl: photoSignedUrl || "",
       eventId: event.id,
       eventName: event.name,
       resolution,
@@ -171,14 +217,13 @@ const FotoPage = () => {
 
           {/* Main content */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
-            {/* Photo with watermark */}
+            {/* Photo — watermark is baked in, no overlay */}
             <div className="relative rounded-xl overflow-hidden bg-secondary/30 aspect-[4/3]">
               <img
-                src={photo.file_url}
+                src={photoSignedUrl || ""}
                 alt=""
                 className="w-full h-full object-contain"
               />
-              <WatermarkOverlay watermarkUrl={photographerSite?.watermark_url || undefined} />
 
               {/* Action buttons overlay */}
               <div className="absolute top-3 right-3 flex gap-2">
@@ -316,29 +361,30 @@ const FotoPage = () => {
             </div>
           </div>
 
-          {/* Related photos */}
+          {/* Related photos — thumbnails with watermark baked in */}
           {relatedPhotos && relatedPhotos.length > 0 && (
             <div className="mt-10 sm:mt-14">
               <h2 className="text-xl font-bold text-foreground mb-4">Mais fotos deste evento</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                {relatedPhotos.map((rp: any) => (
-                  <Link
-                    key={rp.id}
-                    to={`/foto/${rp.id}`}
-                    className="relative rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30 group"
-                  >
-                    <div className="relative w-full h-full">
+                {relatedPhotos.map((rp: any) => {
+                  const thumbPath = toThumbPath(rp.file_url);
+                  const thumbUrl = relatedThumbUrls?.[thumbPath] || "";
+                  return (
+                    <Link
+                      key={rp.id}
+                      to={`/foto/${rp.id}`}
+                      className="relative rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30 group"
+                    >
                       <img
-                        src={rp.file_url}
+                        src={thumbUrl}
                         alt=""
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
-                      <WatermarkOverlay watermarkUrl={photographerSite?.watermark_url || undefined} />
-                    </div>
-                    <div className="absolute inset-0 bg-background/0 group-hover:bg-background/30 transition-all" />
-                  </Link>
-                ))}
+                      <div className="absolute inset-0 bg-background/0 group-hover:bg-background/30 transition-all" />
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
