@@ -39,6 +39,7 @@ const CartDrawer = () => {
   return (
     <>
       <button
+        data-cart-trigger
         onClick={() => setOpen(true)}
         className="relative p-2 rounded-lg hover:bg-secondary/50 transition-colors"
       >
