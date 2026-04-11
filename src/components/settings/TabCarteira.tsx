@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Wallet, CheckCircle2, AlertTriangle, Loader2, Save, Shield, ArrowRight,
   Eye, EyeOff, Info, Clock, Ban, CheckCircle, CreditCard, Plus, Trash2,
-  Lock, Bell
+  Lock, Bell, Mail, RefreshCw
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCountUp } from "@/components/financeiro/useCountUp";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const InputField = ({ label, value, onChange, placeholder, required = false, disabled = false, type = "text" }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean; disabled?: boolean; type?: string;
@@ -87,6 +88,14 @@ const TabCarteira = () => {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [withdrawPassword, setWithdrawPassword] = useState("");
 
+  // 2FA state
+  const [withdrawStep, setWithdrawStep] = useState<"form" | "2fa">("form");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [sending2FA, setSending2FA] = useState(false);
+  const [maskedEmail, setMaskedEmail] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const resendTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const animBalance = useCountUp(balance, 1000, visible);
   const animPending = useCountUp(pending, 1000, visible);
 
@@ -97,6 +106,27 @@ const TabCarteira = () => {
     if (!user) return;
     loadData();
   }, [user]);
+
+  // Cleanup resend timer
+  useEffect(() => {
+    return () => {
+      if (resendTimerRef.current) clearInterval(resendTimerRef.current);
+    };
+  }, []);
+
+  const startResendCooldown = () => {
+    setResendCooldown(30);
+    if (resendTimerRef.current) clearInterval(resendTimerRef.current);
+    resendTimerRef.current = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          if (resendTimerRef.current) clearInterval(resendTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -196,7 +226,8 @@ const TabCarteira = () => {
     }
   };
 
-  const handleWithdraw = async () => {
+  // Step 1: Validate form & send 2FA code
+  const handleWithdrawStep1 = async () => {
     const amount = parseFloat(withdrawAmount.replace(",", "."));
     if (isNaN(amount) || amount <= 0) {
       toast.error("Informe um valor válido");
@@ -211,23 +242,77 @@ const TabCarteira = () => {
       return;
     }
 
-    setWithdrawing(true);
+    setSending2FA(true);
     try {
       const { data, error } = await supabase.functions.invoke("asaas-wallet", {
-        body: { action: "request_withdrawal", accountId: selectedAccountId, amount, password: withdrawPassword },
+        body: { action: "send_2fa", targetAction: "withdrawal" },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      setMaskedEmail(data.maskedEmail || "");
+      setWithdrawStep("2fa");
+      setTwoFactorCode("");
+      startResendCooldown();
+      toast.success(data.message || "Código enviado!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao enviar código de verificação");
+    } finally {
+      setSending2FA(false);
+    }
+  };
+
+  // Step 2: Confirm with 2FA code
+  const handleWithdrawStep2 = async () => {
+    if (twoFactorCode.length !== 6) {
+      toast.error("Digite o código completo de 6 dígitos");
+      return;
+    }
+
+    setWithdrawing(true);
+    try {
+      const amount = parseFloat(withdrawAmount.replace(",", "."));
+      const { data, error } = await supabase.functions.invoke("asaas-wallet", {
+        body: {
+          action: "request_withdrawal",
+          accountId: selectedAccountId,
+          amount,
+          password: withdrawPassword,
+          twoFactorCode,
+        },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       toast.success(data.message || "Saque solicitado!");
       setShowWithdraw(false);
+      setWithdrawStep("form");
       setWithdrawAmount("");
       setWithdrawPassword("");
       setSelectedAccountId("");
+      setTwoFactorCode("");
       loadData();
     } catch (err: any) {
       toast.error(err.message || "Erro ao solicitar saque");
     } finally {
       setWithdrawing(false);
+    }
+  };
+
+  const handleResend2FA = async () => {
+    if (resendCooldown > 0) return;
+    setSending2FA(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("asaas-wallet", {
+        body: { action: "send_2fa", targetAction: "withdrawal" },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+      startResendCooldown();
+      toast.success("Novo código enviado!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao reenviar código");
+    } finally {
+      setSending2FA(false);
     }
   };
 
@@ -375,6 +460,7 @@ const TabCarteira = () => {
                   return;
                 }
                 setShowWithdraw(true);
+                setWithdrawStep("form");
               }}
                 className="w-full flex items-center justify-center gap-2 bg-white text-primary rounded-xl px-5 py-3.5 font-bold text-sm hover:bg-white/90 transition-all hover:shadow-lg min-h-[48px]">
                 <Lock className="w-4 h-4" />
@@ -480,70 +566,135 @@ const TabCarteira = () => {
         )}
       </div>
 
-      {/* ─── WITHDRAWAL FORM (SECURE) ─── */}
+      {/* ─── WITHDRAWAL FORM (SECURE with 2FA) ─── */}
       {showWithdraw && (
         <div className="glass-card p-6 space-y-4 animate-in slide-in-from-top-2 border-2 border-primary/20">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Lock className="w-4 h-4 text-primary" /> Solicitar saque seguro
-          </h3>
+          {withdrawStep === "form" ? (
+            <>
+              <h3 className="font-semibold flex items-center gap-2">
+                <Lock className="w-4 h-4 text-primary" /> Solicitar saque seguro
+              </h3>
 
-          {/* Account selection */}
-          <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-start gap-2 py-3 border-b border-border/50">
-            <label className="text-sm text-muted-foreground font-medium mt-2">Conta de destino <span className="text-destructive">*</span></label>
-            <div className="space-y-2">
-              {activeAccounts.map((acc) => (
-                <label key={acc.id}
-                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                    selectedAccountId === acc.id ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/30"
-                  }`}>
-                  <input type="radio" name="withdraw-account" value={acc.id}
-                    checked={selectedAccountId === acc.id}
-                    onChange={() => setSelectedAccountId(acc.id)}
-                    className="accent-[hsl(var(--primary))]" />
-                  <div>
-                    <p className="text-sm font-medium">{acc.account_type === "pix" ? `PIX ${acc.pix_key_type}` : "Conta bancária"}</p>
-                    <p className="text-xs text-muted-foreground">{acc.pix_key || `${acc.bank_name} ${acc.account_number}`}</p>
-                  </div>
+              {/* Account selection */}
+              <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-start gap-2 py-3 border-b border-border/50">
+                <label className="text-sm text-muted-foreground font-medium mt-2">Conta de destino <span className="text-destructive">*</span></label>
+                <div className="space-y-2">
+                  {activeAccounts.map((acc) => (
+                    <label key={acc.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                        selectedAccountId === acc.id ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/30"
+                      }`}>
+                      <input type="radio" name="withdraw-account" value={acc.id}
+                        checked={selectedAccountId === acc.id}
+                        onChange={() => setSelectedAccountId(acc.id)}
+                        className="accent-[hsl(var(--primary))]" />
+                      <div>
+                        <p className="text-sm font-medium">{acc.account_type === "pix" ? `PIX ${acc.pix_key_type}` : "Conta bancária"}</p>
+                        <p className="text-xs text-muted-foreground">{acc.pix_key || `${acc.bank_name} ${acc.account_number}`}</p>
+                      </div>
+                    </label>
+                  ))}
+                  {activeAccounts.length === 0 && (
+                    <p className="text-sm text-amber-600">Nenhuma conta ativa disponível. Aguarde o período de proteção de 24h.</p>
+                  )}
+                </div>
+              </div>
+
+              <InputField label="Valor do saque" value={withdrawAmount} onChange={setWithdrawAmount}
+                placeholder={`Máximo: R$ ${fmt(balance)}`} required />
+
+              <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-center gap-2 py-3 border-b border-border/50">
+                <label className="text-sm text-muted-foreground font-medium">
+                  Confirme sua senha <span className="text-destructive">*</span>
                 </label>
-              ))}
-              {activeAccounts.length === 0 && (
-                <p className="text-sm text-amber-600">Nenhuma conta ativa disponível. Aguarde o período de proteção de 24h.</p>
-              )}
-            </div>
-          </div>
+                <input type="password" value={withdrawPassword}
+                  onChange={(e) => setWithdrawPassword(e.target.value)}
+                  placeholder="Digite sua senha"
+                  className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
+              </div>
 
-          <InputField label="Valor do saque" value={withdrawAmount} onChange={setWithdrawAmount}
-            placeholder={`Máximo: R$ ${fmt(balance)}`} required />
+              <div className="p-3 rounded-xl bg-secondary/50 border border-border">
+                <p className="text-xs text-muted-foreground flex items-start gap-2">
+                  <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  Para sua segurança, confirmamos esta operação com um código enviado ao seu e-mail.
+                </p>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-center gap-2 py-3 border-b border-border/50">
-            <label className="text-sm text-muted-foreground font-medium">
-              Confirme sua senha <span className="text-destructive">*</span>
-            </label>
-            <input type="password" value={withdrawPassword}
-              onChange={(e) => setWithdrawPassword(e.target.value)}
-              placeholder="Digite sua senha"
-              className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
-          </div>
+              <div className="flex gap-3">
+                <button onClick={handleWithdrawStep1} disabled={sending2FA || activeAccounts.length === 0}
+                  className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50">
+                  {sending2FA ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                  {sending2FA ? "Enviando código..." : "Continuar e enviar código"}
+                </button>
+                <button onClick={() => { setShowWithdraw(false); setWithdrawPassword(""); }}
+                  className="px-6 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-secondary transition-colors">
+                  Cancelar
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* 2FA Verification Step */}
+              <h3 className="font-semibold flex items-center gap-2">
+                <Shield className="w-4 h-4 text-primary" /> Verificação de segurança
+              </h3>
 
-          <div className="p-3 rounded-xl bg-secondary/50 border border-border">
-            <p className="text-xs text-muted-foreground flex items-start gap-2">
-              <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-              Uma notificação de segurança será enviada para sua conta após a solicitação do saque.
-              Caso não reconheça a operação, entre em contato imediatamente.
-            </p>
-          </div>
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center space-y-3">
+                <div className="w-14 h-14 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                  <Mail className="w-7 h-7 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Código enviado por e-mail</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Enviamos um código de 6 dígitos para <span className="font-medium text-foreground">{maskedEmail}</span>
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex gap-3">
-            <button onClick={handleWithdraw} disabled={withdrawing || activeAccounts.length === 0}
-              className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50">
-              {withdrawing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-              {withdrawing ? "Processando..." : "Confirmar saque"}
-            </button>
-            <button onClick={() => { setShowWithdraw(false); setWithdrawPassword(""); }}
-              className="px-6 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-secondary transition-colors">
-              Cancelar
-            </button>
-          </div>
+              <div className="flex justify-center py-4">
+                <InputOTP maxLength={6} value={twoFactorCode} onChange={setTwoFactorCode}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+
+              <div className="flex items-center justify-center gap-2">
+                <button onClick={handleResend2FA} disabled={resendCooldown > 0 || sending2FA}
+                  className="text-xs text-primary hover:underline disabled:text-muted-foreground disabled:no-underline flex items-center gap-1">
+                  {sending2FA ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3 h-3" />
+                  )}
+                  {resendCooldown > 0 ? `Reenviar código (${resendCooldown}s)` : "Reenviar código"}
+                </button>
+              </div>
+
+              <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
+                <p className="text-xs text-amber-800 dark:text-amber-300">
+                  ⏱️ O código expira em 5 minutos. Se não recebeu, verifique sua caixa de spam ou solicite um novo código.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={handleWithdrawStep2} disabled={withdrawing || twoFactorCode.length !== 6}
+                  className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50">
+                  {withdrawing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                  {withdrawing ? "Processando saque..." : "Confirmar saque"}
+                </button>
+                <button onClick={() => { setWithdrawStep("form"); setTwoFactorCode(""); }}
+                  className="px-6 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-secondary transition-colors">
+                  Voltar
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
