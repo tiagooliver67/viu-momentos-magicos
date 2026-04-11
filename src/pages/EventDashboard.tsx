@@ -11,6 +11,7 @@ import PasswordModal from "@/components/event/PasswordModal";
 import PhotoGallery from "@/components/event/PhotoGallery";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
 import { useS3Upload } from "@/hooks/useS3Upload";
+import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import type { UploadFileProgress } from "@/components/event/PhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
