@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +7,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import WatermarkCanvas from "@/components/WatermarkCanvas";
 import CartDrawer from "@/components/CartDrawer";
+import LazyPhotoCard from "@/components/LazyPhotoCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
@@ -76,18 +78,26 @@ const EventPage = () => {
       return data || [];
     },
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
+
+  // Stable key: only changes when photo count or IDs actually change
+  const photoIds = useMemo(() => photos?.map(p => p.id).sort().join(",") || "", [photos]);
 
   // Fetch signed URLs for photos
   const { data: signedUrls, isLoading: urlsLoading, error: urlsError, refetch: refetchUrls } = useQuery({
-    queryKey: ["signed-urls", id, photos?.map(p => p.id).join(",")],
+    queryKey: ["signed-urls", id, photoIds],
     queryFn: async () => {
       if (!photos || photos.length === 0) return {};
       const paths = photos.map((p: any) => p.file_url);
       return getPublicSignedUrls(paths);
     },
     enabled: !!photos && photos.length > 0,
-    staleTime: 10 * 60 * 1000, // 10 min
+    staleTime: 15 * 60 * 1000, // 15 min — URLs are valid for ~15min
+    gcTime: 30 * 60 * 1000, // keep in cache 30 min
+    refetchOnWindowFocus: false, // prevent mobile tab-switch re-fetch
+    refetchOnReconnect: false,
     retry: 2,
   });
 
@@ -248,11 +258,12 @@ const EventPage = () => {
             </button>
           </div>
 
-          {/* Loading state */}
+          {/* Skeleton loading */}
           {urlsLoading && photoList.length > 0 && (
-            <div className="text-center py-16">
-              <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
-              <p className="text-muted-foreground text-sm">Carregando fotos...</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+              {Array.from({ length: Math.min(photoList.length, 20) }).map((_, i) => (
+                <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
+              ))}
             </div>
           )}
 
@@ -281,68 +292,18 @@ const EventPage = () => {
 
           {!urlsLoading && !urlsError && photoList.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-              {photoList.map((photo: any) => {
-                const fav = isFavorite(photo.id);
-                const photoUrl = getPhotoUrl(photo);
-                return (
-                  <div
-                    key={photo.id}
-                    className="relative group cursor-pointer rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30"
-                  >
-                    {photoUrl ? (
-                      <div onClick={() => setSelectedPhoto(photo)} className="w-full h-full">
-                        <WatermarkCanvas
-                          src={photoUrl}
-                          watermarkUrl={photographerSite?.watermark_url || undefined}
-                          watermarkText={photographerSite?.display_name || "VIUFOTO"}
-                          className="w-full h-full"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
-                      </div>
-                    )}
-
-                    {/* Action buttons */}
-                    <div className="absolute top-2 right-2 flex gap-1.5">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const url = `${window.location.origin}/foto/${photo.id}`;
-                          navigator.clipboard.writeText(url);
-                          toast.success("Link copiado!");
-                        }}
-                        className="p-2 rounded-full bg-black/40 text-white/80 hover:bg-black/60 backdrop-blur-sm transition-all transform active:scale-90"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleFavorite(photo.id);
-                          toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
-                        }}
-                        className={`p-2 rounded-full backdrop-blur-sm transition-all transform active:scale-90 ${
-                          fav
-                            ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
-                            : "bg-black/40 text-white/80 hover:bg-black/60 hover:text-white"
-                        }`}
-                      >
-                        <Heart className={`w-4 h-4 transition-all ${fav ? "fill-current scale-110" : ""}`} />
-                      </button>
-                    </div>
-
-                    <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-all flex items-end p-2 pointer-events-none">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity w-full">
-                        <span className="text-primary font-bold text-xs bg-background/80 px-2 py-1 rounded">
-                          R$ {highPrice.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {photoList.map((photo: any) => (
+                <LazyPhotoCard
+                  key={photo.id}
+                  photoId={photo.id}
+                  photoUrl={getPhotoUrl(photo)}
+                  watermarkText={photographerSite?.display_name || "VIUFOTO"}
+                  isFav={isFavorite(photo.id)}
+                  onToggleFavorite={toggleFavorite}
+                  onClick={() => setSelectedPhoto(photo)}
+                  price={highPrice}
+                />
+              ))}
             </div>
           )}
         </div>
