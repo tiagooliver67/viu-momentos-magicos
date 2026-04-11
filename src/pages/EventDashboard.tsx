@@ -379,7 +379,7 @@ const EventDashboard = () => {
         <CouponModal open={showCoupon} onClose={() => setShowCoupon(false)} onSave={(c) => { createCoupon.mutate(c); setShowCoupon(false); }} isSaving={createCoupon.isPending} />
         <EditEventModal open={showEdit} onClose={() => setShowEdit(false)} onSave={(data) => { updateEvent.mutate(data as any); setShowEdit(false); }} initial={{ name: event.name, event_date: event.event_date, event_time: event.event_time, location: event.location, category: event.category, search_type: event.search_type || [], visibility: event.visibility }} isSaving={updateEvent.isPending} />
         <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSave={(pw) => { updateEvent.mutate({ password: pw }); setShowPassword(false); }} currentPassword={event.password} isSaving={updateEvent.isPending} />
-        <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} onUploadFiles={(files) => s3UploadPhotos.mutate(files)} isUploading={s3UploadPhotos.isPending} />
+        <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} onUploadFiles={(files) => s3UploadPhotos.mutate(files)} isUploading={s3UploadPhotos.isPending} uploadProgress={photoUploadProgress} />
 
         {/* Actions dropdown */}
         {showActions && (
