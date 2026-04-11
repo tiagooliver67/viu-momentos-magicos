@@ -407,9 +407,13 @@ const EventPage = () => {
                   >
                     Continuar comprando
                   </button>
-                  <button className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all">
+                  <Link
+                    to={`/evento/${id}`}
+                    onClick={() => setSelectedPhoto(null)}
+                    className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all text-center"
+                  >
                     Ir para o carrinho
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
