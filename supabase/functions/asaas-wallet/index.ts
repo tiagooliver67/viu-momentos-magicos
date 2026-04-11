@@ -176,24 +176,32 @@ Deno.serve(async (req) => {
 
         if (!isDuplicate) throw createError;
 
-        // Account already exists — try to find it by email or cpfCnpj
+        // Account already exists — try to find it via raw fetch (don't throw on error)
         console.log("Account already exists, searching for existing account...");
         let existingAccount = null;
 
-        try {
-          const byEmail = await asaasFetch(`/accounts?email=${encodeURIComponent(email)}`);
-          if (byEmail.data?.length > 0) existingAccount = byEmail.data[0];
-        } catch (_) {}
+        const searchHeaders = { "Content-Type": "application/json", access_token: getAsaasKey() };
 
+        // Search by email
+        try {
+          const res = await fetch(`${ASAAS_BASE_URL}/accounts?email=${encodeURIComponent(email)}`, { headers: searchHeaders });
+          const body = await res.json();
+          console.log("Search by email result:", JSON.stringify(body));
+          if (res.ok && body.data?.length > 0) existingAccount = body.data[0];
+        } catch (e) { console.error("Search by email failed:", e); }
+
+        // Search by cpfCnpj
         if (!existingAccount) {
           try {
-            const byCpf = await asaasFetch(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
-            if (byCpf.data?.length > 0) existingAccount = byCpf.data[0];
-          } catch (_) {}
+            const res = await fetch(`${ASAAS_BASE_URL}/accounts?cpfCnpj=${cleanCpfCnpj}`, { headers: searchHeaders });
+            const body = await res.json();
+            console.log("Search by cpfCnpj result:", JSON.stringify(body));
+            if (res.ok && body.data?.length > 0) existingAccount = body.data[0];
+          } catch (e) { console.error("Search by cpfCnpj failed:", e); }
         }
 
         if (!existingAccount) {
-          return json({ error: "Conta já existe no sistema de pagamentos, mas não foi possível localizá-la. Entre em contato com o suporte." });
+          return json({ error: "Conta já existe no sistema de pagamentos, mas não foi possível localizá-la automaticamente. Entre em contato com o suporte." });
         }
 
         walletId = existingAccount.walletId || existingAccount.id;
