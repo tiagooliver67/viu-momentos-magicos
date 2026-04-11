@@ -9,9 +9,6 @@ interface LazyPhotoCardProps {
   photoUrl: string;
   /** Watermark PNG URL (photographer custom or undefined for default) */
   watermarkUrl?: string;
-  watermarkPosition?: "center" | "tile" | "corner";
-  watermarkOpacity?: number;
-  watermarkSize?: number;
   isFav: boolean;
   onToggleFavorite: (id: string) => void;
   onClick: () => void;
