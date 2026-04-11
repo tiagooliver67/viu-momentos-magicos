@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import WatermarkCanvas from "@/components/WatermarkCanvas";
+import WatermarkOverlay from "@/components/WatermarkOverlay";
 import CartDrawer from "@/components/CartDrawer";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -173,14 +173,16 @@ const FotoPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
             {/* Photo with watermark */}
             <div className="relative rounded-xl overflow-hidden bg-secondary/30 aspect-[4/3]">
-              <WatermarkCanvas
+              <img
                 src={photo.file_url}
+                alt=""
+                className="w-full h-full object-contain"
+              />
+              <WatermarkOverlay
                 watermarkUrl={photographerSite?.watermark_url || undefined}
-                watermarkText={photographerSite?.display_name || "VIUFOTO"}
-                watermarkPosition={(photographerSite as any)?.watermark_position || "tile"}
-                watermarkOpacity={(photographerSite as any)?.watermark_opacity ?? 25}
-                watermarkSize={(photographerSite as any)?.watermark_size ?? 30}
-                className="w-full h-full"
+                position={(photographerSite?.watermark_position as any) || "tile"}
+                opacity={photographerSite?.watermark_opacity ?? 25}
+                size={photographerSite?.watermark_size ?? 30}
               />
 
               {/* Action buttons overlay */}
@@ -330,12 +332,20 @@ const FotoPage = () => {
                     to={`/foto/${rp.id}`}
                     className="relative rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30 group"
                   >
-                    <WatermarkCanvas
-                      src={rp.file_url}
-                      watermarkUrl={photographerSite?.watermark_url || undefined}
-                      watermarkText={photographerSite?.display_name || "VIUFOTO"}
-                      className="w-full h-full"
-                    />
+                    <div className="relative w-full h-full">
+                      <img
+                        src={rp.file_url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <WatermarkOverlay
+                        watermarkUrl={photographerSite?.watermark_url || undefined}
+                        position="tile"
+                        opacity={25}
+                        size={30}
+                      />
+                    </div>
                     <div className="absolute inset-0 bg-background/0 group-hover:bg-background/30 transition-all" />
                   </Link>
                 ))}
