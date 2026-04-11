@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
           formattedBirthDate = birthDate;
         }
         else {
-          return json({ error: "Data de nascimento em formato inválido. Use DD/MM/AAAA ou AAAA-MM-DD." }, 400);
+          return json({ error: "Data de nascimento em formato inválido. Use DD/MM/AAAA ou AAAA-MM-DD." });
         }
       }
 
@@ -205,13 +205,13 @@ Deno.serve(async (req) => {
       const { accountType, pixKey, pixKeyType, bankCode, bankName, agency, accountNumber, accountTypeBank, accountHolder, label } = params;
 
       const profile = await getProfile(supabaseAdmin, user.id);
-      if (!profile?.cpf_cnpj) return json({ error: "Configure seus dados cadastrais antes de adicionar uma conta." }, 400);
+      if (!profile?.cpf_cnpj) return json({ error: "Configure seus dados cadastrais antes de adicionar uma conta." });
 
       if (accountType === "pix" && pixKeyType === "CPF") {
         const cleanPixKey = pixKey?.replace(/\D/g, "") || "";
         const cleanProfileCpf = profile.cpf_cnpj.replace(/\D/g, "");
         if (cleanPixKey && cleanPixKey !== cleanProfileCpf) {
-          return json({ error: "A chave PIX CPF deve corresponder ao seu CPF cadastrado. Saques só são permitidos para contas de mesma titularidade." }, 400);
+          return json({ error: "A chave PIX CPF deve corresponder ao seu CPF cadastrado. Saques só são permitidos para contas de mesma titularidade." });
         }
       }
 
@@ -224,11 +224,11 @@ Deno.serve(async (req) => {
       };
 
       if (accountType === "pix") {
-        if (!pixKey) return json({ error: "Informe a chave PIX" }, 400);
+        if (!pixKey) return json({ error: "Informe a chave PIX" });
         insertData.pix_key = pixKey;
         insertData.pix_key_type = pixKeyType || "CPF";
       } else {
-        if (!bankCode || !agency || !accountNumber) return json({ error: "Dados bancários incompletos" }, 400);
+        if (!bankCode || !agency || !accountNumber) return json({ error: "Dados bancários incompletos" });
         insertData.bank_code = bankCode;
         insertData.bank_name = bankName;
         insertData.agency = agency;
@@ -272,7 +272,7 @@ Deno.serve(async (req) => {
     // ─── DELETE WITHDRAWAL ACCOUNT ───
     if (action === "delete_withdrawal_account") {
       const { accountId } = params;
-      if (!accountId) return json({ error: "ID da conta é obrigatório" }, 400);
+      if (!accountId) return json({ error: "ID da conta é obrigatório" });
 
       const { error } = await supabaseAdmin
         .from("withdrawal_accounts")
@@ -296,7 +296,7 @@ Deno.serve(async (req) => {
     if (action === "send_2fa") {
       const { targetAction } = params;
       if (!targetAction || !["withdrawal", "add_account"].includes(targetAction)) {
-        return json({ error: "Ação inválida para 2FA" }, 400);
+        return json({ error: "Ação inválida para 2FA" });
       }
 
       // Check if user is blocked (too many attempts)
@@ -356,7 +356,7 @@ Deno.serve(async (req) => {
     // ─── VERIFY 2FA CODE ───
     if (action === "verify_2fa") {
       const { code, targetAction } = params;
-      if (!code || !targetAction) return json({ error: "Código e ação são obrigatórios" }, 400);
+      if (!code || !targetAction) return json({ error: "Código e ação são obrigatórios" });
 
       // Find valid code
       const { data: codes } = await supabaseAdmin
@@ -372,7 +372,7 @@ Deno.serve(async (req) => {
       const activeCode = codes?.[0];
 
       if (!activeCode) {
-        return json({ error: "Código expirado ou não encontrado. Solicite um novo código." }, 400);
+        return json({ error: "Código expirado ou não encontrado. Solicite um novo código." });
       }
 
       // Check if blocked
@@ -401,7 +401,7 @@ Deno.serve(async (req) => {
           return json({ error: "Muitas tentativas inválidas. Ação bloqueada por 10 minutos." }, 429);
         }
 
-        return json({ error: `Código incorreto. ${5 - newAttempts} tentativa(s) restante(s).` }, 400);
+        return json({ error: `Código incorreto. ${5 - newAttempts} tentativa(s) restante(s).` });
       }
 
       // Code is valid — mark as used
@@ -417,10 +417,10 @@ Deno.serve(async (req) => {
     if (action === "request_withdrawal") {
       const { accountId, amount, password, twoFactorCode } = params;
 
-      if (!accountId) return json({ error: "Selecione uma conta cadastrada para saque." }, 400);
-      if (!amount || amount <= 0) return json({ error: "Valor inválido para saque." }, 400);
-      if (!password) return json({ error: "Confirme sua senha para realizar o saque." }, 400);
-      if (REQUIRE_2FA && !twoFactorCode) return json({ error: "Código de verificação 2FA é obrigatório." }, 400);
+      if (!accountId) return json({ error: "Selecione uma conta cadastrada para saque." });
+      if (!amount || amount <= 0) return json({ error: "Valor inválido para saque." });
+      if (!password) return json({ error: "Confirme sua senha para realizar o saque." });
+      if (REQUIRE_2FA && !twoFactorCode) return json({ error: "Código de verificação 2FA é obrigatório." });
 
       // Verify password
       const { error: signInError } = await supabaseAdmin.auth.signInWithPassword({
@@ -433,7 +433,7 @@ Deno.serve(async (req) => {
           ip_address: ipAddress, user_agent: userAgent,
           error_message: "Senha incorreta",
         });
-        return json({ error: "Senha incorreta. Tente novamente." }, 400);
+        return json({ error: "Senha incorreta. Tente novamente." });
       }
 
       // Verify 2FA code (only if enabled)
@@ -455,7 +455,7 @@ Deno.serve(async (req) => {
             ip_address: ipAddress, user_agent: userAgent,
             error_message: "Código 2FA inválido",
           });
-          return json({ error: "Código de verificação inválido ou expirado." }, 400);
+          return json({ error: "Código de verificação inválido ou expirado." });
         }
 
         // Mark 2FA code as used
@@ -472,8 +472,8 @@ Deno.serve(async (req) => {
         .eq("user_id", user.id)
         .single();
 
-      if (!account) return json({ error: "Conta de saque não encontrada." }, 400);
-      if (account.status === "blocked") return json({ error: "Esta conta está bloqueada." }, 400);
+      if (!account) return json({ error: "Conta de saque não encontrada." });
+      if (account.status === "blocked") return json({ error: "Esta conta está bloqueada." });
 
       // Check 24h cooldown
       if (account.status === "pending" || new Date(account.activated_at) > new Date()) {
@@ -486,7 +486,7 @@ Deno.serve(async (req) => {
 
       // Titularity check
       const profile = await getProfile(supabaseAdmin, user.id);
-      if (!profile?.asaas_wallet_id) return json({ error: "Carteira não configurada." }, 400);
+      if (!profile?.asaas_wallet_id) return json({ error: "Carteira não configurada." });
 
       const profileCpf = profile.cpf_cnpj?.replace(/\D/g, "") || "";
       const accountCpf = account.cpf_cnpj?.replace(/\D/g, "") || "";
@@ -496,7 +496,7 @@ Deno.serve(async (req) => {
           ip_address: ipAddress, user_agent: userAgent,
           error_message: "CPF/CNPJ da conta não corresponde ao perfil",
         });
-        return json({ error: "CPF/CNPJ da conta de destino não corresponde ao seu cadastro." }, 400);
+        return json({ error: "CPF/CNPJ da conta de destino não corresponde ao seu cadastro." });
       }
 
       // Check balance
@@ -507,7 +507,7 @@ Deno.serve(async (req) => {
       } catch {
         return json({ error: "Erro ao verificar saldo." }, 500);
       }
-      if (amount > currentBalance) return json({ error: `Saldo insuficiente. Disponível: R$ ${currentBalance.toFixed(2)}` }, 400);
+      if (amount > currentBalance) return json({ error: `Saldo insuficiente. Disponível: R$ ${currentBalance.toFixed(2)}` });
 
       // Log the request
       const { data: logEntry } = await supabaseAdmin.from("withdrawal_logs").insert({
@@ -603,7 +603,7 @@ Deno.serve(async (req) => {
       return json({ notifications: data || [] });
     }
 
-    return json({ error: "Ação inválida" }, 400);
+    return json({ error: "Ação inválida" });
   } catch (error: any) {
     console.error("Asaas Wallet Error:", error);
     return new Response(JSON.stringify({ error: error.message }), {
