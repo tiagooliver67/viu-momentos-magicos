@@ -123,7 +123,7 @@ const EventPage = () => {
       if (!event?.organizer_id) return null;
       const { data } = await supabase
         .from("photographer_sites")
-        .select("watermark_url, display_name, slug")
+        .select("watermark_url, display_name, slug, watermark_position, watermark_opacity, watermark_size")
         .eq("user_id", event.organizer_id)
         .maybeSingle();
       return data;
