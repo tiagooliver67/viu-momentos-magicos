@@ -359,7 +359,7 @@ const TabCarteira = () => {
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Wallet className="w-5 h-5 text-primary" /> Carteira
           </h2>
-          <p className="text-sm text-muted-foreground">Configure sua carteira para começar a receber pagamentos</p>
+          <p className="text-sm text-muted-foreground">Configure como você deseja receber seus pagamentos e comece a vender suas fotos.</p>
         </div>
 
         <div className="glass-card p-5 flex items-center gap-4 border-l-4 border-l-amber-500">
@@ -367,31 +367,37 @@ const TabCarteira = () => {
             <AlertTriangle className="w-6 h-6 text-amber-500" />
           </div>
           <div>
-            <p className="font-semibold text-foreground">Carteira não configurada</p>
-            <p className="text-sm text-muted-foreground">Preencha seus dados abaixo para ativar sua carteira.</p>
+            <p className="font-semibold text-foreground">Suas vendas estão bloqueadas</p>
+            <p className="text-sm text-muted-foreground">Preencha os dados abaixo para ativar seu recebimento e começar a vender.</p>
           </div>
         </div>
 
+        {/* Seção 1 — Dados necessários */}
         <div className="glass-card p-6 space-y-0">
-          <InputField label="Nome completo / Razão social" value={name} onChange={setName} placeholder="Seu nome ou razão social" required />
-          <InputField label="E-mail" value={email} onChange={setEmail} placeholder="seu@email.com" required />
+          <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
+            <User className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">Dados necessários</h3>
+          </div>
+          <InputField label="Nome completo" value={name} onChange={setName} placeholder="Seu nome completo" required />
+          <InputField label="E-mail" value={email} onChange={setEmail} placeholder="seu@email.com" required disabled />
           <InputField label="CPF ou CNPJ" value={cpfCnpj} onChange={setCpfCnpj} placeholder="000.000.000-00" required />
           <InputField label="Data de nascimento" value={birthDate} onChange={setBirthDate} placeholder="1990-01-31" required type="date" />
           <InputField label="Telefone" value={phone} onChange={setPhone} placeholder="(00) 00000-0000" />
         </div>
 
+        {/* Seção 2 — Segurança */}
         <div className="glass-card p-4 flex items-start gap-3">
           <Shield className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">
-            Seus pagamentos são processados com segurança por uma instituição financeira parceira.
-            Você pode acompanhar e sacar seus valores diretamente pela ViuFoto.
+            Seus dados são utilizados para validar sua conta de recebimento com segurança através de uma instituição financeira parceira.
+            Após a ativação, você poderá cadastrar suas contas de saque (PIX ou conta bancária) e começar a receber.
           </p>
         </div>
 
         <button onClick={handleSave} disabled={saving}
-          className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
-          {saving ? "Configurando..." : "Ativar carteira"}
+          className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
+          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
+          {saving ? "Ativando recebimento..." : "Ativar recebimento"}
         </button>
       </div>
     );
