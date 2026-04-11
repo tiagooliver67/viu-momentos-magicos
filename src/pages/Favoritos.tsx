@@ -7,7 +7,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
-import WatermarkCanvas from "@/components/WatermarkCanvas";
+import WatermarkOverlay from "@/components/WatermarkOverlay";
 import { toast } from "sonner";
 
 interface FavPhoto {
@@ -207,11 +207,10 @@ export default function Favoritos() {
                     selected.has(photo.id) ? "border-primary" : "border-transparent"
                   }`}
                 >
-                  <WatermarkCanvas
-                    src={photo.file_url}
-                    watermarkText="VIUFOTO"
-                    className="w-full h-full"
-                  />
+                  <div className="relative w-full h-full">
+                    <img src={photo.file_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <WatermarkOverlay />
+                  </div>
 
                   {/* Select checkbox */}
                   <button
