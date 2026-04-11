@@ -371,7 +371,7 @@ const FotoPage = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                 {relatedPhotos.map((rp: any) => {
                   const thumbPath = toThumbPath(rp.file_url);
-                  const thumbUrl = relatedThumbUrls?.[thumbPath] || "";
+                  const thumbUrl = relatedThumbUrls?.[thumbPath] || relatedThumbUrls?.[rp.file_url] || "";
                   return (
                     <Link
                       key={rp.id}
