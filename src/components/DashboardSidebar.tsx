@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, DollarSign, Settings, HelpCircle, PlusCircle, Briefcase, Menu, X } from "lucide-react";
+import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
