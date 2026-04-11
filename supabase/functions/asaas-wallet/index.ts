@@ -159,15 +159,45 @@ Deno.serve(async (req) => {
         name, email, cpfCnpj: cleanCpfCnpj,
         companyType: cleanCpfCnpj.length > 11 ? "LIMITED" : "MEI",
         loginEmail: email,
-        ...(cleanPhone ? { phone: cleanPhone } : {}),
+        incomeValue: 5000,
+        ...(cleanPhone ? { phone: cleanPhone, mobilePhone: cleanPhone } : {}),
         ...(formattedBirthDate ? { birthDate: formattedBirthDate } : {}),
       };
 
       console.log("Creating Asaas account with data:", JSON.stringify({ ...accountData, cpfCnpj: "***" }));
 
-      const account = await asaasFetch("/accounts", { method: "POST", body: JSON.stringify(accountData) });
-      const walletId = account.walletId || account.id;
-      if (!walletId) throw new Error("Falha ao obter walletId");
+      let walletId: string;
+
+      try {
+        const account = await asaasFetch("/accounts", { method: "POST", body: JSON.stringify(accountData) });
+        walletId = account.walletId || account.id;
+      } catch (createError: any) {
+        const errMsg = (createError.message || "").toLowerCase();
+        const isEmailDuplicate = errMsg.includes("email") && errMsg.includes("já está em uso");
+        const isCpfDuplicate = errMsg.includes("cpf") && errMsg.includes("já está em uso");
+        const isDuplicate = isEmailDuplicate || isCpfDuplicate || errMsg.includes("already") || errMsg.includes("duplicat");
+
+        if (!isDuplicate) throw createError;
+
+        // Account exists outside our scope — retry with unique loginEmail
+        console.log("Account already exists externally. Retrying with unique loginEmail...");
+
+        const uniqueEmail = email.replace("@", `+viufoto_${user.id.substring(0, 8)}@`);
+        const retryData = {
+          ...accountData,
+          loginEmail: uniqueEmail,
+          ...(isEmailDuplicate ? { email: uniqueEmail } : {}),
+        };
+
+        try {
+          const account = await asaasFetch("/accounts", { method: "POST", body: JSON.stringify(retryData) });
+          walletId = account.walletId || account.id;
+          console.log("Created account with unique email, walletId:", walletId);
+        } catch (retryError: any) {
+          console.error("Retry also failed:", retryError.message);
+          return json({ error: retryError.message || "Não foi possível criar sua conta de recebimento. Entre em contato com o suporte." });
+        }
+      }
 
       await supabaseAdmin.from("profiles")
         .update({ asaas_wallet_id: walletId, full_name: name, cpf_cnpj: cpfCnpj, phone: phone || null })
