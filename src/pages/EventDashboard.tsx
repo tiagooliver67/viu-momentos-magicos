@@ -40,12 +40,23 @@ const EventDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const [photoUploadProgress, setPhotoUploadProgress] = useState<UploadFileProgress[]>([]);
 
   // Data hooks
   const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
-  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos" });
+  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos", onProgress: (files) => {
+    setPhotoUploadProgress(files.map(f => ({
+      fileName: f.fileName,
+      progress: f.progress,
+      status: f.status,
+    })));
+    // Clear progress after all done
+    if (files.every(f => f.status === "done" || f.status === "error")) {
+      setTimeout(() => setPhotoUploadProgress([]), 5000);
+    }
+  }});
   const s3UploadVideos = useS3Upload({ eventId: id || "", type: "videos" });
   const ordersQuery = useEventOrders(id);
   const { coupons, createCoupon, toggleCoupon } = useEventCoupons(id);
