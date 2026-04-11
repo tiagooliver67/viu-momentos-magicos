@@ -187,14 +187,7 @@ const Dashboard = () => {
               </p>
             </div>
             <Link
-              to="/dashboard/configuracoes"
-              onClick={() => {
-                // Will navigate to configuracoes with financeiro tab
-                setTimeout(() => {
-                  const el = document.querySelector('[data-tab="financeiro"]');
-                  if (el instanceof HTMLElement) el.click();
-                }, 100);
-              }}
+              to="/dashboard/configuracoes?tab=carteira"
               className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all whitespace-nowrap flex items-center gap-2"
             >
               Configurar recebimento
