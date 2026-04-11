@@ -176,28 +176,50 @@ Deno.serve(async (req) => {
 
         if (!isDuplicate) throw createError;
 
-        // Account already exists — try to find it via raw fetch (don't throw on error)
+        // Account already exists — try to find it
         console.log("Account already exists, searching for existing account...");
         let existingAccount = null;
-
         const searchHeaders = { "Content-Type": "application/json", access_token: getAsaasKey() };
 
-        // Search by email
-        try {
-          const res = await fetch(`${ASAAS_BASE_URL}/accounts?email=${encodeURIComponent(email)}`, { headers: searchHeaders });
-          const body = await res.json();
-          console.log("Search by email result:", JSON.stringify(body));
-          if (res.ok && body.data?.length > 0) existingAccount = body.data[0];
-        } catch (e) { console.error("Search by email failed:", e); }
+        // Try multiple search strategies
+        const searchUrls = [
+          `${ASAAS_BASE_URL}/accounts?email=${encodeURIComponent(email)}`,
+          `${ASAAS_BASE_URL}/accounts?cpfCnpj=${cleanCpfCnpj}`,
+          `${ASAAS_BASE_URL}/accounts?loginEmail=${encodeURIComponent(email)}`,
+          `${ASAAS_BASE_URL}/accounts?name=${encodeURIComponent(name)}`,
+        ];
 
-        // Search by cpfCnpj
+        for (const url of searchUrls) {
+          if (existingAccount) break;
+          try {
+            const res = await fetch(url, { headers: searchHeaders });
+            const body = await res.json();
+            console.log(`Search ${url.split('?')[1]}: ${body.totalCount || 0} results`);
+            if (res.ok && body.data?.length > 0) {
+              // Verify match by cpfCnpj or email
+              existingAccount = body.data.find((a: any) =>
+                a.cpfCnpj?.replace(/\D/g, "") === cleanCpfCnpj ||
+                a.email === email ||
+                a.loginEmail === email
+              ) || body.data[0];
+            }
+          } catch (e) { console.error("Search failed:", e); }
+        }
+
+        // Last resort: list all and find manually
         if (!existingAccount) {
           try {
-            const res = await fetch(`${ASAAS_BASE_URL}/accounts?cpfCnpj=${cleanCpfCnpj}`, { headers: searchHeaders });
+            const res = await fetch(`${ASAAS_BASE_URL}/accounts?limit=100`, { headers: searchHeaders });
             const body = await res.json();
-            console.log("Search by cpfCnpj result:", JSON.stringify(body));
-            if (res.ok && body.data?.length > 0) existingAccount = body.data[0];
-          } catch (e) { console.error("Search by cpfCnpj failed:", e); }
+            console.log(`Listing all accounts: ${body.totalCount || 0} total`);
+            if (res.ok && body.data?.length > 0) {
+              existingAccount = body.data.find((a: any) =>
+                a.cpfCnpj?.replace(/\D/g, "") === cleanCpfCnpj ||
+                a.email === email ||
+                a.loginEmail === email
+              );
+            }
+          } catch (e) { console.error("List all failed:", e); }
         }
 
         if (!existingAccount) {
