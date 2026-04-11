@@ -165,9 +165,44 @@ Deno.serve(async (req) => {
 
       console.log("Creating Asaas account with data:", JSON.stringify({ ...accountData, cpfCnpj: "***" }));
 
-      const account = await asaasFetch("/accounts", { method: "POST", body: JSON.stringify(accountData) });
-      const walletId = account.walletId || account.id;
-      if (!walletId) throw new Error("Falha ao obter walletId");
+      let walletId: string;
+
+      try {
+        const account = await asaasFetch("/accounts", { method: "POST", body: JSON.stringify(accountData) });
+        walletId = account.walletId || account.id;
+      } catch (createError: any) {
+        const errMsg = (createError.message || "").toLowerCase();
+        const isDuplicate = errMsg.includes("já está em uso") || errMsg.includes("already") || errMsg.includes("duplicat");
+
+        if (!isDuplicate) throw createError;
+
+        // Account already exists — try to find it by email or cpfCnpj
+        console.log("Account already exists, searching for existing account...");
+        let existingAccount = null;
+
+        try {
+          const byEmail = await asaasFetch(`/accounts?email=${encodeURIComponent(email)}`);
+          if (byEmail.data?.length > 0) existingAccount = byEmail.data[0];
+        } catch (_) {}
+
+        if (!existingAccount) {
+          try {
+            const byCpf = await asaasFetch(`/accounts?cpfCnpj=${cleanCpfCnpj}`);
+            if (byCpf.data?.length > 0) existingAccount = byCpf.data[0];
+          } catch (_) {}
+        }
+
+        if (!existingAccount) {
+          return json({ error: "Conta já existe no sistema de pagamentos, mas não foi possível localizá-la. Entre em contato com o suporte." });
+        }
+
+        walletId = existingAccount.walletId || existingAccount.id;
+        if (!walletId) {
+          return json({ error: "Conta encontrada mas sem identificador válido. Entre em contato com o suporte." });
+        }
+
+        console.log("Found existing account, linking walletId:", walletId);
+      }
 
       await supabaseAdmin.from("profiles")
         .update({ asaas_wallet_id: walletId, full_name: name, cpf_cnpj: cpfCnpj, phone: phone || null })
