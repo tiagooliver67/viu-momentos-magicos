@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
     // ─── CREATE WALLET ───
     if (action === "create_wallet") {
       const { name, email, cpfCnpj, phone, birthDate } = params;
-      if (!name || !email || !cpfCnpj) return json({ error: "Nome, e-mail e CPF/CNPJ são obrigatórios" }, 400);
+      if (!name || !email || !cpfCnpj) return json({ error: "Nome, e-mail e CPF/CNPJ são obrigatórios" });
 
       const profile = await getProfile(supabaseAdmin, user.id);
       if (profile?.asaas_wallet_id) return json({ walletId: profile.asaas_wallet_id, message: "Carteira já configurada" });
