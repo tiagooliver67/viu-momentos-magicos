@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   User, Globe, Image, Landmark, Star, CreditCard, Ticket, MessageSquare, Smartphone,
@@ -7,12 +8,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { Wallet } from "lucide-react";
+
 const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
   { id: "site", label: "Meu site", icon: Globe },
   { id: "portfolio", label: "Meu portfólio", icon: Image },
   { id: "financeiro", label: "Financeiro", icon: Landmark },
-  { id: "banco", label: "Dados bancários", icon: Landmark },
+  { id: "carteira", label: "Carteira", icon: Wallet },
   { id: "exclusividade", label: "Exclusividade", icon: Star },
   { id: "smartcard", label: "SmartCard", icon: CreditCard },
   { id: "cupons", label: "Cupons", icon: Ticket },
@@ -143,6 +146,7 @@ const TabConta = () => {
 import MeuSiteTab from "@/components/settings/MeuSiteTab";
 const TabSite = MeuSiteTab;
 import TabFinanceiro from "@/components/settings/TabFinanceiro";
+import TabCarteira from "@/components/settings/TabCarteira";
 
 // ─── Tab: Portfólio ───
 const TabPortfolio = () => {
@@ -195,44 +199,7 @@ const TabPortfolio = () => {
   );
 };
 
-// ─── Tab: Dados Bancários ───
-const TabBanco = () => {
-  const [pixType, setPixType] = useState("cpf");
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold">Dados bancários</h2>
-        <p className="text-sm text-muted-foreground">Configure sua conta para receber pagamentos</p>
-      </div>
-      <div className="glass-card p-6 space-y-5">
-        <h3 className="font-semibold flex items-center gap-2"><Shield className="w-4 h-4 text-primary" /> Chave PIX</h3>
-        <div className="flex gap-2 flex-wrap">
-          {[{ id: "cpf", label: "CPF" }, { id: "email", label: "E-mail" }, { id: "celular", label: "Celular" }, { id: "aleatoria", label: "Aleatória" }].map(t => (
-            <button key={t.id} onClick={() => setPixType(t.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${pixType === t.id ? "bg-primary text-primary-foreground" : "bg-secondary/50 text-muted-foreground hover:bg-secondary"}`}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <InputField label="Chave PIX" value={pixType === "cpf" ? "051.153.435-33" : ""} />
-        <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
-          <p className="text-xs text-muted-foreground">🔒 Seus dados bancários são criptografados e protegidos. Apenas você e o sistema de pagamento têm acesso.</p>
-        </div>
-      </div>
-      <div className="glass-card p-6 space-y-4">
-        <h3 className="font-semibold">Conta bancária (alternativa)</h3>
-        <SelectField label="Banco" value="Nubank" options={["Nubank", "Banco do Brasil", "Bradesco", "Itaú", "Santander", "Caixa", "Inter", "C6 Bank"]} />
-        <SelectField label="Tipo de conta" value="Conta corrente" options={["Conta corrente", "Conta poupança"]} />
-        <InputField label="Agência" value="0001" />
-        <InputField label="Conta" value="1234567-8" />
-        <InputField label="Titular" value="Tiago Oliver Fotografias" />
-      </div>
-      <button onClick={() => toast.success("Dados bancários salvos!")} className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)] flex items-center gap-2">
-        <Save className="w-4 h-4" /> Salvar dados bancários
-      </button>
-    </div>
-  );
-};
+// TabBanco removed — replaced by TabCarteira
 
 // ─── Tab: Exclusividade ───
 const TabExclusividade = () => {
@@ -497,7 +464,7 @@ const tabComponents: Record<string, React.FC> = {
   site: TabSite,
   portfolio: TabPortfolio,
   financeiro: TabFinanceiro,
-  banco: TabBanco,
+  carteira: TabCarteira,
   exclusividade: TabExclusividade,
   smartcard: TabSmartCard,
   cupons: TabCupons,
@@ -506,7 +473,11 @@ const tabComponents: Record<string, React.FC> = {
 };
 
 const Configuracoes = () => {
-  const [activeTab, setActiveTab] = useState("conta");
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = searchParams.get("tab");
+    return tab && tabComponents[tab] ? tab : "conta";
+  });
   const ActiveComponent = tabComponents[activeTab];
 
   return (
