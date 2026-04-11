@@ -123,7 +123,7 @@ const EventPage = () => {
       if (!event?.organizer_id) return null;
       const { data } = await supabase
         .from("photographer_sites")
-        .select("watermark_url, display_name, slug")
+        .select("watermark_url, display_name, slug, watermark_position, watermark_opacity, watermark_size")
         .eq("user_id", event.organizer_id)
         .maybeSingle();
       return data;
@@ -301,7 +301,6 @@ const EventPage = () => {
                   isFav={isFavorite(photo.id)}
                   onToggleFavorite={toggleFavorite}
                   onClick={() => setSelectedPhoto(photo)}
-                  price={highPrice}
                 />
               ))}
             </div>
@@ -322,6 +321,9 @@ const EventPage = () => {
                   src={getPhotoUrl(selectedPhoto)}
                   watermarkUrl={photographerSite?.watermark_url || undefined}
                   watermarkText={photographerSite?.display_name || "VIUFOTO"}
+                  watermarkPosition={(photographerSite as any)?.watermark_position || "tile"}
+                  watermarkOpacity={(photographerSite as any)?.watermark_opacity ?? 25}
+                  watermarkSize={(photographerSite as any)?.watermark_size ?? 30}
                   className="w-full h-48 sm:h-full sm:min-h-[400px]"
                 />
                 {/* Favorite & Share in lightbox */}
@@ -405,7 +407,17 @@ const EventPage = () => {
                   >
                     Continuar comprando
                   </button>
-                  <button className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all">
+                  <button
+                    onClick={() => {
+                      setSelectedPhoto(null);
+                      // Trigger cart drawer open by clicking the cart button
+                      setTimeout(() => {
+                        const cartBtn = document.querySelector('[data-cart-trigger]') as HTMLElement;
+                        cartBtn?.click();
+                      }, 100);
+                    }}
+                    className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all"
+                  >
                     Ir para o carrinho
                   </button>
                 </div>

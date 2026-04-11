@@ -73,7 +73,7 @@ const FotoPage = () => {
       if (!event?.organizer_id) return null;
       const { data } = await supabase
         .from("photographer_sites")
-        .select("watermark_url, display_name, slug")
+        .select("watermark_url, display_name, slug, watermark_position, watermark_opacity, watermark_size")
         .eq("user_id", event.organizer_id)
         .maybeSingle();
       return data;
@@ -177,6 +177,9 @@ const FotoPage = () => {
                 src={photo.file_url}
                 watermarkUrl={photographerSite?.watermark_url || undefined}
                 watermarkText={photographerSite?.display_name || "VIUFOTO"}
+                watermarkPosition={(photographerSite as any)?.watermark_position || "tile"}
+                watermarkOpacity={(photographerSite as any)?.watermark_opacity ?? 25}
+                watermarkSize={(photographerSite as any)?.watermark_size ?? 30}
                 className="w-full h-full"
               />
 

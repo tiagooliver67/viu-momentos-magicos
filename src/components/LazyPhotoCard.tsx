@@ -10,10 +10,9 @@ interface LazyPhotoCardProps {
   isFav: boolean;
   onToggleFavorite: (id: string) => void;
   onClick: () => void;
-  price: number;
 }
 
-const LazyPhotoCard = memo(({ photoId, photoUrl, watermarkText, isFav, onToggleFavorite, onClick, price }: LazyPhotoCardProps) => {
+const LazyPhotoCard = memo(({ photoId, photoUrl, watermarkText, isFav, onToggleFavorite, onClick }: LazyPhotoCardProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -52,44 +51,30 @@ const LazyPhotoCard = memo(({ photoId, photoUrl, watermarkText, isFav, onToggleF
               onLoad={() => setLoaded(true)}
               className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
             />
-            {/* CSS watermark overlay — much lighter than canvas */}
+            {/* CSS watermark overlay */}
             {loaded && (
               <div className="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
                 <div
-                  className="absolute inset-0 flex items-center justify-center"
+                  className="absolute inset-0"
                   style={{
-                    background: `repeating-linear-gradient(
-                      -30deg,
-                      transparent,
-                      transparent 60px,
-                      rgba(255,255,255,0.03) 60px,
-                      rgba(255,255,255,0.03) 61px
-                    )`,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, 120px)",
+                    gridTemplateRows: "repeat(auto-fill, 80px)",
+                    gap: "20px",
+                    padding: "10px",
+                    transform: "rotate(-25deg) scale(1.5)",
+                    transformOrigin: "center",
                   }}
                 >
-                  {/* Watermark text tiles */}
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fill, 120px)",
-                      gridTemplateRows: "repeat(auto-fill, 80px)",
-                      gap: "20px",
-                      padding: "10px",
-                      transform: "rotate(-25deg) scale(1.5)",
-                      transformOrigin: "center",
-                    }}
-                  >
-                    {Array.from({ length: 20 }).map((_, i) => (
-                      <span
-                        key={i}
-                        className="text-white/20 font-bold text-xs whitespace-nowrap select-none"
-                        style={{ fontSize: "11px", letterSpacing: "1px" }}
-                      >
-                        {watermarkText}
-                      </span>
-                    ))}
-                  </div>
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <span
+                      key={i}
+                      className="text-white/20 font-bold text-xs whitespace-nowrap select-none"
+                      style={{ fontSize: "11px", letterSpacing: "1px" }}
+                    >
+                      {watermarkText}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
@@ -124,13 +109,8 @@ const LazyPhotoCard = memo(({ photoId, photoUrl, watermarkText, isFav, onToggleF
             </button>
           </div>
 
-          <div className="absolute inset-0 bg-background/0 group-hover:bg-background/40 transition-all flex items-end p-2 pointer-events-none">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity w-full">
-              <span className="text-primary font-bold text-xs bg-background/80 px-2 py-1 rounded">
-                R$ {price.toFixed(2)}
-              </span>
-            </div>
-          </div>
+          {/* Hover overlay without price */}
+          <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-all pointer-events-none" />
         </>
       ) : (
         <Skeleton className="w-full h-full rounded-none" />
