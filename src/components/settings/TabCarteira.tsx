@@ -167,6 +167,10 @@ const TabCarteira = () => {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
+    if (!birthDate) {
+      toast.error("Data de nascimento é obrigatória");
+      return;
+    }
     const cleanCpf = cpfCnpj.replace(/\D/g, "");
     if (cleanCpf.length !== 11 && cleanCpf.length !== 14) {
       toast.error("CPF ou CNPJ inválido");
@@ -175,15 +179,26 @@ const TabCarteira = () => {
     setSaving(true);
     try {
       const { data, error } = await supabase.functions.invoke("asaas-wallet", {
-        body: { action: "create_wallet", name: name.trim(), email: email.trim(), cpfCnpj: cpfCnpj.trim(), phone: phone.trim() || undefined, birthDate: birthDate || undefined },
+        body: {
+          action: "create_wallet",
+          name: name.trim(),
+          email: email.trim(),
+          cpfCnpj: cleanCpf,
+          phone: phone.replace(/\D/g, "") || undefined,
+          birthDate: birthDate,
+        },
       });
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (error) {
+        // Try to extract message from edge function response
+        const msg = typeof error === "object" && error.message ? error.message : "Erro ao configurar recebimento";
+        throw new Error(msg);
+      }
+      if (data?.error) throw new Error(data.error);
       setConfigured(true);
       setWalletId(data.walletId);
-      toast.success("Carteira configurada com sucesso! 🎉");
+      toast.success("Recebimento ativado com sucesso! 🎉");
     } catch (err: any) {
-      toast.error(err.message || "Erro ao configurar carteira");
+      toast.error(err.message || "Erro ao configurar recebimento");
     } finally {
       setSaving(false);
     }
