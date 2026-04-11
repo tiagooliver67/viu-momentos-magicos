@@ -7,6 +7,9 @@ const corsHeaders = {
 
 const ASAAS_BASE_URL = "https://sandbox.asaas.com/api/v3";
 
+// 🔧 Feature flag: set to true when email sending is configured
+const REQUIRE_2FA = false;
+
 function getAsaasKey(): string {
   const key = Deno.env.get("ASAAS_API_KEY");
   if (!key) throw new Error("ASAAS_API_KEY not configured");
@@ -395,7 +398,7 @@ Deno.serve(async (req) => {
       if (!accountId) return json({ error: "Selecione uma conta cadastrada para saque." }, 400);
       if (!amount || amount <= 0) return json({ error: "Valor inválido para saque." }, 400);
       if (!password) return json({ error: "Confirme sua senha para realizar o saque." }, 400);
-      if (!twoFactorCode) return json({ error: "Código de verificação 2FA é obrigatório." }, 400);
+      if (REQUIRE_2FA && !twoFactorCode) return json({ error: "Código de verificação 2FA é obrigatório." }, 400);
 
       // Verify password
       const { error: signInError } = await supabaseAdmin.auth.signInWithPassword({
@@ -411,29 +414,33 @@ Deno.serve(async (req) => {
         return json({ error: "Senha incorreta. Tente novamente." }, 400);
       }
 
-      // Verify 2FA code
-      const { data: codes } = await supabaseAdmin
-        .from("two_factor_codes")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("action", "withdrawal")
-        .eq("used", false)
-        .gte("expires_at", new Date().toISOString())
-        .order("created_at", { ascending: false })
-        .limit(1);
+      // Verify 2FA code (only if enabled)
+      if (REQUIRE_2FA) {
+        const { data: codes } = await supabaseAdmin
+          .from("two_factor_codes")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("action", "withdrawal")
+          .eq("used", false)
+          .gte("expires_at", new Date().toISOString())
+          .order("created_at", { ascending: false })
+          .limit(1);
 
-      const activeCode = codes?.[0];
-      if (!activeCode || activeCode.code !== twoFactorCode) {
-        await supabaseAdmin.from("withdrawal_logs").insert({
-          user_id: user.id, account_id: accountId, amount, status: "blocked",
-          ip_address: ipAddress, user_agent: userAgent,
-          error_message: "Código 2FA inválido",
-        });
-        return json({ error: "Código de verificação inválido ou expirado." }, 400);
+        const activeCode = codes?.[0];
+        if (!activeCode || activeCode.code !== twoFactorCode) {
+          await supabaseAdmin.from("withdrawal_logs").insert({
+            user_id: user.id, account_id: accountId, amount, status: "blocked",
+            ip_address: ipAddress, user_agent: userAgent,
+            error_message: "Código 2FA inválido",
+          });
+          return json({ error: "Código de verificação inválido ou expirado." }, 400);
+        }
+
+        // Mark 2FA code as used
+        await supabaseAdmin.from("two_factor_codes").update({ used: true }).eq("id", activeCode.id);
+      } else {
+        console.log("2FA está desativado (modo desenvolvimento)");
       }
-
-      // Mark 2FA code as used
-      await supabaseAdmin.from("two_factor_codes").update({ used: true }).eq("id", activeCode.id);
 
       // Get the account from whitelist
       const { data: account } = await supabaseAdmin
