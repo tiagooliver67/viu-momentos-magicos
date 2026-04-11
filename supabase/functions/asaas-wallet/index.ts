@@ -154,6 +154,48 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "get_balance") {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("asaas_wallet_id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (!profile?.asaas_wallet_id) {
+        return new Response(JSON.stringify({
+          balance: 0,
+          pending: 0,
+          configured: false,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      try {
+        const balanceData = await asaasFetch(`/finance/balance`, {
+          headers: { access_token: getAsaasKey() },
+        });
+
+        return new Response(JSON.stringify({
+          balance: balanceData?.balance ?? 0,
+          pending: balanceData?.statistics?.pending ?? 0,
+          configured: true,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } catch (e: any) {
+        console.error("Balance fetch error:", e.message);
+        return new Response(JSON.stringify({
+          balance: 0,
+          pending: 0,
+          configured: true,
+          error: e.message,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     return new Response(JSON.stringify({ error: "Ação inválida" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
