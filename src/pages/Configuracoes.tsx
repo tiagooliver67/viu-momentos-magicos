@@ -4,9 +4,11 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   User, Globe, Image, Wallet, Star, CreditCard, Ticket, MessageSquare, Smartphone,
   Save, Eye, EyeOff, Plus, Trash2, QrCode, Share2, Shield, LogOut, Copy, Check,
-  Upload, ChevronRight, Lock, Bell, Mail, Phone
+  Upload, ChevronRight, Lock, Bell, Mail, Phone, Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
@@ -20,27 +22,7 @@ const settingsTabs = [
   { id: "dispositivos", label: "Dispositivos", icon: Smartphone },
 ];
 
-// ─── Mock Data ───
-const mockProfile = {
-  nome: "Tiago Oliver",
-  email: "tiagooliver@gmail.com",
-  cpf: "051.153.435-33",
-  rg: "05115343533",
-  sexo: "Masculino",
-  nascimento: "1988-11-21",
-  celular: "(74) 99943-9609",
-  fuso: "(GMT-03:00) Brasília",
-  cep: "44920-000",
-  endereco: "Rua Carmosina Carneiro",
-  numero: "105",
-  complemento: "",
-  referencia: "casa",
-  bairro: "Centro",
-  estado: "Bahia",
-  cidade: "João Dourado",
-  interesse: "Fotografar eventos esportivos",
-  experiencia: "Profissional",
-};
+// Mock data for other tabs
 
 const mockCupons = [
   { id: 1, code: "VERAO10", tipo: "percentual", valor: 10, validade: "2026-06-30", usos: 24, limite: 100, ativo: true },
@@ -80,60 +62,117 @@ const SelectField = ({ label, value, options }: { label: string; value: string; 
 
 // ─── Tab: Minha Conta ───
 const TabConta = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [email, setEmail] = useState("");
+  const [hasWallet, setHasWallet] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    setEmail(user.email || "");
+    const loadProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, phone, cpf_cnpj, asaas_wallet_id")
+        .eq("user_id", user.id)
+        .single();
+      if (data) {
+        setFullName(data.full_name || "");
+        setPhone(data.phone || "");
+        setCpf(data.cpf_cnpj || "");
+        setHasWallet(!!data.asaas_wallet_id);
+      }
+      // Try to get birth date from user metadata
+      const meta = user.user_metadata;
+      if (meta?.birth_date) setBirthDate(meta.birth_date);
+      setLoading(false);
+    };
+    loadProfile();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ full_name: fullName, phone })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      toast.success("Seus dados foram atualizados com sucesso.");
+    } catch (err: any) {
+      toast.error(err.message || "Não foi possível salvar. Tente novamente.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-bold">Minha conta</h2>
-        <p className="text-sm text-muted-foreground">Gerencie seus dados pessoais e de acesso</p>
+        <p className="text-sm text-muted-foreground">Gerencie seus dados pessoais e de acesso.</p>
       </div>
+
+      {/* Dados básicos */}
       <div className="glass-card p-6 space-y-0">
-        <InputField label="Nome completo" value={mockProfile.nome} />
-        <InputField label="E-mail" value={mockProfile.email} type="email" />
-        <InputField label="CPF" value={mockProfile.cpf} />
-        <InputField label="RG" value={mockProfile.rg} />
-        <SelectField label="Sexo" value={mockProfile.sexo} options={["Masculino", "Feminino", "Outro", "Prefiro não informar"]} />
-        <InputField label="Data de nascimento" value={mockProfile.nascimento} type="date" />
-        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-center gap-2 py-3 border-b border-border/50">
+        <InputField label="Nome completo" value={fullName} onChange={setFullName} />
+        <InputField label="E-mail" value={email} disabled />
+        <InputField label="CPF" value={cpf} disabled={hasWallet} onChange={!hasWallet ? setCpf : undefined} />
+        <InputField label="Data de nascimento" value={birthDate} type="date" disabled={hasWallet} onChange={!hasWallet ? setBirthDate : undefined} />
+        {hasWallet && (
+          <p className="text-xs text-muted-foreground pt-2">CPF e data de nascimento não podem ser alterados após ativação do recebimento.</p>
+        )}
+      </div>
+
+      {/* Contato */}
+      <div className="glass-card p-6 space-y-0">
+        <h3 className="font-semibold mb-3 flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /> Contato</h3>
+        <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-center gap-2 py-3">
           <label className="text-sm text-muted-foreground font-medium">Celular</label>
           <div className="flex items-center gap-2">
             <span className="bg-secondary/50 rounded-lg px-3 py-2.5 text-sm border border-border">🇧🇷 +55</span>
-            <input defaultValue={mockProfile.celular} className="flex-1 bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
-            <button className="p-2 rounded-lg bg-primary/20 text-primary hover:bg-primary/30 transition-colors">
-              <Check className="w-4 h-4" />
-            </button>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(00) 00000-0000"
+              className="flex-1 bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors"
+            />
           </div>
         </div>
-        <SelectField label="Fuso horário" value={mockProfile.fuso} options={["(GMT-03:00) Brasília", "(GMT-04:00) Manaus", "(GMT-05:00) Acre"]} />
-        <InputField label="CEP" value={mockProfile.cep} />
-        <InputField label="Endereço" value={mockProfile.endereco} />
-        <InputField label="Número" value={mockProfile.numero} />
-        <InputField label="Complemento" value={mockProfile.complemento} />
-        <InputField label="Referência" value={mockProfile.referencia} />
-        <InputField label="Bairro" value={mockProfile.bairro} />
-        <SelectField label="Estado" value={mockProfile.estado} options={["Bahia", "São Paulo", "Rio de Janeiro", "Minas Gerais", "Paraná", "Santa Catarina", "Rio Grande do Sul"]} />
-        <SelectField label="Cidade" value={mockProfile.cidade} options={["João Dourado", "Salvador", "Feira de Santana"]} />
-        <SelectField label="Interesse na plataforma" value={mockProfile.interesse} options={["Fotografar eventos esportivos", "Fotografar eventos sociais", "Ambos"]} />
-        <SelectField label="Experiência em fotografia" value={mockProfile.experiencia} options={["Iniciante", "Intermediário", "Profissional"]} />
       </div>
 
+      {/* Segurança */}
       <div className="glass-card p-6">
         <h3 className="font-semibold mb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /> Segurança</h3>
         <button
-          onClick={() => { setShowPassword(!showPassword); toast.info("Funcionalidade de alteração de senha será integrada com autenticação."); }}
+          onClick={() => toast.info("Funcionalidade de alteração de senha será integrada em breve.")}
           className="px-5 py-2.5 rounded-xl border-2 border-primary text-primary font-bold text-sm hover:bg-primary/10 transition-all"
         >
           ALTERAR SENHA
         </button>
-        <div className="mt-4 pt-4 border-t border-border/50">
-          <p className="text-xs text-muted-foreground">Termos VIUFOTO</p>
-          <a href="#" className="text-sm font-bold text-primary hover:underline">Link termos de uso VIUFOTO</a>
-          <p className="text-xs text-muted-foreground mt-1">Data do aceite dos termos: 03/05/2025</p>
-        </div>
       </div>
 
-      <button onClick={() => toast.success("Dados salvos com sucesso!")} className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)] flex items-center gap-2">
-        <Save className="w-4 h-4" /> Salvar alterações
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)] flex items-center gap-2 disabled:opacity-50"
+      >
+        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        Salvar alterações
       </button>
     </div>
   );
