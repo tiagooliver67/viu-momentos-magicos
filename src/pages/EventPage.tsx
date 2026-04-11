@@ -171,8 +171,10 @@ const EventPage = () => {
   const photoList = photos || [];
 
   const getPhotoUrl = useCallback((photo: any) => {
-    return signedUrls?.[photo.file_url] || "";
-  }, [signedUrls]);
+    // Prefer thumbnail, fallback to original
+    const thumbPath = toThumbPath(photo.file_url);
+    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+  }, [thumbUrls, toThumbPath]);
 
   // Password protection
   if (event?.password && !unlocked) {
