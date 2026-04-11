@@ -333,7 +333,6 @@ const EventPage = () => {
                   key={photo.id}
                   photoId={photo.id}
                   photoUrl={getPhotoUrl(photo)}
-                  watermarkUrl={photographerSite?.watermark_url || undefined}
                   isFav={isFavorite(photo.id)}
                   onToggleFavorite={toggleFavorite}
                   onClick={() => setSelectedPhoto(photo)}
