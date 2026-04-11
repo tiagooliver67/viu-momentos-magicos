@@ -18,9 +18,6 @@ const LazyPhotoCard = memo(({
   photoId,
   photoUrl,
   watermarkUrl,
-  watermarkPosition = "tile",
-  watermarkOpacity = 25,
-  watermarkSize = 30,
   isFav,
   onToggleFavorite,
   onClick,
@@ -62,12 +59,7 @@ const LazyPhotoCard = memo(({
               className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
             />
             {loaded && (
-              <WatermarkOverlay
-                watermarkUrl={watermarkUrl}
-                position={watermarkPosition}
-                opacity={watermarkOpacity}
-                size={watermarkSize}
-              />
+              <WatermarkOverlay watermarkUrl={watermarkUrl} />
             )}
           </div>
 
