@@ -16,7 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
-  Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2
+  Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
+  ExternalLink, MessageCircle
 } from "lucide-react";
 
 const quickActions = [
