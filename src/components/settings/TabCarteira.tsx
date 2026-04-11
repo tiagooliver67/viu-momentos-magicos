@@ -226,8 +226,8 @@ const TabCarteira = () => {
     }
   };
 
-  // Step 1: Validate form & send 2FA code
-  const handleWithdrawStep1 = async () => {
+  // Submit withdrawal directly (2FA bypassed temporarily)
+  const handleWithdrawSubmit = async () => {
     const amount = parseFloat(withdrawAmount.replace(",", "."));
     if (isNaN(amount) || amount <= 0) {
       toast.error("Informe um valor válido");
@@ -242,23 +242,28 @@ const TabCarteira = () => {
       return;
     }
 
-    setSending2FA(true);
+    setWithdrawing(true);
     try {
       const { data, error } = await supabase.functions.invoke("asaas-wallet", {
-        body: { action: "send_2fa", targetAction: "withdrawal" },
+        body: {
+          action: "request_withdrawal",
+          accountId: selectedAccountId,
+          amount,
+          password: withdrawPassword,
+        },
       });
       if (error) throw error;
       if (data.error) throw new Error(data.error);
-
-      setMaskedEmail(data.maskedEmail || "");
-      setWithdrawStep("2fa");
-      setTwoFactorCode("");
-      startResendCooldown();
-      toast.success(data.message || "Código enviado!");
+      toast.success(data.message || "Saque solicitado!");
+      setShowWithdraw(false);
+      setWithdrawAmount("");
+      setWithdrawPassword("");
+      setSelectedAccountId("");
+      loadData();
     } catch (err: any) {
-      toast.error(err.message || "Erro ao enviar código de verificação");
+      toast.error(err.message || "Erro ao solicitar saque");
     } finally {
-      setSending2FA(false);
+      setWithdrawing(false);
     }
   };
 
