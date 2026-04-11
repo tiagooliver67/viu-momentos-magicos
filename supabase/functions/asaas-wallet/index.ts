@@ -135,13 +135,35 @@ Deno.serve(async (req) => {
       if (profile?.asaas_wallet_id) return json({ walletId: profile.asaas_wallet_id, message: "Carteira já configurada" });
 
       const cleanCpfCnpj = cpfCnpj.replace(/\D/g, "");
+
+      // Parse birthDate to YYYY-MM-DD (Asaas required format)
+      let formattedBirthDate: string | null = null;
+      if (birthDate) {
+        // Handle DD/MM/YYYY or DD-MM-YYYY
+        const dmy = birthDate.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+        if (dmy) {
+          formattedBirthDate = `${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`;
+        }
+        // Handle YYYY-MM-DD (already correct)
+        else if (/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+          formattedBirthDate = birthDate;
+        }
+        else {
+          return json({ error: "Data de nascimento em formato inválido. Use DD/MM/AAAA ou AAAA-MM-DD." }, 400);
+        }
+      }
+
+      const cleanPhone = phone ? phone.replace(/\D/g, "") : null;
+
       const accountData: Record<string, unknown> = {
         name, email, cpfCnpj: cleanCpfCnpj,
         companyType: cleanCpfCnpj.length > 11 ? "LIMITED" : "MEI",
         loginEmail: email,
-        ...(phone ? { phone: phone.replace(/\D/g, "") } : {}),
-        ...(birthDate ? { birthDate } : {}),
+        ...(cleanPhone ? { phone: cleanPhone } : {}),
+        ...(formattedBirthDate ? { birthDate: formattedBirthDate } : {}),
       };
+
+      console.log("Creating Asaas account with data:", JSON.stringify({ ...accountData, cpfCnpj: "***" }));
 
       const account = await asaasFetch("/accounts", { method: "POST", body: JSON.stringify(accountData) });
       const walletId = account.walletId || account.id;
