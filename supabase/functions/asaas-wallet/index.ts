@@ -159,7 +159,8 @@ Deno.serve(async (req) => {
         name, email, cpfCnpj: cleanCpfCnpj,
         companyType: cleanCpfCnpj.length > 11 ? "LIMITED" : "MEI",
         loginEmail: email,
-        ...(cleanPhone ? { phone: cleanPhone } : {}),
+        incomeValue: 5000,
+        ...(cleanPhone ? { phone: cleanPhone, mobilePhone: cleanPhone } : {}),
         ...(formattedBirthDate ? { birthDate: formattedBirthDate } : {}),
       };
 
