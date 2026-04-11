@@ -664,6 +664,48 @@ export type Database = {
         }
         Relationships: []
       }
+      two_factor_codes: {
+        Row: {
+          action: string
+          attempts: number
+          blocked_until: string | null
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          ip_address: string | null
+          used: boolean
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          attempts?: number
+          blocked_until?: string | null
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          used?: boolean
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          attempts?: number
+          blocked_until?: string | null
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          used?: boolean
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
