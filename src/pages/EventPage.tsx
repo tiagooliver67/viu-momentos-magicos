@@ -416,75 +416,74 @@ const EventPage = () => {
               </div>
             </div>
 
-            {/* Purchase panel */}
-            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0">
-                <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
+            {/* Purchase panel — scrollable on mobile */}
+            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0 max-h-[45dvh] sm:max-h-[75vh]">
+              <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
-                <div className="space-y-2">
-                  <label
-                    onClick={() => setResolution("high")}
-                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                      resolution === "high" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        resolution === "high" ? "border-primary" : "border-muted-foreground"
-                      }`}>
-                        {resolution === "high" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                      </div>
-                      <span className="text-sm">Foto digital em alta resolução</span>
-                    </div>
-                    <span className="text-primary font-bold">R$ {highPrice.toFixed(2)}</span>
-                  </label>
-                  <label
-                    onClick={() => setResolution("low")}
-                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                      resolution === "low" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        resolution === "low" ? "border-primary" : "border-muted-foreground"
-                      }`}>
-                        {resolution === "low" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                      </div>
-                      <span className="text-sm">Foto digital em baixa resolução</span>
-                    </div>
-                    <span className="text-primary font-bold">R$ {lowPrice.toFixed(2)}</span>
-                  </label>
-                </div>
-
-                <button
-                  onClick={() => handleAddToCart(selectedPhoto, resolution)}
-                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+              <div className="space-y-2">
+                <label
+                  onClick={() => setResolution("high")}
+                  className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                    resolution === "high" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                  }`}
                 >
-                  <ShoppingCart className="w-5 h-5" />
-                  + Adicionar ao carrinho
-                </button>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setSelectedPhoto(null)}
-                    className="flex-1 py-3 rounded-xl border border-primary text-primary font-medium text-sm hover:bg-primary/10 transition-all"
-                  >
-                    Continuar comprando
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedPhoto(null);
-                      // Trigger cart drawer open by clicking the cart button
-                      setTimeout(() => {
-                        const cartBtn = document.querySelector('[data-cart-trigger]') as HTMLElement;
-                        cartBtn?.click();
-                      }, 100);
-                    }}
-                    className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all"
-                  >
-                    Ir para o carrinho
-                  </button>
-                </div>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      resolution === "high" ? "border-primary" : "border-muted-foreground"
+                    }`}>
+                      {resolution === "high" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                    </div>
+                    <span className="text-sm">Alta resolução</span>
+                  </div>
+                  <span className="text-primary font-bold">R$ {highPrice.toFixed(2)}</span>
+                </label>
+                <label
+                  onClick={() => setResolution("low")}
+                  className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                    resolution === "low" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      resolution === "low" ? "border-primary" : "border-muted-foreground"
+                    }`}>
+                      {resolution === "low" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                    </div>
+                    <span className="text-sm">Baixa resolução</span>
+                  </div>
+                  <span className="text-primary font-bold">R$ {lowPrice.toFixed(2)}</span>
+                </label>
               </div>
+
+              <button
+                onClick={() => handleAddToCart(selectedPhoto, resolution)}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                + Adicionar ao carrinho
+              </button>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setSelectedPhoto(null)}
+                  className="flex-1 py-3 rounded-xl border border-primary text-primary font-medium text-sm hover:bg-primary/10 transition-all"
+                >
+                  Continuar comprando
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedPhoto(null);
+                    setTimeout(() => {
+                      const cartBtn = document.querySelector('[data-cart-trigger]') as HTMLElement;
+                      cartBtn?.click();
+                    }, 100);
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all"
+                >
+                  Ir para o carrinho
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
