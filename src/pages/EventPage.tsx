@@ -123,15 +123,15 @@ const EventPage = () => {
   });
 
   // Fetch medium URL only when a photo is selected (lightbox)
-  const { data: mediumUrl } = useQuery({
+  const { data: mediumUrl, isLoading: mediumLoading } = useQuery({
     queryKey: ["medium-url", selectedPhoto?.file_url],
     queryFn: async () => {
       if (!selectedPhoto) return "";
       const medPath = toMediumPath(selectedPhoto.file_url);
       const thumbPath = toThumbPath(selectedPhoto.file_url);
-      const res = await getPublicSignedUrls([medPath, thumbPath]);
-      // Use medium (watermarked), fallback to thumb — NEVER original
-      return res[medPath] || res[thumbPath] || "";
+      // Request medium, thumb, AND original as final fallback for legacy photos
+      const res = await getPublicSignedUrls([medPath, thumbPath, selectedPhoto.file_url]);
+      return res[medPath] || res[thumbPath] || res[selectedPhoto.file_url] || "";
     },
     enabled: !!selectedPhoto,
     staleTime: 15 * 60 * 1000,
