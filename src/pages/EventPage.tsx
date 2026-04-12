@@ -349,7 +349,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col sm:items-center sm:justify-center"
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
@@ -361,28 +361,41 @@ const EventPage = () => {
           </button>
 
           <div
-            className="relative w-full sm:max-w-4xl sm:mx-4 flex flex-col sm:flex-row max-h-[100dvh] sm:max-h-[90vh] overflow-hidden sm:rounded-xl"
+            className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            {/* Image area — fills available space on mobile */}
-            <div className="flex-1 relative bg-black flex items-center justify-center min-h-0">
-              {!(mediumUrl || getPhotoUrl(selectedPhoto)) && (
-                <Loader2 className="w-8 h-8 text-white/60 animate-spin" />
-              )}
-              <img
-                src={mediumUrl || getPhotoUrl(selectedPhoto)}
-                alt=""
-                className="w-full h-full object-contain max-h-[55dvh] sm:max-h-[80vh] sm:min-h-[400px]"
-              />
+            {/* Image area */}
+            <div className="flex-1 relative bg-black flex items-center justify-center min-h-0 p-2">
+              {(() => {
+                const imgSrc = mediumUrl || getPhotoUrl(selectedPhoto);
+                if (mediumLoading && !imgSrc) {
+                  return <Loader2 className="w-8 h-8 text-white/60 animate-spin" />;
+                }
+                if (!imgSrc) {
+                  return (
+                    <div className="text-white/40 text-center">
+                      <Camera className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Não foi possível carregar a imagem</p>
+                    </div>
+                  );
+                }
+                return (
+                  <img
+                    src={imgSrc}
+                    alt=""
+                    className="max-w-full max-h-[50dvh] sm:max-h-[75vh] object-contain rounded"
+                  />
+                );
+              })()}
               {/* Favorite & Share in lightbox */}
-              <div className="absolute top-3 left-3 flex gap-2">
+              <div className="absolute top-4 left-4 flex gap-2">
                 <button
                   onClick={() => {
                     const url = `${window.location.origin}/foto/${selectedPhoto.id}`;
                     navigator.clipboard.writeText(url);
                     toast.success("Link copiado!");
                   }}
-                  className="p-2.5 rounded-full bg-black/40 text-white/80 hover:bg-black/60 backdrop-blur-sm transition-all transform active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  className="p-2.5 rounded-full bg-black/50 text-white/80 hover:bg-black/70 backdrop-blur-sm transition-all active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <Share2 className="w-5 h-5" />
                 </button>
@@ -392,10 +405,10 @@ const EventPage = () => {
                     toggleFavorite(selectedPhoto.id);
                     toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
                   }}
-                  className={`p-2.5 rounded-full backdrop-blur-sm transition-all transform active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center ${
+                  className={`p-2.5 rounded-full backdrop-blur-sm transition-all active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center ${
                     isFavorite(selectedPhoto.id)
                       ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
-                      : "bg-black/40 text-white/80 hover:bg-black/60"
+                      : "bg-black/50 text-white/80 hover:bg-black/70"
                   }`}
                 >
                   <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
