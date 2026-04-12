@@ -472,7 +472,6 @@ const EventPage = () => {
                   </button>
                 </div>
               </div>
-            </div>
           </div>
         </div>
       )}
