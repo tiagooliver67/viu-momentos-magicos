@@ -91,37 +91,37 @@ const EventPage = () => {
   // Stable key: only changes when photo count or IDs actually change
   const photoIds = useMemo(() => photos?.map(p => p.id).sort().join(",") || "", [photos]);
 
-  // Helper to derive thumb/medium paths from original
-  const toThumbPath = useCallback((originalPath: string) => {
-    const lastSlash = originalPath.lastIndexOf("/");
-    if (lastSlash === -1) return originalPath;
-    const dir = originalPath.substring(0, lastSlash);
-    const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
-    return `${dir}/thumb/${filename}`;
-  }, []);
+  // Use centralized path helpers
+  const toThumbPath = useCallback(cdnToThumbPath, []);
+  const toMediumPath = useCallback(cdnToMediumPath, []);
 
-  const toMediumPath = useCallback((originalPath: string) => {
-    const lastSlash = originalPath.lastIndexOf("/");
-    if (lastSlash === -1) return originalPath;
-    const dir = originalPath.substring(0, lastSlash);
-    const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
-    return `${dir}/medium/${filename}`;
-  }, []);
-
-  // Fetch signed URLs for THUMBNAILS (grid) — with fallback to originals for legacy photos
+  // Fetch signed URLs for THUMBNAILS (grid)
+  // When CDN is active, thumb/medium are public — no signed URLs needed for them
   const { data: thumbUrls, isLoading: urlsLoading, error: urlsError, refetch: refetchUrls } = useQuery({
     queryKey: ["thumb-urls", id, photoIds],
     queryFn: async () => {
       if (!photos || photos.length === 0) return {};
-      // Request both thumb AND original paths — thumb preferred, original as fallback
+
+      // If CDN is active, build CDN URLs directly — no edge function call needed
+      if (IS_LAMBDA_PIPELINE_ACTIVE) {
+        const urlMap: Record<string, string> = {};
+        for (const p of photos) {
+          const cdnThumb = getThumbCdnUrl(p.file_url);
+          if (cdnThumb) {
+            urlMap[toThumbPath(p.file_url)] = cdnThumb;
+          }
+        }
+        return urlMap;
+      }
+
+      // Fallback: S3 signed URLs
       const thumbPaths = photos.map((p: any) => toThumbPath(p.file_url));
       const originalPaths = photos.map((p: any) => p.file_url);
-      // Deduplicate paths
       const allPaths = [...new Set([...thumbPaths, ...originalPaths])];
       return getPublicSignedUrls(allPaths);
     },
     enabled: !!photos && photos.length > 0,
-    staleTime: 15 * 60 * 1000,
+    staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000, // CDN URLs can be cached longer
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
@@ -133,14 +133,20 @@ const EventPage = () => {
     queryKey: ["medium-url", selectedPhoto?.file_url],
     queryFn: async () => {
       if (!selectedPhoto) return "";
+
+      // If CDN is active, return CDN URL directly
+      if (IS_LAMBDA_PIPELINE_ACTIVE) {
+        return getMediumCdnUrl(selectedPhoto.file_url) || "";
+      }
+
+      // Fallback: signed URLs with medium -> thumb -> original chain
       const medPath = toMediumPath(selectedPhoto.file_url);
       const thumbPath = toThumbPath(selectedPhoto.file_url);
-      // Request medium, thumb, AND original as final fallback for legacy photos
       const res = await getPublicSignedUrls([medPath, thumbPath, selectedPhoto.file_url]);
       return res[medPath] || res[thumbPath] || res[selectedPhoto.file_url] || "";
     },
     enabled: !!selectedPhoto,
-    staleTime: 15 * 60 * 1000,
+    staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
