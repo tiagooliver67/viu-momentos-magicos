@@ -5,13 +5,19 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-// Watermark is baked into thumbnails — no overlay needed
 import CartDrawer from "@/components/CartDrawer";
 import LazyPhotoCard from "@/components/LazyPhotoCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
+import {
+  toThumbPath as cdnToThumbPath,
+  toMediumPath as cdnToMediumPath,
+  getThumbCdnUrl,
+  getMediumCdnUrl,
+  IS_LAMBDA_PIPELINE_ACTIVE,
+} from "@/lib/cdnConfig";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
