@@ -212,8 +212,8 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
           progressMap[i] = { ...progressMap[i], progress: 75 };
           onProgress?.([...progressMap]);
 
-          // Upload watermarked thumb and medium in parallel
-          if (isPhoto) {
+          // Upload watermarked thumb and medium in parallel (only when not using Lambda)
+          if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
             const thumbUploads: Promise<void>[] = [];
             if (thumbBlob) {
               const ts = signedMap.get(toThumbPath(obj.path));
