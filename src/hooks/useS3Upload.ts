@@ -124,10 +124,11 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       onProgress?.(progressMap);
 
       // Build all paths for presigned URLs
+      // When Lambda is active, it generates thumb/medium — only upload originals
       const allPaths: { path: string }[] = [];
       for (const obj of objects) {
         allPaths.push({ path: obj.path }); // original
-        if (isPhoto) {
+        if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
           allPaths.push({ path: toThumbPath(obj.path) });   // thumb with watermark
           allPaths.push({ path: toMediumPath(obj.path) });  // medium with watermark
         }
