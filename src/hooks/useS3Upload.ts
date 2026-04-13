@@ -169,11 +169,11 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
         onProgress?.([...progressMap]);
 
         try {
-          // Generate WATERMARKED thumbnails (watermark baked in permanently)
+          // Generate WATERMARKED thumbnails — only when Lambda pipeline is NOT active
           let thumbBlob: Blob | null = null;
           let mediumBlob: Blob | null = null;
 
-          if (isPhoto) {
+          if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
             try {
               [thumbBlob, mediumBlob] = await Promise.all([
                 resizeImageWithWatermark(obj.file, 400, wmSrc, 0.75),
