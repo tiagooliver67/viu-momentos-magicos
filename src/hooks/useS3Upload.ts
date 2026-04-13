@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { resizeImageWithWatermark } from "@/lib/imageResize";
+import { IS_LAMBDA_PIPELINE_ACTIVE } from "@/lib/cdnConfig";
 
 interface UploadProgress {
   fileName: string;
@@ -123,10 +124,11 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       onProgress?.(progressMap);
 
       // Build all paths for presigned URLs
+      // When Lambda is active, it generates thumb/medium — only upload originals
       const allPaths: { path: string }[] = [];
       for (const obj of objects) {
         allPaths.push({ path: obj.path }); // original
-        if (isPhoto) {
+        if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
           allPaths.push({ path: toThumbPath(obj.path) });   // thumb with watermark
           allPaths.push({ path: toMediumPath(obj.path) });  // medium with watermark
         }
@@ -167,11 +169,11 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
         onProgress?.([...progressMap]);
 
         try {
-          // Generate WATERMARKED thumbnails (watermark baked in permanently)
+          // Generate WATERMARKED thumbnails — only when Lambda pipeline is NOT active
           let thumbBlob: Blob | null = null;
           let mediumBlob: Blob | null = null;
 
-          if (isPhoto) {
+          if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
             try {
               [thumbBlob, mediumBlob] = await Promise.all([
                 resizeImageWithWatermark(obj.file, 400, wmSrc, 0.75),
@@ -210,8 +212,8 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
           progressMap[i] = { ...progressMap[i], progress: 75 };
           onProgress?.([...progressMap]);
 
-          // Upload watermarked thumb and medium in parallel
-          if (isPhoto) {
+          // Upload watermarked thumb and medium in parallel (only when not using Lambda)
+          if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
             const thumbUploads: Promise<void>[] = [];
             if (thumbBlob) {
               const ts = signedMap.get(toThumbPath(obj.path));
