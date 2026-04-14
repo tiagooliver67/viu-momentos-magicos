@@ -361,7 +361,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex flex-col"
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-end sm:justify-center"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
@@ -373,11 +373,11 @@ const EventPage = () => {
           </button>
 
           <div
-            className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-hidden"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            {/* Image area */}
-            <div className="flex-1 relative bg-black flex items-center justify-center min-h-0 p-1 sm:p-2">
+            {/* Image area — shrink-wrap on mobile, no flex-1 */}
+            <div className="relative bg-black flex items-center justify-center p-1 sm:p-2 sm:flex-1 sm:min-h-0">
               {(() => {
                 const imgSrc = mediumUrl || getPhotoUrl(selectedPhoto);
                 if (mediumLoading && !imgSrc) {
@@ -395,7 +395,7 @@ const EventPage = () => {
                   <img
                     src={imgSrc}
                     alt=""
-                    className="max-w-full max-h-[55dvh] sm:max-h-[75vh] object-contain rounded"
+                    className="max-w-full max-h-[45dvh] sm:max-h-[75vh] object-contain rounded"
                   />
                 );
               })()}
@@ -429,7 +429,7 @@ const EventPage = () => {
             </div>
 
             {/* Purchase panel — scrollable on mobile */}
-            <div className="w-full sm:w-80 p-3 sm:p-6 space-y-2 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0 max-h-[40dvh] sm:max-h-[75vh]">
+            <div className="w-full sm:w-80 p-3 sm:p-6 space-y-2 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0 max-h-[50dvh] sm:max-h-[75vh]">
               <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
               <div className="space-y-2">
