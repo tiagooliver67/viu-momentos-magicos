@@ -360,7 +360,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-end sm:justify-center"
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-center items-center"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
@@ -372,7 +372,7 @@ const EventPage = () => {
           </button>
 
           <div
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-hidden"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-y-auto max-h-[100dvh]"
             onClick={e => e.stopPropagation()}
           >
             {/* Image area — shrink-wrap on mobile, no flex-1 */}
