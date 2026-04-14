@@ -114,11 +114,9 @@ const EventPage = () => {
         return urlMap;
       }
 
-      // Fallback: S3 signed URLs
-      const thumbPaths = photos.map((p: any) => toThumbPath(p.file_url));
+      // Fallback: S3 signed URLs — only request original paths (thumb/medium don't exist without Lambda)
       const originalPaths = photos.map((p: any) => p.file_url);
-      const allPaths = [...new Set([...thumbPaths, ...originalPaths])];
-      return getPublicSignedUrls(allPaths);
+      return getPublicSignedUrls(originalPaths);
     },
     enabled: !!photos && photos.length > 0,
     staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000, // CDN URLs can be cached longer
