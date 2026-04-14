@@ -143,10 +143,15 @@ Deno.serve(async (req) => {
 
       const viufotoWalletId = getViufotoWalletId();
 
-      const split = [
-        { walletId: viufotoWalletId, fixedValue: platformFee },
-        { walletId: profile.asaas_wallet_id, remainingValue: true },
-      ];
+      // If photographer wallet is the same as platform wallet, skip split
+      // (ASAAS doesn't allow splitting to your own wallet)
+      const isSameWallet = profile.asaas_wallet_id === viufotoWalletId;
+      const split = isSameWallet
+        ? []
+        : [
+            { walletId: viufotoWalletId, fixedValue: platformFee },
+            { walletId: profile.asaas_wallet_id, remainingValue: true },
+          ];
 
       console.log(`Split: platform=${platformFee} (${commissionRate * 100}%), photographer wallet=${profile.asaas_wallet_id}, total=${total}`);
 
