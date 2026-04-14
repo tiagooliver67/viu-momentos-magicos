@@ -104,11 +104,9 @@ const FotoPage = () => {
     queryKey: ["foto-medium-url", photo?.file_url],
     queryFn: async () => {
       if (!photo?.file_url) return "";
-      const medPath = toMediumPath(photo.file_url);
-      const thumbPath = toThumbPath(photo.file_url);
-      // Also request original as fallback for legacy photos
-      const res = await getPublicSignedUrls([medPath, thumbPath, photo.file_url]);
-      return res[medPath] || res[thumbPath] || res[photo.file_url] || "";
+      // Without Lambda pipeline, only original exists
+      const res = await getPublicSignedUrls([photo.file_url]);
+      return res[photo.file_url] || "";
     },
     enabled: !!photo?.file_url,
     staleTime: 15 * 60 * 1000,
@@ -137,10 +135,9 @@ const FotoPage = () => {
     queryKey: ["related-thumb-urls", relatedPhotos?.map(p => p.id).join(",")],
     queryFn: async () => {
       if (!relatedPhotos || relatedPhotos.length === 0) return {};
-      const thumbPaths = relatedPhotos.map(p => toThumbPath(p.file_url));
+      // Without Lambda pipeline, only original paths exist
       const originalPaths = relatedPhotos.map(p => p.file_url);
-      const allPaths = [...new Set([...thumbPaths, ...originalPaths])];
-      return getPublicSignedUrls(allPaths);
+      return getPublicSignedUrls(originalPaths);
     },
     enabled: !!relatedPhotos && relatedPhotos.length > 0,
     staleTime: 15 * 60 * 1000,
