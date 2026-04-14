@@ -183,9 +183,12 @@ const EventPage = () => {
   const photoList = photos || [];
 
   const getPhotoUrl = useCallback((photo: any) => {
-    // Prefer thumbnail, fallback to original for legacy photos
-    const thumbPath = toThumbPath(photo.file_url);
-    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+    if (IS_LAMBDA_PIPELINE_ACTIVE) {
+      const thumbPath = toThumbPath(photo.file_url);
+      return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+    }
+    // Without Lambda, only original paths exist
+    return thumbUrls?.[photo.file_url] || "";
   }, [thumbUrls, toThumbPath]);
 
   // Password protection
