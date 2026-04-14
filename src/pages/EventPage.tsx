@@ -137,11 +137,9 @@ const EventPage = () => {
         return getMediumCdnUrl(selectedPhoto.file_url) || "";
       }
 
-      // Fallback: signed URLs with medium -> thumb -> original chain
-      const medPath = toMediumPath(selectedPhoto.file_url);
-      const thumbPath = toThumbPath(selectedPhoto.file_url);
-      const res = await getPublicSignedUrls([medPath, thumbPath, selectedPhoto.file_url]);
-      return res[medPath] || res[thumbPath] || res[selectedPhoto.file_url] || "";
+      // Fallback: only original path exists without Lambda
+      const res = await getPublicSignedUrls([selectedPhoto.file_url]);
+      return res[selectedPhoto.file_url] || "";
     },
     enabled: !!selectedPhoto,
     staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000,
