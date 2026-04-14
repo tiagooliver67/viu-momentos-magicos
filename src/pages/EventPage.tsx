@@ -114,11 +114,9 @@ const EventPage = () => {
         return urlMap;
       }
 
-      // Fallback: S3 signed URLs
-      const thumbPaths = photos.map((p: any) => toThumbPath(p.file_url));
+      // Fallback: S3 signed URLs — only request original paths (thumb/medium don't exist without Lambda)
       const originalPaths = photos.map((p: any) => p.file_url);
-      const allPaths = [...new Set([...thumbPaths, ...originalPaths])];
-      return getPublicSignedUrls(allPaths);
+      return getPublicSignedUrls(originalPaths);
     },
     enabled: !!photos && photos.length > 0,
     staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000, // CDN URLs can be cached longer
@@ -139,11 +137,9 @@ const EventPage = () => {
         return getMediumCdnUrl(selectedPhoto.file_url) || "";
       }
 
-      // Fallback: signed URLs with medium -> thumb -> original chain
-      const medPath = toMediumPath(selectedPhoto.file_url);
-      const thumbPath = toThumbPath(selectedPhoto.file_url);
-      const res = await getPublicSignedUrls([medPath, thumbPath, selectedPhoto.file_url]);
-      return res[medPath] || res[thumbPath] || res[selectedPhoto.file_url] || "";
+      // Fallback: only original path exists without Lambda
+      const res = await getPublicSignedUrls([selectedPhoto.file_url]);
+      return res[selectedPhoto.file_url] || "";
     },
     enabled: !!selectedPhoto,
     staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000,
@@ -185,9 +181,12 @@ const EventPage = () => {
   const photoList = photos || [];
 
   const getPhotoUrl = useCallback((photo: any) => {
-    // Prefer thumbnail, fallback to original for legacy photos
-    const thumbPath = toThumbPath(photo.file_url);
-    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+    if (IS_LAMBDA_PIPELINE_ACTIVE) {
+      const thumbPath = toThumbPath(photo.file_url);
+      return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+    }
+    // Without Lambda, only original paths exist
+    return thumbUrls?.[photo.file_url] || "";
   }, [thumbUrls, toThumbPath]);
 
   // Password protection
@@ -361,7 +360,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-end sm:justify-center"
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-center items-center"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
@@ -373,7 +372,7 @@ const EventPage = () => {
           </button>
 
           <div
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-hidden"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-y-auto max-h-[100dvh]"
             onClick={e => e.stopPropagation()}
           >
             {/* Image area — shrink-wrap on mobile, no flex-1 */}
