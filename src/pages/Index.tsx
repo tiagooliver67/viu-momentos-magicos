@@ -1,7 +1,9 @@
 import ClientNavbar from "@/components/ClientNavbar";
 import HeroSection from "@/components/HeroSection";
+import FeatureCards from "@/components/landing/FeatureCards";
 import SportCategoryFilter from "@/components/SportCategoryFilter";
 import FeaturedAlbums from "@/components/FeaturedAlbums";
+import PartnerCTA from "@/components/landing/PartnerCTA";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -9,15 +11,14 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <ClientNavbar />
       <HeroSection />
+      <FeatureCards />
 
-      <div className="container mx-auto px-4 mt-12 relative z-10">
-        {/* Filtro por modalidade */}
+      <div className="container mx-auto px-4 relative z-10">
         <SportCategoryFilter />
-
-        {/* Álbuns em Destaque */}
         <FeaturedAlbums />
       </div>
 
+      <PartnerCTA />
       <Footer />
     </div>
   );
