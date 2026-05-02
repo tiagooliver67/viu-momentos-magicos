@@ -89,6 +89,9 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
   const tableName = type === "fotos" ? "event_photos" : "event_videos";
   const queryKey = type === "fotos" ? "event-photos" : "event-videos";
   const isPhoto = type === "fotos";
+  // Concurrency cap: balances upload throughput vs browser/network saturation.
+  // 6 simultaneous uploads is the sweet spot for typical residential connections (50–200Mbps).
+  const UPLOAD_CONCURRENCY = 6;
 
   return useMutation({
     mutationFn: async (files: File[]) => {
@@ -154,15 +157,17 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       // Watermark source for baking
       const wmSrc = watermarkUrl || DEFAULT_WATERMARK;
 
-      const results = [];
-      for (let i = 0; i < objects.length; i++) {
+      const results: any[] = [];
+
+      // Process a single file end-to-end (resize → upload original → upload variants → DB insert)
+      const processOne = async (i: number): Promise<void> => {
         const obj = objects[i];
         const signed = signedMap.get(obj.path);
 
         if (!signed) {
           progressMap[i] = { ...progressMap[i], status: "error", progress: 0, errorDetail: "URL de upload inválida" };
           onProgress?.([...progressMap]);
-          continue;
+          return;
         }
 
         progressMap[i] = { ...progressMap[i], status: "uploading", progress: 5 };
@@ -247,7 +252,7 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
             console.error(`[S3Upload] DB insert error for ${obj.file.name}:`, error);
             progressMap[i] = { ...progressMap[i], status: "error", progress: 0, errorDetail: "Erro ao salvar no banco" };
             onProgress?.([...progressMap]);
-            continue;
+            return;
           }
 
           progressMap[i] = { ...progressMap[i], status: "done", progress: 100 };
@@ -258,7 +263,21 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
           onProgress?.([...progressMap]);
           console.error(`[S3Upload] Upload error for ${obj.file.name}:`, err);
         }
-      }
+      };
+
+      // Worker pool: N workers pull from a shared index queue.
+      // This keeps exactly UPLOAD_CONCURRENCY uploads in flight at any moment,
+      // automatically backfilling as soon as one finishes.
+      let cursor = 0;
+      const worker = async () => {
+        while (true) {
+          const idx = cursor++;
+          if (idx >= objects.length) return;
+          await processOne(idx);
+        }
+      };
+      const workerCount = Math.min(UPLOAD_CONCURRENCY, objects.length);
+      await Promise.all(Array.from({ length: workerCount }, worker));
 
       return results;
     },
