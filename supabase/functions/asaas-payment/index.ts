@@ -181,6 +181,7 @@ Deno.serve(async (req) => {
         photo_id: item.photoId || null,
         video_id: item.videoId || null,
         price: item.price,
+        resolution: item.resolution === "low" ? "low" : "high",
       }));
 
       const { error: itemsError } = await supabaseAdmin

@@ -80,6 +80,7 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
           photoId: i.photoId,
           videoId: i.videoId,
           price: i.price,
+          resolution: i.resolution,
         })),
         total,
       });
