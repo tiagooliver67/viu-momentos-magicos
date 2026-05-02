@@ -5,6 +5,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePhotographerSite, useCustomLinks } from "@/hooks/usePhotographerSite";
+import { supabase } from "@/integrations/supabase/client";
+import { cdnUrl } from "@/lib/cdnConfig";
+import { getSignedReadUrl } from "@/hooks/useS3Upload";
 
 const siteSubTabs = [
   { id: "geral", label: "Meu site", icon: Globe },
@@ -54,10 +57,50 @@ const MeuSiteTab = () => {
   const handleWatermarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // The Lambda processor reads the watermark from a FIXED path:
+    //   usuarios/{userId}/config/watermark.png
+    // We must upload to S3 at exactly that path so Lambda can find it.
+    if (file.type !== "image/png") {
+      toast.error("A marca d'água deve ser um arquivo PNG (com fundo transparente).");
+      return;
+    }
     try {
-      const url = await uploadAsset(file, `watermark.${file.name.split(".").pop()}`);
-      set("watermark_url", url);
-      upsertSite.mutate({ watermark_url: url });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Não autenticado");
+
+      const objectPath = `usuarios/${user.id}/config/watermark.png`;
+
+      // 1. Get presigned PUT URL from S3
+      const { data: signed, error: signErr } = await supabase.functions.invoke("s3-presign", {
+        body: { action: "sign_upload", object_path: objectPath },
+      });
+      if (signErr || !signed?.url) {
+        throw new Error(signErr?.message || "Falha ao gerar URL de upload");
+      }
+
+      // 2. PUT directly to S3 (overwrites previous watermark — same fixed path)
+      const putRes = await fetch(signed.url, {
+        method: signed.method || "PUT",
+        headers: { "Content-Type": "image/png" },
+        body: file,
+      });
+      if (!putRes.ok) throw new Error(`S3 PUT status ${putRes.status}`);
+
+      // 3. Resolve a viewable URL for the UI (CDN if available, else signed read URL)
+      let displayUrl = cdnUrl(objectPath);
+      if (!displayUrl) {
+        try {
+          displayUrl = await getSignedReadUrl(objectPath);
+        } catch {
+          displayUrl = "";
+        }
+      }
+      // Cache-bust so the new image shows immediately after re-upload
+      const finalUrl = displayUrl ? `${displayUrl}${displayUrl.includes("?") ? "&" : "?"}v=${Date.now()}` : "";
+
+      set("watermark_url", finalUrl);
+      upsertSite.mutate({ watermark_url: finalUrl });
+      toast.success("Marca d'água enviada — processamento ativo nos próximos uploads.");
     } catch (err: any) {
       toast.error("Erro ao enviar marca d'água: " + err.message);
     }
