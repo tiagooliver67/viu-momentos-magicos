@@ -1,15 +1,24 @@
 import { Search, Camera, ScanFace } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const HeroSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<"text" | "face">("text");
   const [mounted, setMounted] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     requestAnimationFrame(() => setMounted(true));
   }, []);
+
+  const handleSearch = (e?: FormEvent) => {
+    e?.preventDefault();
+    const q = searchQuery.trim();
+    navigate(q ? `/buscar?q=${encodeURIComponent(q)}` : "/buscar");
+  };
 
   return (
     <section className="relative min-h-[70vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden pt-14 sm:pt-0">
@@ -35,56 +44,52 @@ const HeroSection = () => {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Badge */}
-        <div
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6"
-          style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(20px)",
-            transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
-          }}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={mounted ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs sm:text-sm font-bold uppercase tracking-[0.18em] mb-6"
         >
           <Camera className="w-4 h-4" />
-          Conectando atletas às suas melhores fotos.
-        </div>
+          A revolução da fotografia esportiva
+        </motion.div>
 
         {/* Headline */}
-        <h1
-          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white leading-tight mb-4"
-          style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(24px)",
-            transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
-          }}
+        <motion.h1
+          initial={{ opacity: 0, y: 24 }}
+          animate={mounted ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white leading-[1.05] tracking-tight mb-5"
         >
-          Reviva seu momento. <br />
-          <span className="text-primary">Encontre suas fotos agora.</span>
-        </h1>
+          Sua superação imortalizada <br className="hidden sm:block" />
+          <span className="text-primary">em alta definição.</span>
+        </motion.h1>
 
         {/* Sub */}
-        <p
-          className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
-          style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(20px)",
-            transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s",
-          }}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={mounted ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+          className="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
         >
-          Encontre suas fotos e vídeos em segundos.
-        </p>
+          Encontre suas fotos de eventos esportivos em segundos com nossa
+          inteligência de busca facial e OCR de número de peito.
+        </motion.p>
 
         {/* Search */}
-        <div
+        <motion.form
+          onSubmit={handleSearch}
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={mounted ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.45 }}
           className="max-w-2xl mx-auto"
-          style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0) scale(1)" : "translateY(20px) scale(0.98)",
-            transition: "all 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s",
-          }}
         >
           <div className="glass-card p-1.5 sm:p-2 flex items-center gap-1 sm:gap-2 overflow-hidden">
             <div className="flex items-center gap-0.5 sm:gap-1 pl-1 sm:pl-2 shrink-0">
               <button
+                type="button"
                 onClick={() => setSearchMode("text")}
+                aria-label="Buscar por texto"
                 className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                   searchMode === "text"
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
@@ -95,7 +100,9 @@ const HeroSection = () => {
               </button>
 
               <button
+                type="button"
                 onClick={() => setSearchMode("face")}
+                aria-label="Buscar por reconhecimento facial"
                 className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
                   searchMode === "face"
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
@@ -118,15 +125,25 @@ const HeroSection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <button className="btn-premium px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs sm:text-sm min-h-[40px] sm:min-h-[44px] shrink-0">
+            <button
+              type="submit"
+              className="btn-premium px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs sm:text-sm min-h-[40px] sm:min-h-[44px] shrink-0"
+            >
               Buscar
             </button>
           </div>
 
           <p className="text-xs text-gray-400 mt-3">
-            Não sabe o nome do evento? <button className="text-primary hover:underline">Clique aqui</button>
+            Não sabe o nome do evento?{" "}
+            <button
+              type="button"
+              onClick={() => navigate("/buscar")}
+              className="text-primary hover:underline"
+            >
+              Clique aqui
+            </button>
           </p>
-        </div>
+        </motion.form>
       </div>
     </section>
   );
