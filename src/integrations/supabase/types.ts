@@ -393,6 +393,7 @@ export type Database = {
           order_id: string
           photo_id: string | null
           price: number
+          resolution: string
           video_id: string | null
         }
         Insert: {
@@ -401,6 +402,7 @@ export type Database = {
           order_id: string
           photo_id?: string | null
           price?: number
+          resolution?: string
           video_id?: string | null
         }
         Update: {
@@ -409,6 +411,7 @@ export type Database = {
           order_id?: string
           photo_id?: string | null
           price?: number
+          resolution?: string
           video_id?: string | null
         }
         Relationships: [
