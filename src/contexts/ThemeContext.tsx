@@ -13,12 +13,14 @@ export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem("admin-theme");
+    // Migração: limpa a chave antiga para forçar default branco em quem já visitou
+    try { localStorage.removeItem("admin-theme"); } catch {}
+    const saved = localStorage.getItem("viu-theme-v2");
     return (saved as Theme) || "clean";
   });
 
   useEffect(() => {
-    localStorage.setItem("admin-theme", theme);
+    localStorage.setItem("viu-theme-v2", theme);
     document.documentElement.classList.toggle("dark-theme", theme === "dark");
   }, [theme]);
 
