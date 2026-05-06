@@ -326,9 +326,10 @@ function ProposalDetail({ id, onBack }: { id: string; onBack: () => void }) {
     queryKey: ["proposal", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("proposals").select("*, events(name)").eq("id", id).single();
+        .from("proposals").select("*").eq("id", id).single();
       if (error) throw error;
-      return data as Proposal;
+      const { data: ev } = await supabase.from("events").select("name").eq("id", data.event_id).single();
+      return { ...data, events: ev || null } as Proposal;
     },
   });
 
