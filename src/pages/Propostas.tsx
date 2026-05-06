@@ -64,11 +64,16 @@ export default function Propostas() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("event_applications")
-        .select("*, events(name, event_date, location, organizer_id)")
+        .select("*")
         .eq("photographer_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as AppRow[];
+      const ids = Array.from(new Set((data || []).map((a: any) => a.event_id)));
+      const { data: evs } = ids.length
+        ? await supabase.from("events").select("id, name, event_date, location, organizer_id").in("id", ids)
+        : { data: [] };
+      const emap = new Map((evs || []).map((e: any) => [e.id, e]));
+      return (data || []).map((a: any) => ({ ...a, events: emap.get(a.event_id) || null })) as AppRow[];
     },
   });
 
@@ -83,16 +88,21 @@ export default function Propostas() {
       if (ids.length === 0) return [];
       const { data, error } = await supabase
         .from("event_applications")
-        .select("*, events(name, event_date, location, organizer_id)")
+        .select("*")
         .in("event_id", ids)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      // load photographer profiles
+      const { data: evs } = await supabase.from("events").select("id, name, event_date, location, organizer_id").in("id", ids);
+      const emap = new Map((evs || []).map((e: any) => [e.id, e]));
       const userIds = Array.from(new Set((data || []).map((a: any) => a.photographer_id)));
       const { data: profs } = await supabase
         .from("profiles").select("user_id, full_name, avatar_url").in("user_id", userIds);
       const pmap = new Map((profs || []).map((p: any) => [p.user_id, p]));
-      return (data || []).map((a: any) => ({ ...a, profiles: pmap.get(a.photographer_id) || null })) as AppRow[];
+      return (data || []).map((a: any) => ({
+        ...a,
+        events: emap.get(a.event_id) || null,
+        profiles: pmap.get(a.photographer_id) || null,
+      })) as AppRow[];
     },
   });
 
@@ -103,11 +113,16 @@ export default function Propostas() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("proposals")
-        .select("*, events(name)")
+        .select("*")
         .or(`organizer_id.eq.${user!.id},photographer_id.eq.${user!.id}`)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Proposal[];
+      const ids = Array.from(new Set((data || []).map((p: any) => p.event_id)));
+      const { data: evs } = ids.length
+        ? await supabase.from("events").select("id, name").in("id", ids)
+        : { data: [] };
+      const emap = new Map((evs || []).map((e: any) => [e.id, e]));
+      return (data || []).map((p: any) => ({ ...p, events: emap.get(p.event_id) || null })) as Proposal[];
     },
   });
 
@@ -355,7 +370,7 @@ function ProposalDetail({ id, onBack }: { id: string; onBack: () => void }) {
   });
 
   const updateStatus = useMutation({
-    mutationFn: async (status: string) => {
+    mutationFn: async (status: "aceita" | "rejeitada" | "encerrada" | "em_negociacao") => {
       const { error } = await supabase.from("proposals").update({ status }).eq("id", id);
       if (error) throw error;
     },
