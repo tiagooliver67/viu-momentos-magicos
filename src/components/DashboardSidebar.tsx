@@ -44,14 +44,16 @@ const DashboardSidebar = () => {
     staleTime: 60_000,
   });
 
-  const sidebarContent = (
+  const sidebarContent = (showLogo: boolean) => (
     <>
-      <Link to="/" className="flex items-center gap-2 mb-8 px-3">
-        <span className="text-2xl font-black">
-          <span className="text-primary">VIU</span>
-          <span className="text-foreground">FOTO</span>
-        </span>
-      </Link>
+      {showLogo && (
+        <Link to="/" className="flex items-center gap-2 mb-8 px-3">
+          <span className="text-2xl font-black">
+            <span className="text-primary">VIU</span>
+            <span className="text-foreground">FOTO</span>
+          </span>
+        </Link>
+      )}
 
       <Link to="/dashboard/criar-evento" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm mb-6 hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
         <PlusCircle className="w-5 h-5" />
@@ -114,21 +116,22 @@ const DashboardSidebar = () => {
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <aside className="relative w-72 h-full bg-sidebar border-r border-sidebar-border p-4 flex flex-col overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xl font-black">
-                <span className="text-primary">VIU</span>FOTO
-              </span>
+              <Link to="/" onClick={() => setMobileOpen(false)} className="text-xl font-black">
+                <span className="text-primary">VIU</span>
+                <span className="text-foreground">FOTO</span>
+              </Link>
               <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg hover:bg-secondary min-w-[44px] min-h-[44px] flex items-center justify-center">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            {sidebarContent}
+            {sidebarContent(false)}
           </aside>
         </div>
       )}
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 min-h-screen bg-sidebar border-r border-sidebar-border p-4">
-        {sidebarContent}
+        {sidebarContent(true)}
       </aside>
     </>
   );
