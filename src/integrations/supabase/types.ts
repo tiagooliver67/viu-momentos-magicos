@@ -151,6 +151,45 @@ export type Database = {
           },
         ]
       }
+      event_applications: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          message: string | null
+          organizer_response: string | null
+          photographer_id: string
+          responded_at: string | null
+          status: Database["public"]["Enums"]["application_status"]
+          suggested_fee: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          message?: string | null
+          organizer_response?: string | null
+          photographer_id: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          suggested_fee?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          message?: string | null
+          organizer_response?: string | null
+          photographer_id?: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["application_status"]
+          suggested_fee?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_coupons: {
         Row: {
           active: boolean
@@ -676,6 +715,124 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          proposal_id: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          proposal_id: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          proposal_id?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_attachments_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposal_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          proposal_id: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          proposal_id: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          proposal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_comments_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposals: {
+        Row: {
+          created_at: string
+          created_by: string
+          deadline: string | null
+          description: string | null
+          event_id: string
+          fee: number | null
+          id: string
+          organizer_id: string
+          photographer_id: string
+          status: Database["public"]["Enums"]["proposal_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          deadline?: string | null
+          description?: string | null
+          event_id: string
+          fee?: number | null
+          id?: string
+          organizer_id: string
+          photographer_id: string
+          status?: Database["public"]["Enums"]["proposal_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deadline?: string | null
+          description?: string | null
+          event_id?: string
+          fee?: number | null
+          id?: string
+          organizer_id?: string
+          photographer_id?: string
+          status?: Database["public"]["Enums"]["proposal_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       two_factor_codes: {
         Row: {
           action: string
@@ -910,14 +1067,23 @@ export type Database = {
       }
       is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
       is_event_photographer: { Args: { _event_id: string }; Returns: boolean }
+      is_proposal_party: { Args: { _proposal_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "user" | "photographer" | "organizer" | "super_admin"
+      application_status: "pendente" | "aceita" | "rejeitada" | "cancelada"
       discount_type: "percentual" | "valor_fixo"
       event_status: "ativo" | "em_breve" | "inativo"
       order_status: "aguardando_pagamento" | "pago" | "enviado" | "cancelado"
       payment_method: "pix" | "cartao"
+      proposal_status:
+        | "rascunho"
+        | "enviada"
+        | "em_negociacao"
+        | "aceita"
+        | "rejeitada"
+        | "encerrada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1046,10 +1212,19 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "photographer", "organizer", "super_admin"],
+      application_status: ["pendente", "aceita", "rejeitada", "cancelada"],
       discount_type: ["percentual", "valor_fixo"],
       event_status: ["ativo", "em_breve", "inativo"],
       order_status: ["aguardando_pagamento", "pago", "enviado", "cancelado"],
       payment_method: ["pix", "cartao"],
+      proposal_status: [
+        "rascunho",
+        "enviada",
+        "em_negociacao",
+        "aceita",
+        "rejeitada",
+        "encerrada",
+      ],
     },
   },
 } as const

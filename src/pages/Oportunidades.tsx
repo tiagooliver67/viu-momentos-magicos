@@ -1,13 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardSidebar from "@/components/DashboardSidebar";
+import ApplyEventModal from "@/components/oportunidades/ApplyEventModal";
+import { Button } from "@/components/ui/button";
 import {
   Briefcase, Calendar, MapPin, Lightbulb, ArrowRight,
   PlusCircle, FileText, Award, BookOpen, Image as ImageIcon,
-  Megaphone, Sparkles, TrendingUp, Search,
+  Megaphone, Sparkles, TrendingUp, Search, Handshake, Send,
 } from "lucide-react";
 
 /* ──────────────────────────────────────────────────────────
@@ -20,6 +22,7 @@ import {
 const Oportunidades = () => {
   const { user, profile } = useAuth();
   const firstName = profile?.full_name?.split(" ")[0] || "Fotógrafo";
+  const [applyTarget, setApplyTarget] = useState<{ id: string; name: string } | null>(null);
 
   /* ── Eventos abertos: upcoming + status público (em_breve / ativo) ── */
   const { data: openEvents = [], isLoading: loadingEvents } = useQuery({
@@ -35,6 +38,20 @@ const Oportunidades = () => {
         .limit(12);
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  /* ── IDs de eventos onde já me candidatei (para esconder botão) ── */
+  const { data: appliedIds = new Set<string>() } = useQuery({
+    queryKey: ["my-applied-event-ids", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("event_applications")
+        .select("event_id, status")
+        .eq("photographer_id", user!.id)
+        .neq("status", "cancelada");
+      return new Set((data || []).map((a: any) => a.event_id));
     },
   });
 
@@ -135,11 +152,8 @@ const Oportunidades = () => {
                 <ul className="space-y-2">
                   {openEvents.map((ev) => (
                     <li key={ev.id}>
-                      <Link
-                        to={`/evento/${ev.id}`}
-                        className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-all"
-                      >
-                        <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                    <div className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-all">
+                      <Link to={`/evento/${ev.id}`} className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                           {ev.cover_url ? (
                             <img src={ev.cover_url} alt={ev.name} className="w-full h-full object-cover" />
                           ) : (
@@ -147,16 +161,16 @@ const Oportunidades = () => {
                               <ImageIcon className="w-4 h-4 text-muted-foreground/40" />
                             </div>
                           )}
-                        </div>
-                        <div className="flex-1 min-w-0">
+                      </Link>
+                      <Link to={`/evento/${ev.id}`} className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                             {ev.name}
                           </p>
                           <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
                             <MapPin className="w-3 h-3" /> {ev.location}
                           </p>
-                        </div>
-                        <div className="text-right hidden sm:block">
+                      </Link>
+                      <div className="text-right hidden md:block">
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-foreground bg-muted px-2 py-1 rounded-md">
                             <Calendar className="w-3 h-3" /> {formatDate(ev.event_date)}
                           </span>
@@ -164,8 +178,20 @@ const Oportunidades = () => {
                             <p className="text-[10px] text-muted-foreground mt-1 capitalize">{ev.category}</p>
                           )}
                         </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                      </Link>
+                      {appliedIds.has(ev.id) ? (
+                        <span className="text-[11px] font-semibold text-emerald-600 px-2 py-1 rounded-md bg-emerald-500/10">
+                          Candidatado
+                        </span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => setApplyTarget({ id: ev.id, name: ev.name })}
+                          className="text-xs whitespace-nowrap"
+                        >
+                          <Send className="w-3 h-3 mr-1" /> Candidatar
+                        </Button>
+                      )}
+                    </div>
                     </li>
                   ))}
                 </ul>
@@ -241,10 +267,10 @@ const Oportunidades = () => {
               highlight
             />
             <ActionCard
-              icon={Megaphone}
-              title="Sugerir evento"
-              desc="Envie ideia ao time"
-              to="/dashboard/configuracoes?tab=suporte"
+              icon={Handshake}
+              title="Propostas"
+              desc="Negociações ativas"
+              to="/dashboard/propostas"
             />
             <ActionCard
               icon={ImageIcon}
@@ -285,6 +311,12 @@ const Oportunidades = () => {
             Otimizar perfil <ArrowRight className="w-4 h-4" />
           </Link>
         </section>
+
+        <ApplyEventModal
+          open={!!applyTarget}
+          onOpenChange={(v) => !v && setApplyTarget(null)}
+          event={applyTarget}
+        />
       </main>
     </div>
   );
