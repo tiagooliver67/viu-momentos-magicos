@@ -44,7 +44,7 @@ const Pedidos = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 pt-18 lg:pt-6 lg:p-8 overflow-auto">
+      <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto">
         <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1">Pedidos</h1>
         <p className="text-sm text-muted-foreground mb-6">
           {filtered.length} pedido{filtered.length !== 1 ? "s" : ""} encontrado{filtered.length !== 1 ? "s" : ""} 
