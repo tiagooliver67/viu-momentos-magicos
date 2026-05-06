@@ -191,7 +191,7 @@ const EventDashboard = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 pt-18 lg:pt-6 lg:p-8 overflow-auto">
+      <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto">
         {/* Header */}
         <p className="text-xs text-primary font-bold mb-1">DASHBOARD EVENTO</p>
         <p className="text-xs text-muted-foreground mb-4">{event.id.slice(0, 8)} - {event.name}</p>

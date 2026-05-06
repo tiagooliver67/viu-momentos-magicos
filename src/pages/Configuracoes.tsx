@@ -517,7 +517,7 @@ const Configuracoes = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 pt-18 lg:pt-4 md:p-8 overflow-auto">
+      <main className="flex-1 p-4 pt-20 lg:pt-4 md:p-8 overflow-auto">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
             {/* Sidebar tabs - horizontal scroll on mobile */}

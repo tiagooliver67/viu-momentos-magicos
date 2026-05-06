@@ -173,7 +173,7 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 pt-18 lg:pt-6 lg:p-8 overflow-auto space-y-6">
+      <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto space-y-6">
         {/* ── WALLET WARNING ── */}
         {!isLoading && !walletConfigured && (
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">

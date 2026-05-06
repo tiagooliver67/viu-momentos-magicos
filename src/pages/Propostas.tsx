@@ -182,7 +182,7 @@ export default function Propostas() {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 pt-18 lg:pt-6 lg:p-8 overflow-auto space-y-6">
+      <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto space-y-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-3">
             <Handshake className="w-3.5 h-3.5" /> Propostas & Candidaturas
@@ -419,7 +419,7 @@ function ProposalDetail({ id, onBack }: { id: string; onBack: () => void }) {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 pt-18 lg:pt-6 lg:p-8 overflow-auto space-y-4 max-w-3xl">
+      <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto space-y-4 max-w-3xl">
         <button onClick={onBack} className="text-sm text-muted-foreground flex items-center gap-1 hover:text-foreground">
           <ArrowLeft className="w-4 h-4" /> Voltar
         </button>
