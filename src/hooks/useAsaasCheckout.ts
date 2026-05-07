@@ -36,8 +36,22 @@ export function useAsaasCheckout() {
       const { data, error } = await supabase.functions.invoke("asaas-payment", {
         body: { action: "create_checkout", ...params },
       });
-      if (error) throw new Error(error.message);
-      if (data.error) throw new Error(data.error);
+      if (error) {
+        // Try to extract friendly message from edge function response body
+        let friendly: string | null = null;
+        try {
+          const ctx: any = (error as any).context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json();
+            friendly = body?.error ?? null;
+          } else if (ctx && typeof ctx.text === "function") {
+            const txt = await ctx.text();
+            try { friendly = JSON.parse(txt)?.error ?? null; } catch { /* noop */ }
+          }
+        } catch { /* noop */ }
+        throw new Error(friendly || "Não foi possível concluir o pagamento. Tente novamente em instantes.");
+      }
+      if (data?.error) throw new Error(data.error);
       setPixData(data);
       setPaymentStatus(data.status);
       // Start polling for payment status

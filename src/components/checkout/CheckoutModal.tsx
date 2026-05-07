@@ -7,6 +7,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 
+// Validate Brazilian CPF (11 digits with check digits) — accepts CNPJ (14 digits) loosely as well
+function isValidCpfCnpj(value: string): boolean {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length === 14) return true; // CNPJ — let Asaas validate fully
+  if (digits.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(digits)) return false;
+  const calc = (base: string, factor: number) => {
+    let sum = 0;
+    for (let i = 0; i < base.length; i++) sum += parseInt(base[i]) * (factor - i);
+    const mod = (sum * 10) % 11;
+    return mod === 10 ? 0 : mod;
+  };
+  const d1 = calc(digits.slice(0, 9), 10);
+  const d2 = calc(digits.slice(0, 10), 11);
+  return d1 === parseInt(digits[9]) && d2 === parseInt(digits[10]);
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 interface CheckoutModalProps {
   open: boolean;
   onClose: () => void;
@@ -58,16 +79,28 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.cpfCnpj) {
-      toast.error("Preencha todos os campos");
+    if (!form.name.trim() || !form.email.trim() || !form.cpfCnpj.trim()) {
+      toast.error("Preencha todos os campos para continuar.");
+      return;
+    }
+    if (form.name.trim().length < 3) {
+      toast.error("Informe seu nome completo.");
+      return;
+    }
+    if (!isValidEmail(form.email)) {
+      toast.error("E-mail inválido. Verifique e tente novamente.");
+      return;
+    }
+    if (!isValidCpfCnpj(form.cpfCnpj)) {
+      toast.error("CPF ou CNPJ inválido. Confira os números e tente novamente.");
       return;
     }
     if (!eventId) {
-      toast.error("Erro: evento não identificado");
+      toast.error("Evento não identificado. Atualize a página e tente novamente.");
       return;
     }
     if (items.length === 0) {
-      toast.error("Carrinho vazio");
+      toast.error("Seu carrinho está vazio.");
       return;
     }
     try {
@@ -86,7 +119,8 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
       });
       setStep("pix");
     } catch (err: any) {
-      toast.error("Erro ao criar pagamento: " + err.message);
+      const msg = err?.message || "Não foi possível concluir o pagamento. Tente novamente em instantes.";
+      toast.error(msg, { duration: 6000 });
     }
   };
 
