@@ -205,7 +205,17 @@ export function useDiscountPackages(eventId: string | undefined) {
   });
 
   const savePackage = useMutation({
-    mutationFn: async (pkg: { min_photos: number; discount_pct: number; all_photos_price?: number; min_photo_price?: number; id?: string }) => {
+    mutationFn: async (pkg: {
+      min_photos: number;
+      discount_pct: number;
+      all_photos_price?: number;
+      min_photo_price?: number;
+      package_type?: "closed" | "per_photo";
+      display_mode?: "from" | "always";
+      active?: boolean;
+      base_photo_price?: number;
+      id?: string;
+    }) => {
       if (!eventId) throw new Error("No event ID");
       if (pkg.id) {
         const { error } = await supabase.from("discount_packages").update(pkg).eq("id", pkg.id);
