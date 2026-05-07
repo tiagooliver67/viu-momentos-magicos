@@ -32,6 +32,7 @@ import BuscarEventos from "./pages/BuscarEventos";
 import Favoritos from "./pages/Favoritos";
 import VirarFotografo from "./pages/VirarFotografo";
 import TermosDeUso from "./pages/TermosDeUso";
+import TermsGate from "./components/TermsGate";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -55,6 +56,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <Sonner />
+            <TermsGate />
             <PageTransition>
             <Routes>
               <Route path="/" element={<Index />} />

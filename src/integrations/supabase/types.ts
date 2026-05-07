@@ -678,6 +678,8 @@ export type Database = {
           interest: string | null
           last_sign_in_at: string | null
           phone: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string
           user_id: string
         }
@@ -694,6 +696,8 @@ export type Database = {
           interest?: string | null
           last_sign_in_at?: string | null
           phone?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
           user_id: string
         }
@@ -710,6 +714,8 @@ export type Database = {
           interest?: string | null
           last_sign_in_at?: string | null
           phone?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
           user_id?: string
         }
