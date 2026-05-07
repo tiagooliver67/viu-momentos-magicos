@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { UploadFileProgress } from "@/components/event/PhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
   Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
@@ -45,6 +46,7 @@ const quickActions = [
 const EventDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [photoUploadProgress, setPhotoUploadProgress] = useState<UploadFileProgress[]>([]);
 
@@ -423,7 +425,39 @@ const EventDashboard = () => {
         <CouponModal open={showCoupon} onClose={() => setShowCoupon(false)} onSave={(c) => { createCoupon.mutate(c); setShowCoupon(false); }} isSaving={createCoupon.isPending} />
         <EditEventModal open={showEdit} onClose={() => setShowEdit(false)} onSave={(data) => { updateEvent.mutate(data as any); setShowEdit(false); }} initial={{ name: event.name, event_date: event.event_date, event_time: event.event_time, location: event.location, category: event.category, search_type: event.search_type || [], visibility: event.visibility }} isSaving={updateEvent.isPending} />
         <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSave={(pw) => { updateEvent.mutate({ password: pw }); setShowPassword(false); }} currentPassword={event.password} isSaving={updateEvent.isPending} />
-        <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} onUploadFiles={(files) => s3UploadPhotos.mutate(files)} isUploading={s3UploadPhotos.isPending} uploadProgress={photoUploadProgress} />
+        <PhotoGallery
+          open={showGallery}
+          onClose={() => setShowGallery(false)}
+          photos={photos}
+          onDelete={(pid) => deletePhoto.mutate(pid)}
+          isDeleting={deletePhoto.isPending}
+          totalPhotos={photos.length}
+          onUploadFiles={(files) => s3UploadPhotos.mutate(files)}
+          isUploading={s3UploadPhotos.isPending}
+          uploadProgress={photoUploadProgress}
+          coverUrl={event?.cover_url}
+          onSetCover={async (photo) => {
+            try {
+              const { data: signed } = await supabase.functions.invoke("s3-presign", {
+                body: { action: "sign_read_batch", objects: [{ path: photo.file_url }] },
+              });
+              const url = signed?.results?.[0]?.url || photo.file_url;
+              await updateEvent.mutateAsync({ cover_url: url });
+              toast.success("Foto definida como capa do evento");
+            } catch (e: any) {
+              toast.error("Erro ao definir capa: " + (e.message || "tente novamente"));
+            }
+          }}
+          onBulkDelete={async (ids) => {
+            const { error } = await supabase.from("event_photos").delete().in("id", ids);
+            if (error) {
+              toast.error("Erro ao excluir fotos");
+              return;
+            }
+            toast.success(`${ids.length} foto(s) excluída(s)`);
+            queryClient.invalidateQueries({ queryKey: ["event-photos", id] });
+          }}
+        />
         <PromoArtModal
           open={showPromo}
           onClose={() => setShowPromo(false)}

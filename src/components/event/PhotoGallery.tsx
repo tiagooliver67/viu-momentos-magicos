@@ -1,8 +1,18 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw } from "lucide-react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Photo {
   id: string;
@@ -32,17 +42,23 @@ interface Props {
   onRetryFiles?: (files: File[]) => void;
   isUploading?: boolean;
   uploadProgress?: UploadFileProgress[];
+  coverUrl?: string | null;
+  onSetCover?: (photo: Photo) => void;
+  onBulkDelete?: (ids: string[]) => void;
 }
 
 const PHOTOS_PER_PAGE = 20;
 
-export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [] }: Props) {
+export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [], coverUrl, onSetCover, onBulkDelete }: Props) {
   const [search, setSearch] = useState("");
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState<{ ids: string[]; bulk: boolean } | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const filesRef = useRef<File[]>([]);
 
@@ -131,6 +147,33 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
 
   const totalPages = Math.ceil(photos.length / PHOTOS_PER_PAGE);
   const paginatedPhotos = photos.slice((page - 1) * PHOTOS_PER_PAGE, page * PHOTOS_PER_PAGE);
+
+  const isCoverPhoto = (photo: Photo) => {
+    if (!coverUrl) return false;
+    const last = (s: string) => s.split("/").pop() || s;
+    return coverUrl === photo.file_url || last(coverUrl) === last(photo.file_url);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleConfirmDelete = () => {
+    if (!confirmDelete) return;
+    if (confirmDelete.bulk && onBulkDelete) {
+      onBulkDelete(confirmDelete.ids);
+      clearSelection();
+    } else {
+      confirmDelete.ids.forEach(id => onDelete(id));
+    }
+    setConfirmDelete(null);
+  };
 
   const sold = 0;
   const revenue = 0;
@@ -324,6 +367,30 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
             </div>
           )}
 
+          {/* Bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div className="sticky top-0 z-10 mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-primary text-primary-foreground shadow-lg">
+              <span className="text-sm font-medium">
+                {selectedIds.size} foto(s) selecionada(s)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={clearSelection}
+                  className="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-primary-foreground/10 transition-colors"
+                >
+                  Limpar
+                </button>
+                <button
+                  onClick={() => setConfirmDelete({ ids: Array.from(selectedIds), bulk: true })}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 transition-colors min-h-[36px]"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Excluir selecionadas
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Photo Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {paginatedPhotos.map((photo) => {
@@ -333,33 +400,52 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                   <div className="animate-pulse text-xs text-muted-foreground">Carregando...</div>
                 </div>
               );
+              const isCover = isCoverPhoto(photo);
+              const isSelected = selectedIds.has(photo.id);
               return (
-              <div key={photo.id} className="relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5]">
+              <div key={photo.id} className={`relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5] ${isSelected ? "ring-2 ring-primary" : ""}`}>
                 <img src={url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
-                
-                <div className="absolute top-2 left-2 right-2 flex items-start justify-between">
-                  <button className="flex items-center gap-1 px-2 py-1 rounded bg-primary/80 text-primary-foreground text-[10px] font-medium backdrop-blur-sm">
-                    <Image className="w-3 h-3" />
-                    Capa
-                  </button>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(photo.id); }} className="p-1 rounded bg-black/40 backdrop-blur-sm text-white hover:bg-destructive/80">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                    <button className="p-1 rounded bg-black/40 backdrop-blur-sm text-white">
-                      <MoreVertical className="w-3.5 h-3.5" />
+
+                <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2">
+                  {isCover ? (
+                    <span className="flex items-center gap-1 px-2 py-1 rounded bg-primary/90 text-primary-foreground text-[10px] font-semibold backdrop-blur-sm">
+                      <Star className="w-3 h-3 fill-current" />
+                      Capa do evento
+                    </span>
+                  ) : <span />}
+                  <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    {!isCover && onSetCover && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onSetCover(photo); setMenuOpenId(null); }}
+                        title="Definir como capa do evento"
+                        className="p-1.5 rounded bg-black/50 backdrop-blur-sm text-white hover:bg-primary/80 min-w-[32px] min-h-[32px] flex items-center justify-center"
+                      >
+                        <Star className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setConfirmDelete({ ids: [photo.id], bulk: false }); }}
+                      title="Excluir foto"
+                      className="p-1.5 rounded bg-black/50 backdrop-blur-sm text-white hover:bg-destructive/80 min-w-[32px] min-h-[32px] flex items-center justify-center"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <input type="checkbox" className="w-3.5 h-3.5 rounded border-white/50" />
+                    <label className="flex items-center gap-1.5 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(photo.id)}
+                        className="w-4 h-4 rounded border-white/50 cursor-pointer accent-primary"
+                      />
                       <span className="text-[10px] text-white/80 truncate max-w-[120px]">
                         {photo.file_name ? `...${photo.file_name.slice(-20)}` : "foto"}
                       </span>
-                    </div>
+                    </label>
                   </div>
                 </div>
 
@@ -401,6 +487,30 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
           <img src={lightbox} alt="" className="max-w-[90vw] max-h-[90vh] object-contain" />
         </div>
       )}
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDelete?.bulk
+                ? `Excluir ${confirmDelete.ids.length} foto(s)?`
+                : "Excluir esta foto?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. As fotos serão removidas permanentemente do evento.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
