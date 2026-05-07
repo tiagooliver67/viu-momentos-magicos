@@ -115,31 +115,43 @@ export type Database = {
       }
       discount_packages: {
         Row: {
+          active: boolean
           all_photos_price: number | null
+          base_photo_price: number | null
           created_at: string
           discount_pct: number
+          display_mode: string
           event_id: string
           id: string
           min_photo_price: number | null
           min_photos: number
+          package_type: string
         }
         Insert: {
+          active?: boolean
           all_photos_price?: number | null
+          base_photo_price?: number | null
           created_at?: string
           discount_pct?: number
+          display_mode?: string
           event_id: string
           id?: string
           min_photo_price?: number | null
           min_photos?: number
+          package_type?: string
         }
         Update: {
+          active?: boolean
           all_photos_price?: number | null
+          base_photo_price?: number | null
           created_at?: string
           discount_pct?: number
+          display_mode?: string
           event_id?: string
           id?: string
           min_photo_price?: number | null
           min_photos?: number
+          package_type?: string
         }
         Relationships: [
           {
