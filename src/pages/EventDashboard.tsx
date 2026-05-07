@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import type { UploadFileProgress } from "@/components/event/PhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
   Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
@@ -45,6 +46,7 @@ const quickActions = [
 const EventDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [photoUploadProgress, setPhotoUploadProgress] = useState<UploadFileProgress[]>([]);
 
@@ -453,9 +455,7 @@ const EventDashboard = () => {
               return;
             }
             toast.success(`${ids.length} foto(s) excluída(s)`);
-            // refresh
-            deletePhoto.reset();
-            window.dispatchEvent(new Event("focus"));
+            queryClient.invalidateQueries({ queryKey: ["event-photos", id] });
           }}
         />
         <PromoArtModal
