@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import CriarEvento from "./pages/CriarEvento";
 import VIUPass from "./pages/VIUPass";
 import Pedidos from "./pages/Pedidos";
+import Clientes from "./pages/Clientes";
 import Configuracoes from "./pages/Configuracoes";
 import Oportunidades from "./pages/Oportunidades";
 import Propostas from "./pages/Propostas";
@@ -80,6 +81,7 @@ const App = () => (
               {/* Financeiro route removed — unified into Carteira */}
               <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
               <Route path="/dashboard/pedidos" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Pedidos /></ProtectedRoute>} />
+              <Route path="/dashboard/clientes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Clientes /></ProtectedRoute>} />
               <Route path="/dashboard/oportunidades" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Oportunidades /></ProtectedRoute>} />
               <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
               <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
