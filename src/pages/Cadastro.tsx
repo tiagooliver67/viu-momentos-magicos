@@ -12,6 +12,20 @@ const ESTADOS_BR = [
   "PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"
 ];
 
+function isValidCpfCnpj(value: string): boolean {
+  const d = value.replace(/\D/g, "");
+  if (d.length === 14) return true;
+  if (d.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(d)) return false;
+  const calc = (base: string, factor: number) => {
+    let sum = 0;
+    for (let i = 0; i < base.length; i++) sum += parseInt(base[i]) * (factor - i);
+    const mod = (sum * 10) % 11;
+    return mod === 10 ? 0 : mod;
+  };
+  return calc(d.slice(0, 9), 10) === parseInt(d[9]) && calc(d.slice(0, 10), 11) === parseInt(d[10]);
+}
+
 export default function Cadastro() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,8 +55,16 @@ export default function Cadastro() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fullName || !form.email || !form.password) {
-      toast.error("Preencha os campos obrigatórios");
+    if (!form.fullName || !form.email || !form.password || !form.cpfCnpj || !form.phone) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+    if (!isValidCpfCnpj(form.cpfCnpj)) {
+      toast.error("CPF ou CNPJ inválido. Confira os números.");
+      return;
+    }
+    if (form.phone.replace(/\D/g, "").length < 10) {
+      toast.error("Celular inválido. Informe DDD + número.");
       return;
     }
     if (form.password.length < 6) {
@@ -142,8 +164,8 @@ export default function Cadastro() {
 
               <Input placeholder="Nome completo *" value={form.fullName} onChange={(e) => update("fullName", e.target.value)} className="h-12" />
               <Input type="email" placeholder="E-mail *" value={form.email} onChange={(e) => update("email", e.target.value)} className="h-12" />
-              <Input placeholder="CPF ou CNPJ" value={form.cpfCnpj} onChange={(e) => update("cpfCnpj", e.target.value)} className="h-12" />
-              <Input placeholder="Celular" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-12" />
+              <Input placeholder="CPF ou CNPJ *" value={form.cpfCnpj} onChange={(e) => update("cpfCnpj", e.target.value)} className="h-12" />
+              <Input placeholder="Celular *" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-12" />
 
               {isPhotographer && (
                 <>
