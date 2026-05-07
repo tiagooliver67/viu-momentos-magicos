@@ -369,6 +369,77 @@ export type Database = {
           },
         ]
       }
+      event_registrations: {
+        Row: {
+          birth_date: string | null
+          category: string | null
+          checked_in_at: string | null
+          checkin_status: Database["public"]["Enums"]["registration_checkin_status"]
+          city: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          notes: string | null
+          payment_proof_url: string | null
+          payment_status: Database["public"]["Enums"]["registration_payment_status"]
+          phone: string
+          qr_token: string
+          registration_event_id: string
+          shirt_size: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          birth_date?: string | null
+          category?: string | null
+          checked_in_at?: string | null
+          checkin_status?: Database["public"]["Enums"]["registration_checkin_status"]
+          city?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          payment_proof_url?: string | null
+          payment_status?: Database["public"]["Enums"]["registration_payment_status"]
+          phone: string
+          qr_token?: string
+          registration_event_id: string
+          shirt_size?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          birth_date?: string | null
+          category?: string | null
+          checked_in_at?: string | null
+          checkin_status?: Database["public"]["Enums"]["registration_checkin_status"]
+          city?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          payment_proof_url?: string | null
+          payment_status?: Database["public"]["Enums"]["registration_payment_status"]
+          phone?: string
+          qr_token?: string
+          registration_event_id?: string
+          shirt_size?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_registration_event_id_fkey"
+            columns: ["registration_event_id"]
+            isOneToOne: false
+            referencedRelation: "registration_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_videos: {
         Row: {
           created_at: string
@@ -907,6 +978,84 @@ export type Database = {
         }
         Relationships: []
       }
+      registration_events: {
+        Row: {
+          categories: Json
+          category: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          event_date: string
+          event_time: string | null
+          id: string
+          location: string
+          max_slots: number | null
+          name: string
+          organizer_id: string
+          pix_amount: number | null
+          pix_key: string | null
+          regulation: string | null
+          requires_birth_date: boolean
+          requires_city: boolean
+          requires_shirt_size: boolean
+          shirt_sizes: Json
+          slug: string
+          status: Database["public"]["Enums"]["registration_event_status"]
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          categories?: Json
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date: string
+          event_time?: string | null
+          id?: string
+          location: string
+          max_slots?: number | null
+          name: string
+          organizer_id: string
+          pix_amount?: number | null
+          pix_key?: string | null
+          regulation?: string | null
+          requires_birth_date?: boolean
+          requires_city?: boolean
+          requires_shirt_size?: boolean
+          shirt_sizes?: Json
+          slug: string
+          status?: Database["public"]["Enums"]["registration_event_status"]
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          categories?: Json
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          location?: string
+          max_slots?: number | null
+          name?: string
+          organizer_id?: string
+          pix_amount?: number | null
+          pix_key?: string | null
+          regulation?: string | null
+          requires_birth_date?: boolean
+          requires_city?: boolean
+          requires_shirt_size?: boolean
+          shirt_sizes?: Json
+          slug?: string
+          status?: Database["public"]["Enums"]["registration_event_status"]
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       two_factor_codes: {
         Row: {
           action: string
@@ -1142,6 +1291,10 @@ export type Database = {
       is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
       is_event_photographer: { Args: { _event_id: string }; Returns: boolean }
       is_proposal_party: { Args: { _proposal_id: string }; Returns: boolean }
+      is_registration_event_organizer: {
+        Args: { _event_id: string }
+        Returns: boolean
+      }
       is_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
@@ -1158,6 +1311,13 @@ export type Database = {
         | "aceita"
         | "rejeitada"
         | "encerrada"
+      registration_checkin_status: "ausente" | "presente"
+      registration_event_status:
+        | "rascunho"
+        | "aberto"
+        | "encerrado"
+        | "cancelado"
+      registration_payment_status: "pendente" | "pago" | "cancelado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1299,6 +1459,14 @@ export const Constants = {
         "rejeitada",
         "encerrada",
       ],
+      registration_checkin_status: ["ausente", "presente"],
+      registration_event_status: [
+        "rascunho",
+        "aberto",
+        "encerrado",
+        "cancelado",
+      ],
+      registration_payment_status: ["pendente", "pago", "cancelado"],
     },
   },
 } as const
