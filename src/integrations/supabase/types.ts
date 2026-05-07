@@ -246,27 +246,77 @@ export type Database = {
           },
         ]
       }
-      event_photographers: {
+      event_partners: {
         Row: {
           commission_pct: number
           created_at: string
           event_id: string
           id: string
-          photographer_id: string
+          partner_email: string | null
+          partner_name: string
+          partner_user_id: string | null
+          permissions: Json
         }
         Insert: {
           commission_pct?: number
           created_at?: string
           event_id: string
           id?: string
-          photographer_id: string
+          partner_email?: string | null
+          partner_name: string
+          partner_user_id?: string | null
+          permissions?: Json
         }
         Update: {
           commission_pct?: number
           created_at?: string
           event_id?: string
           id?: string
+          partner_email?: string | null
+          partner_name?: string
+          partner_user_id?: string | null
+          permissions?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_partners_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_photographers: {
+        Row: {
+          commission_pct: number
+          created_at: string
+          event_id: string
+          id: string
+          invited_at: string
+          note: string | null
+          photographer_id: string
+          status: string
+        }
+        Insert: {
+          commission_pct?: number
+          created_at?: string
+          event_id: string
+          id?: string
+          invited_at?: string
+          note?: string | null
+          photographer_id: string
+          status?: string
+        }
+        Update: {
+          commission_pct?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          invited_at?: string
+          note?: string | null
           photographer_id?: string
+          status?: string
         }
         Relationships: [
           {
@@ -357,6 +407,7 @@ export type Database = {
       events: {
         Row: {
           category: string
+          collab_note: string | null
           cover_url: string | null
           created_at: string
           event_date: string
@@ -365,6 +416,7 @@ export type Database = {
           location: string
           name: string
           organizer_id: string
+          owner_commission_pct: number
           password: string | null
           plan_type: string
           search_type: string[] | null
@@ -374,6 +426,7 @@ export type Database = {
         }
         Insert: {
           category?: string
+          collab_note?: string | null
           cover_url?: string | null
           created_at?: string
           event_date: string
@@ -382,6 +435,7 @@ export type Database = {
           location: string
           name: string
           organizer_id: string
+          owner_commission_pct?: number
           password?: string | null
           plan_type?: string
           search_type?: string[] | null
@@ -391,6 +445,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          collab_note?: string | null
           cover_url?: string | null
           created_at?: string
           event_date?: string
@@ -399,6 +454,7 @@ export type Database = {
           location?: string
           name?: string
           organizer_id?: string
+          owner_commission_pct?: number
           password?: string | null
           plan_type?: string
           search_type?: string[] | null
