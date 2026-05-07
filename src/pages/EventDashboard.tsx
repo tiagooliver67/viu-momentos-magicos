@@ -9,9 +9,11 @@ import CouponModal from "@/components/event/CouponModal";
 import EditEventModal from "@/components/event/EditEventModal";
 import PasswordModal from "@/components/event/PasswordModal";
 import PhotoGallery from "@/components/event/PhotoGallery";
+import PromoArtModal from "@/components/event/PromoArtModal";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
 import { useS3Upload } from "@/hooks/useS3Upload";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
+import { useAuth } from "@/contexts/AuthContext";
 import type { UploadFileProgress } from "@/components/event/PhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -75,6 +77,8 @@ const EventDashboard = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [showActions, setShowActions] = useState(false);
+  const [showPromo, setShowPromo] = useState(false);
+  const { profile } = useAuth();
 
   const orders = ordersQuery.data || [];
 
@@ -95,7 +99,7 @@ const EventDashboard = () => {
       case "password": setShowPassword(true); break;
       case "coupons": setShowCoupon(true); break;
       case "actions": setShowActions(true); break;
-      case "promo": toast.info("Módulo de divulgação em breve!"); break;
+      case "promo": setShowPromo(true); break;
       case "import": toast.info("Importação de pedidos em breve!"); break;
       case "invite": toast.info("Convite de fotógrafos em breve!"); break;
       case "videos": toast.info("Galeria de vídeos em breve!"); break;
@@ -416,6 +420,19 @@ const EventDashboard = () => {
         <EditEventModal open={showEdit} onClose={() => setShowEdit(false)} onSave={(data) => { updateEvent.mutate(data as any); setShowEdit(false); }} initial={{ name: event.name, event_date: event.event_date, event_time: event.event_time, location: event.location, category: event.category, search_type: event.search_type || [], visibility: event.visibility }} isSaving={updateEvent.isPending} />
         <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSave={(pw) => { updateEvent.mutate({ password: pw }); setShowPassword(false); }} currentPassword={event.password} isSaving={updateEvent.isPending} />
         <PhotoGallery open={showGallery} onClose={() => setShowGallery(false)} photos={photos} onDelete={(pid) => deletePhoto.mutate(pid)} isDeleting={deletePhoto.isPending} totalPhotos={photos.length} onUploadFiles={(files) => s3UploadPhotos.mutate(files)} isUploading={s3UploadPhotos.isPending} uploadProgress={photoUploadProgress} />
+        <PromoArtModal
+          open={showPromo}
+          onClose={() => setShowPromo(false)}
+          event={{
+            id: event.id,
+            name: event.name,
+            event_date: event.event_date,
+            event_time: event.event_time,
+            location: event.location,
+            cover_url: event.cover_url,
+          }}
+          photographerName={profile?.full_name || undefined}
+        />
 
         {/* Actions dropdown */}
         {showActions && (
