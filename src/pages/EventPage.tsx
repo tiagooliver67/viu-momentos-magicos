@@ -195,6 +195,29 @@ const EventPage = () => {
     return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
   }, [thumbUrls, toThumbPath]);
 
+  const selectedIndex = selectedPhoto
+    ? photoList.findIndex((p: any) => p.id === selectedPhoto.id)
+    : -1;
+  const goPrev = useCallback(() => {
+    if (selectedIndex > 0) setSelectedPhoto(photoList[selectedIndex - 1]);
+  }, [selectedIndex, photoList]);
+  const goNext = useCallback(() => {
+    if (selectedIndex >= 0 && selectedIndex < photoList.length - 1) {
+      setSelectedPhoto(photoList[selectedIndex + 1]);
+    }
+  }, [selectedIndex, photoList]);
+
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") goPrev();
+      else if (e.key === "ArrowRight") goNext();
+      else if (e.key === "Escape") setSelectedPhoto(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selectedPhoto, goPrev, goNext]);
+
   // Password protection
   if (event?.password && !unlocked) {
     return (
@@ -266,29 +289,6 @@ const EventPage = () => {
     });
     toast.success("Foto adicionada ao carrinho!");
   };
-
-  const selectedIndex = selectedPhoto
-    ? photoList.findIndex((p: any) => p.id === selectedPhoto.id)
-    : -1;
-  const goPrev = useCallback(() => {
-    if (selectedIndex > 0) setSelectedPhoto(photoList[selectedIndex - 1]);
-  }, [selectedIndex, photoList]);
-  const goNext = useCallback(() => {
-    if (selectedIndex >= 0 && selectedIndex < photoList.length - 1) {
-      setSelectedPhoto(photoList[selectedIndex + 1]);
-    }
-  }, [selectedIndex, photoList]);
-
-  useEffect(() => {
-    if (!selectedPhoto) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") goPrev();
-      else if (e.key === "ArrowRight") goNext();
-      else if (e.key === "Escape") setSelectedPhoto(null);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [selectedPhoto, goPrev, goNext]);
 
   return (
     <div className="min-h-screen bg-background">
