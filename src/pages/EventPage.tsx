@@ -401,7 +401,7 @@ const EventPage = () => {
           </button>
 
           <div
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full h-[100dvh] sm:h-auto sm:max-w-5xl sm:mx-auto overflow-y-auto sm:max-h-[100dvh]"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl sm:mx-auto overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             {/* Image area — shrink-wrap on mobile, no flex-1 */}
