@@ -406,7 +406,7 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
               <div key={photo.id} className={`relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5] ${isSelected ? "ring-2 ring-primary" : ""}`}>
                 <img src={url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
 
-                <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2">
+                <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2 z-20">
                   {isCover ? (
                     <span className="flex items-center gap-1 px-2 py-1 rounded bg-primary/90 text-primary-foreground text-[10px] font-semibold backdrop-blur-sm">
                       <Star className="w-3 h-3 fill-current" />
@@ -433,7 +433,7 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                   </div>
                 </div>
 
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6 z-20">
                   <div className="flex items-center justify-between">
                     <label className="flex items-center gap-1.5 cursor-pointer" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -450,7 +450,7 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                 </div>
 
                 <div
-                  className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all cursor-pointer"
+                  className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all cursor-pointer z-10"
                   onClick={() => setLightbox(url)}
                 />
               </div>
