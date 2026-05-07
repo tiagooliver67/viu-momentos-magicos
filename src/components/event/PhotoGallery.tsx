@@ -148,6 +148,33 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   const totalPages = Math.ceil(photos.length / PHOTOS_PER_PAGE);
   const paginatedPhotos = photos.slice((page - 1) * PHOTOS_PER_PAGE, page * PHOTOS_PER_PAGE);
 
+  const isCoverPhoto = (photo: Photo) => {
+    if (!coverUrl) return false;
+    const last = (s: string) => s.split("/").pop() || s;
+    return coverUrl === photo.file_url || last(coverUrl) === last(photo.file_url);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleConfirmDelete = () => {
+    if (!confirmDelete) return;
+    if (confirmDelete.bulk && onBulkDelete) {
+      onBulkDelete(confirmDelete.ids);
+      clearSelection();
+    } else {
+      confirmDelete.ids.forEach(id => onDelete(id));
+    }
+    setConfirmDelete(null);
+  };
+
   const sold = 0;
   const revenue = 0;
   const avgTicket = 0;
