@@ -114,9 +114,18 @@ const EventPage = () => {
         return urlMap;
       }
 
-      // Fallback: S3 signed URLs — only request original paths (thumb/medium don't exist without Lambda)
-      const originalPaths = photos.map((p: any) => p.file_url);
-      return getPublicSignedUrls(originalPaths);
+      // Fallback: S3 signed URLs for the WATERMARKED thumb variant.
+      // Originals never reach the public gallery — they're protected post-purchase.
+      const thumbPaths = photos.map((p: any) => toThumbPath(p.file_url));
+      const urls = await getPublicSignedUrls(thumbPaths);
+      // Index by both the thumb path and the original file_url, so getPhotoUrl
+      // can resolve regardless of which key it asks for.
+      const indexed: Record<string, string> = { ...urls };
+      for (const p of photos as any[]) {
+        const tp = toThumbPath(p.file_url);
+        if (urls[tp]) indexed[p.file_url] = urls[tp];
+      }
+      return indexed;
     },
     enabled: !!photos && photos.length > 0,
     staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000, // CDN URLs can be cached longer
@@ -137,9 +146,10 @@ const EventPage = () => {
         return getMediumCdnUrl(selectedPhoto.file_url) || "";
       }
 
-      // Fallback: only original path exists without Lambda
-      const res = await getPublicSignedUrls([selectedPhoto.file_url]);
-      return res[selectedPhoto.file_url] || "";
+      // Fallback: serve the WATERMARKED medium variant (never the clean original)
+      const mediumPath = toMediumPath(selectedPhoto.file_url);
+      const res = await getPublicSignedUrls([mediumPath]);
+      return res[mediumPath] || "";
     },
     enabled: !!selectedPhoto,
     staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000,
@@ -181,12 +191,8 @@ const EventPage = () => {
   const photoList = photos || [];
 
   const getPhotoUrl = useCallback((photo: any) => {
-    if (IS_LAMBDA_PIPELINE_ACTIVE) {
-      const thumbPath = toThumbPath(photo.file_url);
-      return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
-    }
-    // Without Lambda, only original paths exist
-    return thumbUrls?.[photo.file_url] || "";
+    const thumbPath = toThumbPath(photo.file_url);
+    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
   }, [thumbUrls, toThumbPath]);
 
   // Password protection
