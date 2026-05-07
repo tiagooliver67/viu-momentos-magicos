@@ -406,7 +406,7 @@ const EventPage = () => {
           >
             {/* Image area — shrink-wrap on mobile, no flex-1 */}
             <div
-              className="relative bg-black flex items-center justify-center p-1 sm:p-2 sm:flex-1 sm:min-h-0"
+              className="relative bg-black flex items-center justify-center p-1 sm:p-2 flex-1 min-h-0"
               onTouchStart={(e) => {
                 (e.currentTarget as any)._touchX = e.touches[0].clientX;
               }}
@@ -490,7 +490,7 @@ const EventPage = () => {
             </div>
 
             {/* Purchase panel — scrollable on mobile */}
-            <div className="w-full sm:w-80 p-3 sm:p-6 space-y-2 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0 max-h-[50dvh] sm:max-h-[75vh]">
+            <div className="w-full sm:w-80 p-3 sm:p-6 space-y-2 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0 max-h-[40dvh] sm:max-h-[75vh]">
               <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
               <div className="space-y-2">
