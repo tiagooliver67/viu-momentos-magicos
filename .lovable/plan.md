@@ -1,42 +1,63 @@
-## Diagnóstico
+# Tornar mensagens de erro do checkout claras para o usuário
 
-**1. Por que aparece "Capa" em toda foto?**
-No `src/components/event/PhotoGallery.tsx` (linha 341-344), o badge "Capa" está **hardcoded** em todas as fotos da grade — é um bug. A nomenclatura vem do conceito de "foto de capa do evento" (a imagem usada no card do evento na home), mas hoje o componente exibe o rótulo indiscriminadamente em todos os thumbnails, sem checar se aquela foto é realmente a capa (`events.cover_url`).
+Hoje, quando algo falha no pagamento, o cliente vê textos técnicos como:
+> "Erro ao criar pagamento: Edge Function returned a non-2xx status code"
 
-**2. Por que "não acha" como deletar?**
-O botão de deletar (ícone X) já existe (linha 346), mas está dentro de um `opacity-0 group-hover:opacity-100` — só aparece quando o mouse passa por cima. **No celular não existe hover**, então o botão fica invisível. Além disso, não há confirmação nem ação de deletar em massa.
+Ou recebe a mensagem crua do Asaas em inglês/jargão (ex.: *"Não é permitido split para sua própria carteira"*), que confunde o atleta — ele não tem como agir sobre isso.
 
-## Plano
+## Objetivo
+Substituir mensagens técnicas por mensagens **humanas, acionáveis e em português**, tanto no Edge Function quanto no modal de checkout.
 
-### Correções no `PhotoGallery.tsx`
+## Mudanças
 
-1. **Badge "Capa" condicional**
-   - Receber `coverUrl` (de `event.cover_url`) como prop.
-   - Mostrar o badge "Capa" **somente** na foto cuja `file_url` corresponde a `coverUrl`.
-   - Adicionar ação no menu da foto (`MoreVertical`) para "Definir como capa", chamando um handler `onSetCover(photoId)` que atualiza `events.cover_url` no banco.
+### 1. Edge Function `asaas-payment` — devolver erros estruturados
+Em vez de só `throw new Error(...)`, retornar JSON com:
+```json
+{ "error": "mensagem amigável", "code": "WALLET_CONFLICT", "detail": "técnico para log" }
+```
 
-2. **Deletar visível no mobile**
-   - Tornar os botões de ação (X e ⋮) sempre visíveis em telas `< sm` (remover `opacity-0` no mobile, manter hover-reveal só no desktop).
-   - Adicionar confirmação antes de deletar (AlertDialog do shadcn) com mensagem "Excluir esta foto? Esta ação não pode ser desfeita."
+Mapear os principais cenários de falha:
 
-3. **Seleção múltipla + deletar em lote**
-   - Os checkboxes no rodapé já existem mas não fazem nada. Conectá-los a um state `selectedIds: Set<string>`.
-   - Quando houver ≥1 selecionada, mostrar uma **barra de ações fixa no topo da galeria** com "X fotos selecionadas" e botão "Excluir selecionadas".
-   - Handler `onBulkDelete(ids[])` com confirmação única.
+| Situação real                                              | Mensagem para o cliente                                                                 |
+|------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| `Não é permitido split para sua própria carteira`          | "Este evento ainda não está pronto para receber pagamentos. Avise o organizador."        |
+| Fotógrafo sem `asaas_wallet_id`                            | "O fotógrafo deste evento ainda não ativou o recebimento. Tente novamente em breve."    |
+| CPF inválido / formato incorreto                           | "CPF inválido. Confira os números e tente novamente."                                    |
+| Email inválido                                             | "E-mail inválido. Verifique e tente novamente."                                          |
+| `customer` recusado pelo Asaas                             | "Não conseguimos validar seus dados. Confira nome, e-mail e CPF."                        |
+| Valor mínimo / `value` inválido                            | "Valor da compra inválido. Atualize o carrinho e tente de novo."                         |
+| Falha de rede / timeout / 5xx Asaas                        | "Sistema de pagamento indisponível no momento. Tente novamente em alguns minutos."       |
+| Erro ao gravar pedido (`orderError`)                       | "Não conseguimos registrar seu pedido. Tente novamente."                                 |
+| `ASAAS_API_KEY` / `VIUFOTO_WALLET_ID` ausente              | "Pagamento temporariamente indisponível. Já fomos avisados." (e log no servidor)         |
+| Qualquer outro erro                                        | "Não foi possível concluir o pagamento. Tente novamente em instantes."                   |
 
-### Atualização em `EventDashboard.tsx`
+Detalhes técnicos continuam indo só para `console.error` (logs do edge), nunca para o cliente.
 
-- Passar `coverUrl={event?.cover_url}` para `<PhotoGallery>`.
-- Implementar `onSetCover`: `update events set cover_url = <file_url> where id = eventId` + invalidate query.
-- Implementar `onBulkDelete`: deletar registros em `event_photos` (manter S3 cleanup como está hoje, se já existe no `onDelete` atual; senão apenas remover do banco).
+Status HTTP: 400 para erros do usuário, 502 para falhas do Asaas, 500 para falhas internas — mas o **frontend usa `error` do JSON**, não o status code.
 
-### Sobre a nomenclatura
+### 2. Frontend `CheckoutModal.tsx` — ler o JSON estruturado
+Trocar:
+```ts
+toast.error("Erro ao criar pagamento: " + err.message);
+```
+por algo como:
+```ts
+const friendly = data?.error ?? "Não foi possível concluir o pagamento. Tente novamente.";
+toast.error(friendly, { duration: 6000 });
+```
 
-"Capa" = foto de capa do evento (a imagem que aparece no card do evento na listagem pública e no header de `/evento/:id`). Vamos manter o termo, mas ele só aparecerá na foto correta. Se preferir outro rótulo (ex: "Foto de capa", "Destaque"), posso trocar.
+E garantir que, mesmo quando `supabase.functions.invoke` retorna `non-2xx status code`, a gente leia o corpo da resposta (`error.context?.body` ou refazer com `fetch`) para extrair o `error` amigável em vez de mostrar o erro genérico do SDK.
+
+### 3. Validação preventiva no front (antes de chamar a função)
+- CPF: validar formato/dígitos antes de submeter — evita ida desnecessária ao Asaas.
+- E-mail: regex básica.
+- Mostrar erro inline no campo, não como toast.
 
 ## Arquivos afetados
+- `supabase/functions/asaas-payment/index.ts` — mapa de erros + respostas estruturadas.
+- `src/components/checkout/CheckoutModal.tsx` — ler `error` do JSON, validar CPF/email antes, mensagens consistentes.
+- (opcional) `src/lib/validators.ts` — helpers `isValidCpf`, `isValidEmail` se ainda não existirem.
 
-- `src/components/event/PhotoGallery.tsx` — badge condicional, ações sempre visíveis no mobile, confirmação, seleção em massa.
-- `src/pages/EventDashboard.tsx` — passar `coverUrl`, implementar `onSetCover` e `onBulkDelete`.
-
-Nada de mudanças no banco — `events.cover_url` e `event_photos` já existem.
+## Não incluído
+- Resolver a causa raiz do "split para própria carteira" (isso é um bug separado de configuração do organizador/fotógrafo).
+- Mudar o fluxo de pagamento ou o split.
