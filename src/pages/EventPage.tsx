@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -267,6 +267,29 @@ const EventPage = () => {
     toast.success("Foto adicionada ao carrinho!");
   };
 
+  const selectedIndex = selectedPhoto
+    ? photoList.findIndex((p: any) => p.id === selectedPhoto.id)
+    : -1;
+  const goPrev = useCallback(() => {
+    if (selectedIndex > 0) setSelectedPhoto(photoList[selectedIndex - 1]);
+  }, [selectedIndex, photoList]);
+  const goNext = useCallback(() => {
+    if (selectedIndex >= 0 && selectedIndex < photoList.length - 1) {
+      setSelectedPhoto(photoList[selectedIndex + 1]);
+    }
+  }, [selectedIndex, photoList]);
+
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") goPrev();
+      else if (e.key === "ArrowRight") goNext();
+      else if (e.key === "Escape") setSelectedPhoto(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selectedPhoto, goPrev, goNext]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -366,7 +389,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-center items-center"
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-start sm:justify-center items-center"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
@@ -378,11 +401,25 @@ const EventPage = () => {
           </button>
 
           <div
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-y-auto max-h-[100dvh]"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full h-[100dvh] sm:h-auto sm:max-w-5xl sm:mx-auto overflow-y-auto sm:max-h-[100dvh]"
             onClick={e => e.stopPropagation()}
           >
             {/* Image area — shrink-wrap on mobile, no flex-1 */}
-            <div className="relative bg-black flex items-center justify-center p-1 sm:p-2 sm:flex-1 sm:min-h-0">
+            <div
+              className="relative bg-black flex items-center justify-center p-1 sm:p-2 flex-1 min-h-0"
+              onTouchStart={(e) => {
+                (e.currentTarget as any)._touchX = e.touches[0].clientX;
+              }}
+              onTouchEnd={(e) => {
+                const startX = (e.currentTarget as any)._touchX;
+                if (startX == null) return;
+                const dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 50) {
+                  if (dx < 0) goNext();
+                  else goPrev();
+                }
+              }}
+            >
               {(() => {
                 const imgSrc = mediumUrl || getPhotoUrl(selectedPhoto);
                 if (mediumLoading && !imgSrc) {
@@ -397,13 +434,32 @@ const EventPage = () => {
                   );
                 }
                 return (
-                  <img
-                    src={imgSrc}
-                    alt=""
-                    className="max-w-full max-h-[45dvh] sm:max-h-[75vh] object-contain rounded"
-                  />
+                   <img
+                     src={imgSrc}
+                     alt=""
+                     className="max-w-full max-h-[55dvh] sm:max-h-[75vh] object-contain rounded"
+                   />
                 );
               })()}
+              {/* Prev / Next navigation */}
+              {selectedIndex > 0 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                  aria-label="Foto anterior"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-all active:scale-90"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+              {selectedIndex >= 0 && selectedIndex < photoList.length - 1 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); goNext(); }}
+                  aria-label="Próxima foto"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-all active:scale-90"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
               {/* Favorite & Share in lightbox */}
               <div className="absolute top-4 left-4 flex gap-2">
                 <button
@@ -434,7 +490,7 @@ const EventPage = () => {
             </div>
 
             {/* Purchase panel — scrollable on mobile */}
-            <div className="w-full sm:w-80 p-3 sm:p-6 space-y-2 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0 max-h-[50dvh] sm:max-h-[75vh]">
+            <div className="w-full sm:w-80 p-3 sm:p-6 space-y-2 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0 max-h-[40dvh] sm:max-h-[75vh]">
               <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
               <div className="space-y-2">
