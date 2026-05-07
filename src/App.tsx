@@ -47,6 +47,10 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminStorage from "./pages/admin/AdminStorage";
+import InscricoesList from "./pages/inscricoes/InscricoesList";
+import InscricaoForm from "./pages/inscricoes/InscricaoForm";
+import InscricaoDetail from "./pages/inscricoes/InscricaoDetail";
+import InscricaoPublic from "./pages/inscricoes/InscricaoPublic";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +81,7 @@ const App = () => (
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/virar-fotografo" element={<VirarFotografo />} />
               <Route path="/termos-de-uso" element={<TermosDeUso />} />
+              <Route path="/inscricao/:slug" element={<InscricaoPublic />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
               {/* Financeiro route removed — unified into Carteira */}
               <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
@@ -86,6 +91,10 @@ const App = () => (
               <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
               <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
               <Route path="/dashboard/evento/:id" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><EventDashboard /></ProtectedRoute>} />
+              <Route path="/dashboard/inscricoes" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricoesList /></ProtectedRoute>} />
+              <Route path="/dashboard/inscricoes/novo" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoForm /></ProtectedRoute>} />
+              <Route path="/dashboard/inscricoes/:id" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoDetail /></ProtectedRoute>} />
+              <Route path="/dashboard/inscricoes/:id/editar" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoForm /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute requiredRoles={["super_admin"]} redirectTo="/"><AdminLayout /></ProtectedRoute>}>
                 <Route index element={<Overview />} />
                 <Route path="usuarios" element={<AdminUsers />} />

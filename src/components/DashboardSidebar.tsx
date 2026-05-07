@@ -1,23 +1,25 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Handshake, Menu, X, Users } from "lucide-react";
+import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Handshake, Menu, X, Users, ClipboardList } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const menuItems = [
-  { label: "Eventos", icon: Calendar, path: "/dashboard" },
-  { label: "Clientes", icon: Users, path: "/dashboard/clientes" },
-  { label: "Oportunidades", icon: Briefcase, path: "/dashboard/oportunidades" },
-  { label: "Propostas", icon: Handshake, path: "/dashboard/propostas" },
-  { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes" },
-  { label: "Ajuda", icon: HelpCircle, path: "/dashboard/ajuda" },
+const menuItemsBase = [
+  { label: "Eventos", icon: Calendar, path: "/dashboard", roles: ["photographer", "organizer"] },
+  { label: "Inscrições", icon: ClipboardList, path: "/dashboard/inscricoes", roles: ["organizer"] },
+  { label: "Clientes", icon: Users, path: "/dashboard/clientes", roles: ["photographer", "organizer"] },
+  { label: "Oportunidades", icon: Briefcase, path: "/dashboard/oportunidades", roles: ["photographer", "organizer"] },
+  { label: "Propostas", icon: Handshake, path: "/dashboard/propostas", roles: ["photographer", "organizer"] },
+  { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes", roles: ["photographer", "organizer"] },
+  { label: "Ajuda", icon: HelpCircle, path: "/dashboard/ajuda", roles: ["photographer", "organizer"] },
 ];
 
 const DashboardSidebar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
+  const menuItems = menuItemsBase.filter((m) => m.roles.some((r) => hasRole(r as any)));
 
   /* ── real sidebar stats ── */
   const { data: sidebarStats } = useQuery({
