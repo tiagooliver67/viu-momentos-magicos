@@ -31,6 +31,7 @@ import MeusPedidos from "./pages/MeusPedidos";
 import BuscarEventos from "./pages/BuscarEventos";
 import Favoritos from "./pages/Favoritos";
 import VirarFotografo from "./pages/VirarFotografo";
+import TermosDeUso from "./pages/TermosDeUso";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -72,6 +73,7 @@ const App = () => (
               <Route path="/buscar" element={<BuscarEventos />} />
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/virar-fotografo" element={<VirarFotografo />} />
+              <Route path="/termos-de-uso" element={<TermosDeUso />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
               {/* Financeiro route removed — unified into Carteira */}
               <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />

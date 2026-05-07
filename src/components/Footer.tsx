@@ -38,6 +38,7 @@ const Footer = () => (
             <li><Link to="/" className="hover:text-primary transition-colors">Contate-nos</Link></li>
             <li><Link to="/" className="hover:text-primary transition-colors">Central de ajuda</Link></li>
             <li><Link to="/" className="hover:text-primary transition-colors">Buscar fotos</Link></li>
+            <li><Link to="/termos-de-uso" className="hover:text-primary transition-colors">Termos de Uso</Link></li>
           </ul>
         </div>
       </div>
