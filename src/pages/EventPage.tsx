@@ -389,7 +389,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-start sm:justify-center items-center pt-12 sm:pt-0"
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-start sm:justify-center items-center"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
@@ -401,7 +401,7 @@ const EventPage = () => {
           </button>
 
           <div
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full sm:max-w-5xl sm:mx-auto overflow-y-auto max-h-[calc(100dvh-3rem)] sm:max-h-[100dvh]"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full h-[100dvh] sm:h-auto sm:max-w-5xl sm:mx-auto overflow-y-auto sm:max-h-[100dvh]"
             onClick={e => e.stopPropagation()}
           >
             {/* Image area — shrink-wrap on mobile, no flex-1 */}
@@ -434,11 +434,11 @@ const EventPage = () => {
                   );
                 }
                 return (
-                  <img
-                    src={imgSrc}
-                    alt=""
-                    className="max-w-full max-h-[45dvh] sm:max-h-[75vh] object-contain rounded"
-                  />
+                   <img
+                     src={imgSrc}
+                     alt=""
+                     className="max-w-full max-h-[55dvh] sm:max-h-[75vh] object-contain rounded"
+                   />
                 );
               })()}
               {/* Prev / Next navigation */}
