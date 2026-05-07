@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Handshake, Menu, X } from "lucide-react";
+import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Handshake, Menu, X, Users } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const menuItems = [
   { label: "Eventos", icon: Calendar, path: "/dashboard" },
+  { label: "Clientes", icon: Users, path: "/dashboard/clientes" },
   { label: "Oportunidades", icon: Briefcase, path: "/dashboard/oportunidades" },
   { label: "Propostas", icon: Handshake, path: "/dashboard/propostas" },
   { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes" },
