@@ -10,6 +10,7 @@ import EditEventModal from "@/components/event/EditEventModal";
 import PasswordModal from "@/components/event/PasswordModal";
 import PhotoGallery from "@/components/event/PhotoGallery";
 import PromoArtModal from "@/components/event/PromoArtModal";
+import CollaborationModal from "@/components/event/CollaborationModal";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
 import { useS3Upload } from "@/hooks/useS3Upload";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
@@ -32,6 +33,7 @@ const quickActions = [
   { label: "Ações", icon: MoreHorizontal, key: "actions" },
   { label: "Senha", icon: Lock, key: "password" },
   { label: "Divulgação", icon: Megaphone, key: "promo" },
+  { label: "Colaboração", icon: Users, key: "collab" },
   { label: "Cupons", icon: Tag, key: "coupons" },
   { label: "Enviar Vídeos", icon: Video, key: "upload-videos" },
   { label: "Vídeos", icon: Video, key: "videos" },
@@ -78,6 +80,7 @@ const EventDashboard = () => {
   const [showGallery, setShowGallery] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showPromo, setShowPromo] = useState(false);
+  const [showCollab, setShowCollab] = useState(false);
   const { profile } = useAuth();
 
   const orders = ordersQuery.data || [];
@@ -100,6 +103,7 @@ const EventDashboard = () => {
       case "coupons": setShowCoupon(true); break;
       case "actions": setShowActions(true); break;
       case "promo": setShowPromo(true); break;
+      case "collab": setShowCollab(true); break;
       case "import": toast.info("Importação de pedidos em breve!"); break;
       case "invite": toast.info("Convite de fotógrafos em breve!"); break;
       case "videos": toast.info("Galeria de vídeos em breve!"); break;
@@ -432,6 +436,13 @@ const EventDashboard = () => {
             cover_url: event.cover_url,
           }}
           photographerName={profile?.full_name || undefined}
+        />
+        <CollaborationModal
+          open={showCollab}
+          onClose={() => setShowCollab(false)}
+          eventId={event.id}
+          ownerCommissionPct={Number((event as any).owner_commission_pct ?? 0)}
+          collabNote={(event as any).collab_note ?? null}
         />
 
         {/* Actions dropdown */}
