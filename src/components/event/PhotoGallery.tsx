@@ -367,6 +367,30 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
             </div>
           )}
 
+          {/* Bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div className="sticky top-0 z-10 mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-primary text-primary-foreground shadow-lg">
+              <span className="text-sm font-medium">
+                {selectedIds.size} foto(s) selecionada(s)
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={clearSelection}
+                  className="px-3 py-1.5 rounded-md text-sm font-medium hover:bg-primary-foreground/10 transition-colors"
+                >
+                  Limpar
+                </button>
+                <button
+                  onClick={() => setConfirmDelete({ ids: Array.from(selectedIds), bulk: true })}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 transition-colors min-h-[36px]"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Excluir selecionadas
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Photo Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {paginatedPhotos.map((photo) => {
@@ -376,33 +400,52 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                   <div className="animate-pulse text-xs text-muted-foreground">Carregando...</div>
                 </div>
               );
+              const isCover = isCoverPhoto(photo);
+              const isSelected = selectedIds.has(photo.id);
               return (
-              <div key={photo.id} className="relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5]">
+              <div key={photo.id} className={`relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5] ${isSelected ? "ring-2 ring-primary" : ""}`}>
                 <img src={url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
-                
-                <div className="absolute top-2 left-2 right-2 flex items-start justify-between">
-                  <button className="flex items-center gap-1 px-2 py-1 rounded bg-primary/80 text-primary-foreground text-[10px] font-medium backdrop-blur-sm">
-                    <Image className="w-3 h-3" />
-                    Capa
-                  </button>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={(e) => { e.stopPropagation(); onDelete(photo.id); }} className="p-1 rounded bg-black/40 backdrop-blur-sm text-white hover:bg-destructive/80">
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                    <button className="p-1 rounded bg-black/40 backdrop-blur-sm text-white">
-                      <MoreVertical className="w-3.5 h-3.5" />
+
+                <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2">
+                  {isCover ? (
+                    <span className="flex items-center gap-1 px-2 py-1 rounded bg-primary/90 text-primary-foreground text-[10px] font-semibold backdrop-blur-sm">
+                      <Star className="w-3 h-3 fill-current" />
+                      Capa do evento
+                    </span>
+                  ) : <span />}
+                  <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    {!isCover && onSetCover && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onSetCover(photo); setMenuOpenId(null); }}
+                        title="Definir como capa do evento"
+                        className="p-1.5 rounded bg-black/50 backdrop-blur-sm text-white hover:bg-primary/80 min-w-[32px] min-h-[32px] flex items-center justify-center"
+                      >
+                        <Star className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setConfirmDelete({ ids: [photo.id], bulk: false }); }}
+                      title="Excluir foto"
+                      className="p-1.5 rounded bg-black/50 backdrop-blur-sm text-white hover:bg-destructive/80 min-w-[32px] min-h-[32px] flex items-center justify-center"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 pt-6">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <input type="checkbox" className="w-3.5 h-3.5 rounded border-white/50" />
+                    <label className="flex items-center gap-1.5 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelect(photo.id)}
+                        className="w-4 h-4 rounded border-white/50 cursor-pointer accent-primary"
+                      />
                       <span className="text-[10px] text-white/80 truncate max-w-[120px]">
                         {photo.file_name ? `...${photo.file_name.slice(-20)}` : "foto"}
                       </span>
-                    </div>
+                    </label>
                   </div>
                 </div>
 
