@@ -1,8 +1,18 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw } from "lucide-react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Photo {
   id: string;
@@ -32,17 +42,23 @@ interface Props {
   onRetryFiles?: (files: File[]) => void;
   isUploading?: boolean;
   uploadProgress?: UploadFileProgress[];
+  coverUrl?: string | null;
+  onSetCover?: (photo: Photo) => void;
+  onBulkDelete?: (ids: string[]) => void;
 }
 
 const PHOTOS_PER_PAGE = 20;
 
-export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [] }: Props) {
+export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [], coverUrl, onSetCover, onBulkDelete }: Props) {
   const [search, setSearch] = useState("");
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [failedFiles, setFailedFiles] = useState<File[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState<{ ids: string[]; bulk: boolean } | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const filesRef = useRef<File[]>([]);
 
