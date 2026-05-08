@@ -371,8 +371,10 @@ export type Database = {
       }
       event_registrations: {
         Row: {
+          amount_due: number
           birth_date: string | null
           category: string | null
+          category_id: string | null
           checked_in_at: string | null
           checkin_status: Database["public"]["Enums"]["registration_checkin_status"]
           city: string | null
@@ -384,15 +386,19 @@ export type Database = {
           payment_proof_url: string | null
           payment_status: Database["public"]["Enums"]["registration_payment_status"]
           phone: string
+          price_tier_id: string | null
           qr_token: string
           registration_event_id: string
+          senior_discount_applied: boolean
           shirt_size: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          amount_due?: number
           birth_date?: string | null
           category?: string | null
+          category_id?: string | null
           checked_in_at?: string | null
           checkin_status?: Database["public"]["Enums"]["registration_checkin_status"]
           city?: string | null
@@ -404,15 +410,19 @@ export type Database = {
           payment_proof_url?: string | null
           payment_status?: Database["public"]["Enums"]["registration_payment_status"]
           phone: string
+          price_tier_id?: string | null
           qr_token?: string
           registration_event_id: string
+          senior_discount_applied?: boolean
           shirt_size?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          amount_due?: number
           birth_date?: string | null
           category?: string | null
+          category_id?: string | null
           checked_in_at?: string | null
           checkin_status?: Database["public"]["Enums"]["registration_checkin_status"]
           city?: string | null
@@ -424,13 +434,29 @@ export type Database = {
           payment_proof_url?: string | null
           payment_status?: Database["public"]["Enums"]["registration_payment_status"]
           phone?: string
+          price_tier_id?: string | null
           qr_token?: string
           registration_event_id?: string
+          senior_discount_applied?: boolean
           shirt_size?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "event_registrations_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "registration_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_registrations_price_tier_id_fkey"
+            columns: ["price_tier_id"]
+            isOneToOne: false
+            referencedRelation: "registration_price_tiers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_registrations_registration_event_id_fkey"
             columns: ["registration_event_id"]
@@ -978,6 +1004,41 @@ export type Database = {
         }
         Relationships: []
       }
+      registration_categories: {
+        Row: {
+          created_at: string
+          id: string
+          max_slots: number | null
+          name: string
+          registration_event_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_slots?: number | null
+          name: string
+          registration_event_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_slots?: number | null
+          name?: string
+          registration_event_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_categories_registration_event_id_fkey"
+            columns: ["registration_event_id"]
+            isOneToOne: false
+            referencedRelation: "registration_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registration_events: {
         Row: {
           categories: Json
@@ -992,12 +1053,16 @@ export type Database = {
           max_slots: number | null
           name: string
           organizer_id: string
+          payment_instructions: string | null
           pix_amount: number | null
           pix_key: string | null
           regulation: string | null
+          regulation_file_url: string | null
           requires_birth_date: boolean
           requires_city: boolean
           requires_shirt_size: boolean
+          senior_discount_enabled: boolean
+          senior_discount_min_age: number
           shirt_sizes: Json
           slug: string
           status: Database["public"]["Enums"]["registration_event_status"]
@@ -1017,12 +1082,16 @@ export type Database = {
           max_slots?: number | null
           name: string
           organizer_id: string
+          payment_instructions?: string | null
           pix_amount?: number | null
           pix_key?: string | null
           regulation?: string | null
+          regulation_file_url?: string | null
           requires_birth_date?: boolean
           requires_city?: boolean
           requires_shirt_size?: boolean
+          senior_discount_enabled?: boolean
+          senior_discount_min_age?: number
           shirt_sizes?: Json
           slug: string
           status?: Database["public"]["Enums"]["registration_event_status"]
@@ -1042,12 +1111,16 @@ export type Database = {
           max_slots?: number | null
           name?: string
           organizer_id?: string
+          payment_instructions?: string | null
           pix_amount?: number | null
           pix_key?: string | null
           regulation?: string | null
+          regulation_file_url?: string | null
           requires_birth_date?: boolean
           requires_city?: boolean
           requires_shirt_size?: boolean
+          senior_discount_enabled?: boolean
+          senior_discount_min_age?: number
           shirt_sizes?: Json
           slug?: string
           status?: Database["public"]["Enums"]["registration_event_status"]
@@ -1055,6 +1128,82 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      registration_price_tiers: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          name: string
+          price: number
+          registration_event_id: string
+          sort_order: number
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          name: string
+          price?: number
+          registration_event_id: string
+          sort_order?: number
+          starts_at: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          name?: string
+          price?: number
+          registration_event_id?: string
+          sort_order?: number
+          starts_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_price_tiers_registration_event_id_fkey"
+            columns: ["registration_event_id"]
+            isOneToOne: false
+            referencedRelation: "registration_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      registration_shirt_stock: {
+        Row: {
+          created_at: string
+          id: string
+          quantity: number
+          registration_event_id: string
+          size: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          quantity?: number
+          registration_event_id: string
+          size: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          quantity?: number
+          registration_event_id?: string
+          size?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registration_shirt_stock_registration_event_id_fkey"
+            columns: ["registration_event_id"]
+            isOneToOne: false
+            referencedRelation: "registration_events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       two_factor_codes: {
         Row: {
