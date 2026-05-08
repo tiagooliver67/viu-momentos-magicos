@@ -17,7 +17,7 @@ const Footer = () => (
           <h4 className="font-bold text-foreground mb-4">Venda suas fotos</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/cadastro/fotografo" className="hover:text-primary transition-colors">Sou Fotógrafo</Link></li>
-            <li><Link to="/cadastro/organizador" className="hover:text-primary transition-colors">Sou Organizador</Link></li>
+            <li><Link to="/para-organizadores" className="hover:text-primary transition-colors">Sou Organizador</Link></li>
           </ul>
         </div>
         <div>

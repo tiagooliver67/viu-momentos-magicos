@@ -10,7 +10,7 @@ const cards = [
     description:
       "Agregue valor à sua prova com a melhor cobertura fotográfica do mercado e relatórios em tempo real.",
     cta: "Seja um parceiro ViuFoto",
-    to: "/cadastro/organizador",
+    to: "/para-organizadores",
   },
   {
     icon: Camera,
