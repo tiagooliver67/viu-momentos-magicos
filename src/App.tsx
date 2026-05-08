@@ -32,6 +32,7 @@ import MeusPedidos from "./pages/MeusPedidos";
 import BuscarEventos from "./pages/BuscarEventos";
 import Favoritos from "./pages/Favoritos";
 import VirarFotografo from "./pages/VirarFotografo";
+import ParaOrganizadores from "./pages/ParaOrganizadores";
 import TermosDeUso from "./pages/TermosDeUso";
 import TermsGate from "./components/TermsGate";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -80,6 +81,7 @@ const App = () => (
               <Route path="/buscar" element={<BuscarEventos />} />
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/virar-fotografo" element={<VirarFotografo />} />
+              <Route path="/para-organizadores" element={<ParaOrganizadores />} />
               <Route path="/termos-de-uso" element={<TermosDeUso />} />
               <Route path="/inscricao/:slug" element={<InscricaoPublic />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
