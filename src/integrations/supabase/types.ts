@@ -378,6 +378,7 @@ export type Database = {
           checked_in_at: string | null
           checkin_status: Database["public"]["Enums"]["registration_checkin_status"]
           city: string | null
+          cpf: string | null
           created_at: string
           email: string
           full_name: string
@@ -391,6 +392,7 @@ export type Database = {
           registration_event_id: string
           senior_discount_applied: boolean
           shirt_size: string | null
+          team: string | null
           updated_at: string
           user_id: string | null
         }
@@ -402,6 +404,7 @@ export type Database = {
           checked_in_at?: string | null
           checkin_status?: Database["public"]["Enums"]["registration_checkin_status"]
           city?: string | null
+          cpf?: string | null
           created_at?: string
           email: string
           full_name: string
@@ -415,6 +418,7 @@ export type Database = {
           registration_event_id: string
           senior_discount_applied?: boolean
           shirt_size?: string | null
+          team?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -426,6 +430,7 @@ export type Database = {
           checked_in_at?: string | null
           checkin_status?: Database["public"]["Enums"]["registration_checkin_status"]
           city?: string | null
+          cpf?: string | null
           created_at?: string
           email?: string
           full_name?: string
@@ -439,6 +444,7 @@ export type Database = {
           registration_event_id?: string
           senior_discount_applied?: boolean
           shirt_size?: string | null
+          team?: string | null
           updated_at?: string
           user_id?: string | null
         }
