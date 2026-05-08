@@ -139,8 +139,8 @@ export default function InscricaoPublic() {
     const path = `proofs/${created.id}.${ext}`;
     const { error } = await supabase.storage.from("registration-assets").upload(path, file, { upsert: true });
     if (!error) {
-      const { data } = supabase.storage.from("registration-assets").getPublicUrl(path);
-      await supabase.from("event_registrations").update({ payment_proof_url: data.publicUrl }).eq("id", created.id);
+      // Bucket é privado: armazenamos apenas o path. O organizador gera URL assinada ao visualizar.
+      await supabase.from("event_registrations").update({ payment_proof_url: path }).eq("id", created.id);
       toast.success("Comprovante enviado!");
     } else toast.error("Erro no upload");
     setUploading(false);
