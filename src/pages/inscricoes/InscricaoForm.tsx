@@ -16,7 +16,7 @@ import { slugify, randomSuffix, SHIRT_SIZES_DEFAULT } from "@/lib/inscricoes";
 
 type TierDraft = { id?: string; name: string; price: string; starts_at: string; ends_at: string; sort_order: number };
 type CatDraft = { id?: string; name: string; max_slots: string; sort_order: number };
-type ShirtDraft = { id?: string; size: string; quantity: string; sort_order: number };
+type ShirtDraft = { id?: string; size: string; sort_order: number };
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -93,7 +93,7 @@ export default function InscricaoForm() {
         id: x.id, name: x.name, max_slots: x.max_slots != null ? String(x.max_slots) : "", sort_order: x.sort_order ?? i,
       })));
       setShirts((s ?? []).map((x, i) => ({
-        id: x.id, size: x.size, quantity: String(x.quantity), sort_order: x.sort_order ?? i,
+        id: x.id, size: x.size, sort_order: x.sort_order ?? i,
       })));
     })();
   }, [id, isEdit]);
@@ -146,16 +146,23 @@ export default function InscricaoForm() {
   const removeCategory = (i: number) => setCategories((p) => p.filter((_, idx) => idx !== i));
 
   // ---------- Shirts ----------
-  const ensureDefaultShirts = () => {
-    if (shirts.length === 0) {
-      setShirts(SHIRT_SIZES_DEFAULT.map((size, i) => ({ size, quantity: "0", sort_order: i })));
-    }
+  const toggleShirt = (size: string) => {
+    setShirts((p) => {
+      const exists = p.find((s) => s.size === size);
+      if (exists) return p.filter((s) => s.size !== size).map((s, i) => ({ ...s, sort_order: i }));
+      return [...p, { size, sort_order: p.length }];
+    });
   };
-  useEffect(() => { if (form.requires_shirt_size) ensureDefaultShirts(); /* eslint-disable-next-line */ }, [form.requires_shirt_size]);
-  const addShirt = () => setShirts((p) => [...p, { size: "", quantity: "0", sort_order: p.length }]);
-  const updateShirt = (i: number, k: keyof ShirtDraft, v: any) =>
-    setShirts((p) => p.map((s, idx) => (idx === i ? { ...s, [k]: v } : s)));
-  const removeShirt = (i: number) => setShirts((p) => p.filter((_, idx) => idx !== i));
+  const [customSize, setCustomSize] = useState("");
+  const addCustomSize = () => {
+    const v = customSize.trim();
+    if (!v) return;
+    if (shirts.some((s) => s.size.toLowerCase() === v.toLowerCase())) { setCustomSize(""); return; }
+    setShirts((p) => [...p, { size: v, sort_order: p.length }]);
+    setCustomSize("");
+  };
+  const removeShirt = (size: string) =>
+    setShirts((p) => p.filter((s) => s.size !== size).map((s, i) => ({ ...s, sort_order: i })));
 
   // ---------- Save ----------
   const handleSubmit = async () => {
@@ -175,8 +182,8 @@ export default function InscricaoForm() {
     for (const c of categories) {
       if (!c.name) { toast.error("Modalidade sem nome"); return; }
     }
-    if (form.requires_shirt_size) {
-      for (const s of shirts) if (!s.size) { toast.error("Tamanho de camiseta sem nome"); return; }
+    if (form.requires_shirt_size && shirts.length === 0) {
+      toast.error("Selecione pelo menos um tamanho de camiseta"); return;
     }
 
     setLoading(true);
@@ -252,7 +259,7 @@ export default function InscricaoForm() {
       await supabase.from("registration_shirt_stock").insert(
         shirts.map((s, i) => ({
           registration_event_id: eventId,
-          size: s.size, quantity: parseInt(s.quantity) || 0, sort_order: i,
+          size: s.size, quantity: 9999, sort_order: i,
         })),
       );
     }
@@ -417,25 +424,52 @@ export default function InscricaoForm() {
             </div>
             {form.requires_shirt_size && (
               <>
-                <p className="text-xs text-muted-foreground">Quando o estoque de um tamanho zerar, o sistema bloqueia a opção no formulário.</p>
-                {shirts.map((s, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_140px_auto] gap-2 items-end">
-                    <div>
-                      <Label className="text-xs">Tamanho</Label>
-                      <Input value={s.size} onChange={(e) => updateShirt(i, "size", e.target.value)} placeholder="M" />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Quantidade</Label>
-                      <Input type="number" min={0} value={s.quantity} onChange={(e) => updateShirt(i, "quantity", e.target.value)} />
-                    </div>
-                    <Button type="button" size="icon" variant="ghost" onClick={() => removeShirt(i)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
+                <p className="text-xs text-muted-foreground">Marque os tamanhos disponíveis para esta edição. Os atletas poderão escolher entre os marcados.</p>
+                <div className="flex flex-wrap gap-2">
+                  {SHIRT_SIZES_DEFAULT.map((size) => {
+                    const active = shirts.some((s) => s.size === size);
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => toggleShirt(size)}
+                        className={`px-4 py-2 rounded-full border text-sm transition ${
+                          active
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background border-border hover:border-primary/50"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+                {shirts.filter((s) => !SHIRT_SIZES_DEFAULT.includes(s.size)).length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {shirts.filter((s) => !SHIRT_SIZES_DEFAULT.includes(s.size)).map((s) => (
+                      <span key={s.size} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-sm">
+                        {s.size}
+                        <button type="button" onClick={() => removeShirt(s.size)} className="hover:opacity-70">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
                   </div>
-                ))}
-                <Button type="button" size="sm" variant="outline" onClick={addShirt} className="gap-1">
-                  <Plus className="w-4 h-4" /> Adicionar tamanho
-                </Button>
+                )}
+                <div className="flex gap-2 items-end pt-1">
+                  <div className="flex-1 max-w-xs">
+                    <Label className="text-xs">Adicionar tamanho personalizado</Label>
+                    <Input
+                      value={customSize}
+                      onChange={(e) => setCustomSize(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSize(); } }}
+                      placeholder="Ex: Infantil 10"
+                    />
+                  </div>
+                  <Button type="button" size="sm" variant="outline" onClick={addCustomSize} className="gap-1">
+                    <Plus className="w-4 h-4" /> Adicionar
+                  </Button>
+                </div>
               </>
             )}
           </section>

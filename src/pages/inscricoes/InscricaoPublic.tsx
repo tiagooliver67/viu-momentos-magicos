@@ -97,6 +97,7 @@ export default function InscricaoPublic() {
       const sh = shirtAvailability.find((s) => s.size === form.shirt_size);
       if (sh && sh.remaining <= 0) { toast.error("Tamanho esgotado"); return; }
     }
+    void 0;
 
     const selectedCat = categories.find((c) => c.id === form.category_id);
     setSubmitting(true);
@@ -319,12 +320,9 @@ export default function InscricaoPublic() {
                   <SelectTrigger className="h-12"><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
                     {shirtAvailability.map((s) => {
-                      const out = s.remaining <= 0;
                       return (
-                        <SelectItem key={s.size} value={s.size} disabled={out}>
-                          <span className={out ? "line-through opacity-50" : ""}>
-                            {s.size}{out ? " — esgotado" : ` — ${s.remaining} disponíveis`}
-                          </span>
+                        <SelectItem key={s.size} value={s.size}>
+                          {s.size}
                         </SelectItem>
                       );
                     })}
