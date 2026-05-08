@@ -48,6 +48,8 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminStorage from "./pages/admin/AdminStorage";
+import AdminInscricoes from "./pages/admin/AdminInscricoes";
+import AdminInscricaoDetail from "./pages/admin/AdminInscricaoDetail";
 import InscricoesList from "./pages/inscricoes/InscricoesList";
 import InscricaoForm from "./pages/inscricoes/InscricaoForm";
 import InscricaoDetail from "./pages/inscricoes/InscricaoDetail";
@@ -106,6 +108,8 @@ const App = () => (
                 <Route path="pagamentos" element={<AdminPayments />} />
                 <Route path="moderacao" element={<AdminModeration />} />
                 <Route path="storage" element={<AdminStorage />} />
+                <Route path="inscricoes" element={<AdminInscricoes />} />
+                <Route path="inscricoes/:id" element={<AdminInscricaoDetail />} />
                 <Route path="suporte" element={<AdminSupport />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="configuracoes" element={<AdminSettings />} />
