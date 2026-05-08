@@ -274,7 +274,7 @@ export default function InscricaoDetail() {
                       </td>
                       <td className="p-3">
                         {r.payment_proof_url ? (
-                          <button onClick={() => setProofPreview(r.payment_proof_url!)} className="text-xs text-primary hover:underline">Ver</button>
+                          <button onClick={() => openProof(r.payment_proof_url!)} disabled={loadingProof} className="text-xs text-primary hover:underline disabled:opacity-50">{loadingProof ? "..." : "Ver"}</button>
                         ) : (<span className="text-xs text-muted-foreground">—</span>)}
                       </td>
                       <td className="p-3">
