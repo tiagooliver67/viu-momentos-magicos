@@ -11,13 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QRCodeSVG } from "qrcode.react";
-import { formatDate, STATUS_LABEL, type RegistrationEvent, type EventRegistration } from "@/lib/inscricoes";
+import { formatDate, formatBRL, STATUS_LABEL, type RegistrationEvent, type EventRegistration, type RegistrationCategory } from "@/lib/inscricoes";
 
 export default function InscricaoDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [event, setEvent] = useState<RegistrationEvent | null>(null);
   const [regs, setRegs] = useState<EventRegistration[]>([]);
+  const [categories, setCategories] = useState<RegistrationCategory[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [proofPreview, setProofPreview] = useState<string | null>(null);
@@ -27,12 +28,14 @@ export default function InscricaoDetail() {
 
   const reload = async () => {
     if (!id) return;
-    const [evRes, regRes] = await Promise.all([
+    const [evRes, regRes, catRes] = await Promise.all([
       supabase.from("registration_events").select("*").eq("id", id).single(),
       supabase.from("event_registrations").select("*").eq("registration_event_id", id).order("created_at", { ascending: false }),
+      supabase.from("registration_categories").select("*").eq("registration_event_id", id).order("sort_order"),
     ]);
     setEvent(evRes.data);
     setRegs(regRes.data ?? []);
+    setCategories(catRes.data ?? []);
     setLoading(false);
   };
 
@@ -42,9 +45,21 @@ export default function InscricaoDetail() {
     const pagos = regs.filter((r) => r.payment_status === "pago").length;
     const pendentes = regs.filter((r) => r.payment_status === "pendente").length;
     const presentes = regs.filter((r) => r.checkin_status === "presente").length;
-    const remaining = event?.max_slots ? Math.max(0, event.max_slots - regs.length) : null;
-    return { total: regs.length, pagos, pendentes, presentes, remaining };
-  }, [regs, event]);
+    const arrecadacaoPrevista = regs.reduce((acc, r) => acc + Number(r.amount_due ?? 0), 0);
+    const arrecadacaoReal = regs.filter((r) => r.payment_status === "pago")
+      .reduce((acc, r) => acc + Number(r.amount_due ?? 0), 0);
+    // top modalidade
+    const counts: Record<string, number> = {};
+    regs.forEach((r) => {
+      const key = r.category_id
+        ? categories.find((c) => c.id === r.category_id)?.name ?? r.category ?? "—"
+        : r.category ?? "—";
+      if (key && key !== "—") counts[key] = (counts[key] ?? 0) + 1;
+    });
+    const topEntry = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    const topModalidade = topEntry ? `${topEntry[0]} (${topEntry[1]})` : "—";
+    return { total: regs.length, pagos, pendentes, presentes, arrecadacaoPrevista, arrecadacaoReal, topModalidade };
+  }, [regs, categories]);
 
   const publicUrl = event ? `${window.location.origin}/inscricao/${event.slug}` : "";
 
@@ -157,13 +172,17 @@ export default function InscricaoDetail() {
             <TabsTrigger value="link">Link & QR</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="visao" className="mt-4">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <KPI label="Inscritos" value={stats.total} />
+          <TabsContent value="visao" className="mt-4 space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <KPI label="Total inscritos" value={stats.total} sub={`${stats.pagos} pagos · ${stats.pendentes} pendentes`} />
+              <KPI label="Arrecadação prevista" value={formatBRL(stats.arrecadacaoPrevista)} accent="text-foreground" />
+              <KPI label="Arrecadação real" value={formatBRL(stats.arrecadacaoReal)} accent="text-green-500" sub="Apenas pagamentos confirmados" />
+              <KPI label="Top modalidade" value={stats.topModalidade} accent="text-primary" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               <KPI label="Pagos" value={stats.pagos} accent="text-green-500" />
               <KPI label="Pendentes" value={stats.pendentes} accent="text-amber-500" />
               <KPI label="Check-ins" value={stats.presentes} accent="text-primary" />
-              <KPI label="Vagas restantes" value={stats.remaining ?? "—"} />
             </div>
           </TabsContent>
 
@@ -297,11 +316,12 @@ export default function InscricaoDetail() {
   );
 }
 
-function KPI({ label, value, accent }: { label: string; value: number | string; accent?: string }) {
+function KPI({ label, value, accent, sub }: { label: string; value: number | string; accent?: string; sub?: string }) {
   return (
     <div className="glass-card p-4">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className={`text-2xl font-black mt-1 ${accent ?? ""}`}>{value}</p>
+      {sub && <p className="text-[11px] text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
 }
