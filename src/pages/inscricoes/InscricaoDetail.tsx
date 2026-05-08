@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Calendar, MapPin, Users2, Copy, ExternalLink, Search, Check, Edit, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users2, Copy, ExternalLink, Search, Check, Edit, FileSpreadsheet, FileText, Loader2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import { formatDate, formatBRL, STATUS_LABEL, type RegistrationEvent, type Event
 export default function InscricaoDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [event, setEvent] = useState<RegistrationEvent | null>(null);
   const [regs, setRegs] = useState<EventRegistration[]>([]);
   const [categories, setCategories] = useState<RegistrationCategory[]>([]);
@@ -212,6 +214,7 @@ export default function InscricaoDetail() {
                   <tr className="border-b border-border">
                     <th className="text-left p-3">Nome</th>
                     <th className="text-left p-3">Contato</th>
+                    <th className="text-left p-3">Documentos</th>
                     <th className="text-left p-3">Categoria</th>
                     <th className="text-left p-3">Pagamento</th>
                     <th className="text-left p-3">Comprovante</th>
@@ -222,8 +225,31 @@ export default function InscricaoDetail() {
                   {filteredRegs.map((r) => (
                     <tr key={r.id} className="border-b border-border last:border-0">
                       <td className="p-3 font-medium">{r.full_name}</td>
-                      <td className="p-3 text-muted-foreground"><div>{r.email}</div><div className="text-xs">{r.phone}</div></td>
-                      <td className="p-3">{r.category ?? "-"}</td>
+                      <td className="p-3 text-muted-foreground">
+                        <div className="text-xs">{r.email}</div>
+                        {r.phone && (
+                          <a
+                            href={`https://wa.me/55${r.phone.replace(/\D/g, "")}?text=${encodeURIComponent(
+                              `Olá ${firstName(r.full_name)}, aqui é ${profile?.full_name ?? "o organizador"}, organizador do evento *${event.name}*.`,
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-green-600 hover:underline mt-0.5"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5" /> {formatPhone(r.phone)}
+                          </a>
+                        )}
+                      </td>
+                      <td className="p-3 text-xs text-muted-foreground">
+                        {r.cpf && <div>CPF {formatCPF(r.cpf)}</div>}
+                        {r.birth_date && <div>Nasc. {formatDate(r.birth_date)}</div>}
+                        {!r.cpf && !r.birth_date && <span>—</span>}
+                      </td>
+                      <td className="p-3 text-xs">
+                        <div className="font-medium text-sm text-foreground">{r.category ?? "-"}</div>
+                        {r.team && <div className="text-muted-foreground">Equipe: {r.team}</div>}
+                        {r.shirt_size && <div className="text-muted-foreground">Camiseta: {r.shirt_size}</div>}
+                      </td>
                       <td className="p-3">
                         <Badge variant={r.payment_status === "pago" ? "default" : "secondary"}>{STATUS_LABEL[r.payment_status]}</Badge>
                       </td>
@@ -242,7 +268,7 @@ export default function InscricaoDetail() {
                     </tr>
                   ))}
                   {filteredRegs.length === 0 && (
-                    <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Nenhum inscrito ainda</td></tr>
+                    <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Nenhum inscrito ainda</td></tr>
                   )}
                 </tbody>
               </table>
@@ -324,4 +350,20 @@ function KPI({ label, value, accent, sub }: { label: string; value: number | str
       {sub && <p className="text-[11px] text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
+}
+
+function firstName(full: string): string {
+  return (full ?? "").trim().split(/\s+/)[0] ?? "";
+}
+
+function formatCPF(raw: string): string {
+  const d = (raw ?? "").replace(/\D/g, "").padStart(11, "0").slice(-11);
+  return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+}
+
+function formatPhone(raw: string): string {
+  const d = (raw ?? "").replace(/\D/g, "");
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return raw;
 }
