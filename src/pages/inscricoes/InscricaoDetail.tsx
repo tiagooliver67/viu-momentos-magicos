@@ -24,6 +24,7 @@ export default function InscricaoDetail() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [loadingProof, setLoadingProof] = useState(false);
   const [loading, setLoading] = useState(true);
   const [hideCheckedIn, setHideCheckedIn] = useState(true);
   const [checkinSearch, setCheckinSearch] = useState("");
@@ -42,6 +43,24 @@ export default function InscricaoDetail() {
   };
 
   useEffect(() => { reload(); }, [id]);
+
+  const openProof = async (value: string) => {
+    // Backward compat: valores antigos podem ser URLs públicas completas
+    if (/^https?:\/\//i.test(value)) {
+      setProofPreview(value);
+      return;
+    }
+    setLoadingProof(true);
+    const { data, error } = await supabase.storage
+      .from("registration-assets")
+      .createSignedUrl(value, 3600);
+    setLoadingProof(false);
+    if (error || !data?.signedUrl) {
+      toast.error("Não foi possível abrir o comprovante");
+      return;
+    }
+    setProofPreview(data.signedUrl);
+  };
 
   const stats = useMemo(() => {
     const pagos = regs.filter((r) => r.payment_status === "pago").length;
@@ -255,7 +274,7 @@ export default function InscricaoDetail() {
                       </td>
                       <td className="p-3">
                         {r.payment_proof_url ? (
-                          <button onClick={() => setProofPreview(r.payment_proof_url!)} className="text-xs text-primary hover:underline">Ver</button>
+                          <button onClick={() => openProof(r.payment_proof_url!)} disabled={loadingProof} className="text-xs text-primary hover:underline disabled:opacity-50">{loadingProof ? "..." : "Ver"}</button>
                         ) : (<span className="text-xs text-muted-foreground">—</span>)}
                       </td>
                       <td className="p-3">
