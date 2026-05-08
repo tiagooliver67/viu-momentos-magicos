@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   formatDate, formatBRL, applySeniorDiscount, getActiveTier, getNextTier,
-  getCategoryAvailability, getShirtAvailability,
+  getCategoryAvailability, getShirtAvailability, SHIRT_SIZES_DEFAULT,
   type RegistrationEvent, type EventRegistration, type PriceTier, type RegistrationCategory, type ShirtStock,
 } from "@/lib/inscricoes";
 
@@ -34,7 +34,7 @@ export default function InscricaoPublic() {
   const [uploading, setUploading] = useState(false);
 
   const [form, setForm] = useState({
-    full_name: "", email: "", phone: "", city: "", birth_date: "",
+    full_name: "", cpf: "", email: "", phone: "", city: "", birth_date: "", team: "",
     category_id: "", shirt_size: "", notes: "",
   });
 
@@ -71,6 +71,11 @@ export default function InscricaoPublic() {
   const nextTier = useMemo(() => getNextTier(tiers), [tiers]);
   const catAvailability = useMemo(() => getCategoryAvailability(categories, regs), [categories, regs]);
   const shirtAvailability = useMemo(() => getShirtAvailability(shirts, regs), [shirts, regs]);
+  // Fallback: organizer marked "requires shirt size" but didn't configure sizes — use defaults.
+  const shirtOptions = useMemo(() => {
+    if (shirtAvailability.length > 0) return shirtAvailability;
+    return SHIRT_SIZES_DEFAULT.map((size, i) => ({ size, total: 9999, remaining: 9999, sortOrder: i }));
+  }, [shirtAvailability]);
 
   const basePrice = activeTier ? Number(activeTier.price) : 0;
   const seniorEnabled = !!event?.senior_discount_enabled;
@@ -82,7 +87,9 @@ export default function InscricaoPublic() {
 
   const submit = async () => {
     if (!event) return;
-    if (!form.full_name || !form.email || !form.phone) { toast.error("Preencha nome, e-mail e telefone (WhatsApp)"); return; }
+    if (!form.full_name || !form.email || !form.phone || !form.cpf) { toast.error("Preencha nome, CPF, e-mail e WhatsApp"); return; }
+    const cpfDigits = form.cpf.replace(/\D/g, "");
+    if (cpfDigits.length !== 11) { toast.error("CPF inválido — informe os 11 dígitos"); return; }
     if (event.requires_birth_date && !form.birth_date) { toast.error("Informe a data de nascimento"); return; }
     if (event.requires_city && !form.city) { toast.error("Informe a cidade"); return; }
     if (event.requires_shirt_size && !form.shirt_size) { toast.error("Selecione o tamanho da camiseta"); return; }
@@ -105,8 +112,10 @@ export default function InscricaoPublic() {
       registration_event_id: event.id,
       user_id: user?.id ?? null,
       full_name: form.full_name,
+      cpf: cpfDigits,
       email: form.email,
       phone: form.phone,
+      team: form.team || null,
       city: form.city || null,
       birth_date: form.birth_date || null,
       category_id: form.category_id || null,
@@ -267,6 +276,16 @@ export default function InscricaoPublic() {
               <Label>Nome completo *</Label>
               <Input value={form.full_name} onChange={(e) => update("full_name", e.target.value)} className="h-12" />
             </div>
+            <div>
+              <Label>CPF *</Label>
+              <Input
+                value={form.cpf}
+                onChange={(e) => update("cpf", e.target.value.replace(/\D/g, "").slice(0, 11))}
+                inputMode="numeric"
+                placeholder="Somente números"
+                className="h-12"
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>E-mail *</Label>
@@ -276,6 +295,10 @@ export default function InscricaoPublic() {
                 <Label>WhatsApp *</Label>
                 <Input type="tel" inputMode="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-12" placeholder="11999999999" />
               </div>
+            </div>
+            <div>
+              <Label>Equipe (opcional)</Label>
+              <Input value={form.team} onChange={(e) => update("team", e.target.value)} className="h-12" placeholder="Nome da equipe ou assessoria" />
             </div>
             {event.requires_city && (
               <div>
@@ -313,13 +336,13 @@ export default function InscricaoPublic() {
             )}
 
             {/* Camiseta */}
-            {event.requires_shirt_size && shirtAvailability.length > 0 && (
+            {event.requires_shirt_size && (
               <div>
                 <Label>Tamanho da camiseta *</Label>
                 <Select value={form.shirt_size} onValueChange={(v) => update("shirt_size", v)}>
                   <SelectTrigger className="h-12"><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    {shirtAvailability.map((s) => {
+                    {shirtOptions.map((s) => {
                       return (
                         <SelectItem key={s.size} value={s.size}>
                           {s.size}
