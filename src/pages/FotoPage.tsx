@@ -10,7 +10,7 @@ import PhotoTermsFooter from "@/components/PhotoTermsFooter";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
-import { toThumbPath, toMediumPath } from "@/hooks/useS3Upload";
+import { getThumbCdnUrl, getMediumCdnUrl, IS_LAMBDA_PIPELINE_ACTIVE } from "@/lib/cdnConfig";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
@@ -100,17 +100,19 @@ const FotoPage = () => {
     enabled: !!event?.organizer_id,
   });
 
-  // Fetch MEDIUM signed URL for the main photo (watermarked, NOT original)
+  // MEDIUM URL for the main photo (watermarked via Lambda, served from CloudFront CDN)
   const { data: photoSignedUrl } = useQuery({
     queryKey: ["foto-medium-url", photo?.file_url],
     queryFn: async () => {
       if (!photo?.file_url) return "";
-      // Without Lambda pipeline, only original exists
+      if (IS_LAMBDA_PIPELINE_ACTIVE) {
+        return getMediumCdnUrl(photo.file_url) || "";
+      }
       const res = await getPublicSignedUrls([photo.file_url]);
       return res[photo.file_url] || "";
     },
     enabled: !!photo?.file_url,
-    staleTime: 15 * 60 * 1000,
+    staleTime: 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
@@ -131,17 +133,23 @@ const FotoPage = () => {
     enabled: !!photo?.event_id,
   });
 
-  // Fetch thumbnail signed URLs for related photos (with original fallback)
+  // THUMB URLs for related photos (CloudFront CDN, no signed URLs)
   const { data: relatedThumbUrls } = useQuery({
     queryKey: ["related-thumb-urls", relatedPhotos?.map(p => p.id).join(",")],
     queryFn: async () => {
       if (!relatedPhotos || relatedPhotos.length === 0) return {};
-      // Without Lambda pipeline, only original paths exist
-      const originalPaths = relatedPhotos.map(p => p.file_url);
-      return getPublicSignedUrls(originalPaths);
+      const map: Record<string, string> = {};
+      if (IS_LAMBDA_PIPELINE_ACTIVE) {
+        for (const p of relatedPhotos) {
+          const u = getThumbCdnUrl(p.file_url);
+          if (u) map[p.file_url] = u;
+        }
+        return map;
+      }
+      return getPublicSignedUrls(relatedPhotos.map(p => p.file_url));
     },
     enabled: !!relatedPhotos && relatedPhotos.length > 0,
-    staleTime: 15 * 60 * 1000,
+    staleTime: 60 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 

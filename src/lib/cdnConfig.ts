@@ -8,8 +8,14 @@
  * When not set, all images fall back to S3 signed URLs via the s3-presign edge function.
  */
 
-/** CloudFront base URL — set in .env as VITE_CDN_BASE_URL */
-const CDN_BASE = import.meta.env.VITE_CDN_BASE_URL as string | undefined;
+/**
+ * CloudFront base URL.
+ * Default: ViuFoto's production CloudFront distribution backed by S3 + Lambda image pipeline.
+ * Override via VITE_CDN_BASE_URL if needed (e.g. staging).
+ */
+const CDN_BASE: string =
+  (import.meta.env.VITE_CDN_BASE_URL as string | undefined) ||
+  "https://d30bj690qj992h.cloudfront.net";
 
 /** Whether backend Lambda pipeline is active (generates thumb/medium automatically) */
 export const IS_LAMBDA_PIPELINE_ACTIVE = !!CDN_BASE;
