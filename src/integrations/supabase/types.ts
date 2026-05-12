@@ -596,6 +596,72 @@ export type Database = {
           },
         ]
       }
+      hero_settings: {
+        Row: {
+          autoplay: boolean
+          created_at: string
+          highlight: string
+          highlight_color: string
+          id: string
+          interval_seconds: number
+          title: string
+          title_color: string
+          transition_duration_ms: number
+          transition_type: string
+          updated_at: string
+        }
+        Insert: {
+          autoplay?: boolean
+          created_at?: string
+          highlight?: string
+          highlight_color?: string
+          id?: string
+          interval_seconds?: number
+          title?: string
+          title_color?: string
+          transition_duration_ms?: number
+          transition_type?: string
+          updated_at?: string
+        }
+        Update: {
+          autoplay?: boolean
+          created_at?: string
+          highlight?: string
+          highlight_color?: string
+          id?: string
+          interval_seconds?: number
+          title?: string
+          title_color?: string
+          transition_duration_ms?: number
+          transition_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hero_slides: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          image_path: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_path: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_path?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string

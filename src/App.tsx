@@ -50,6 +50,7 @@ import AdminPayments from "./pages/admin/AdminPayments";
 import AdminStorage from "./pages/admin/AdminStorage";
 import AdminInscricoes from "./pages/admin/AdminInscricoes";
 import AdminInscricaoDetail from "./pages/admin/AdminInscricaoDetail";
+import AdminHero from "./pages/admin/AdminHero";
 import InscricoesList from "./pages/inscricoes/InscricoesList";
 import InscricaoForm from "./pages/inscricoes/InscricaoForm";
 import InscricaoDetail from "./pages/inscricoes/InscricaoDetail";
@@ -113,6 +114,7 @@ const App = () => (
                 <Route path="suporte" element={<AdminSupport />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
                 <Route path="configuracoes" element={<AdminSettings />} />
+                <Route path="hero" element={<AdminHero />} />
                 <Route path="logs" element={<AdminLogs />} />
               </Route>
               <Route path="*" element={<NotFound />} />
