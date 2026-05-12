@@ -9,6 +9,7 @@ import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
 import { toThumbPath, getSignedReadUrls } from "@/hooks/useS3Upload";
+import { getThumbCdnUrl, IS_LAMBDA_PIPELINE_ACTIVE } from "@/lib/cdnConfig";
 
 interface FavPhoto {
   id: string;
@@ -70,11 +71,20 @@ export default function Favoritos() {
 
       setPhotos(enriched);
 
-      // Fetch thumbnail signed URLs (watermarked, NOT originals)
+      // Thumbnails via CloudFront CDN (no signed URL roundtrip when pipeline active)
       try {
-        const thumbPaths = enriched.map(p => toThumbPath(p.file_url));
-        const urls = await getSignedReadUrls(thumbPaths);
-        setThumbUrls(urls);
+        if (IS_LAMBDA_PIPELINE_ACTIVE) {
+          const map: Record<string, string> = {};
+          for (const p of enriched) {
+            const u = getThumbCdnUrl(p.file_url);
+            if (u) map[toThumbPath(p.file_url)] = u;
+          }
+          setThumbUrls(map);
+        } else {
+          const thumbPaths = enriched.map(p => toThumbPath(p.file_url));
+          const urls = await getSignedReadUrls(thumbPaths);
+          setThumbUrls(urls);
+        }
       } catch (err) {
         console.error("Failed to fetch thumb URLs for favorites:", err);
       }
