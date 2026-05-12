@@ -9,6 +9,8 @@ interface LazyPhotoCardProps {
   isFav: boolean;
   onToggleFavorite: (id: string) => void;
   onClick: () => void;
+  /** When true, image loads eagerly with high fetch priority (above-the-fold) */
+  priority?: boolean;
 }
 
 /**
@@ -21,12 +23,14 @@ const LazyPhotoCard = memo(({
   isFav,
   onToggleFavorite,
   onClick,
+  priority = false,
 }: LazyPhotoCardProps) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(priority);
   const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (priority) return;
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -40,7 +44,7 @@ const LazyPhotoCard = memo(({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [priority]);
 
   return (
     <div
@@ -54,7 +58,9 @@ const LazyPhotoCard = memo(({
             <img
               src={photoUrl}
               alt=""
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              decoding="async"
+              {...(priority ? { fetchPriority: "high" as any } : { fetchPriority: "low" as any })}
               onLoad={() => setLoaded(true)}
               className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
             />
