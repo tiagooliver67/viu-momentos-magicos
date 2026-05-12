@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import LazyPhotoCard from "@/components/LazyPhotoCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import PhotoTermsFooter from "@/components/PhotoTermsFooter";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
@@ -52,6 +53,7 @@ const EventPage = () => {
   const [resolution, setResolution] = useState<"high" | "low">("high");
   const [passwordInput, setPasswordInput] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const [page, setPage] = useState(1);
   const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
 
@@ -189,6 +191,36 @@ const EventPage = () => {
   const highPrice = priceGrid?.photo_high_price ?? 15;
   const lowPrice = priceGrid?.photo_low_price ?? 11;
   const photoList = photos || [];
+
+  const PHOTOS_PER_PAGE = 32;
+  const totalPages = Math.max(1, Math.ceil(photoList.length / PHOTOS_PER_PAGE));
+  const paginatedPhotos = photoList.slice((page - 1) * PHOTOS_PER_PAGE, page * PHOTOS_PER_PAGE);
+
+  // Reset to page 1 when search changes or photos reload
+  useEffect(() => { setPage(1); }, [searchBib, photoList.length]);
+
+  // Keep page in valid range
+  useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
+
+  // Build a compact page list with ellipsis: 1, 2, 3, 4, 5, …, ▶
+  const pageNumbers = useMemo<(number | "ellipsis")[]>(() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const arr: (number | "ellipsis")[] = [];
+    const add = (n: number | "ellipsis") => arr.push(n);
+    add(1);
+    if (page > 4) add("ellipsis");
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+    for (let i = start; i <= end; i++) add(i);
+    if (page < totalPages - 3) add("ellipsis");
+    add(totalPages);
+    return arr;
+  }, [page, totalPages]);
+
+  const goToPage = (p: number) => {
+    setPage(p);
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  };
 
   const getPhotoUrl = useCallback((photo: any) => {
     const thumbPath = toThumbPath(photo.file_url);
@@ -370,18 +402,65 @@ const EventPage = () => {
           )}
 
           {!urlsLoading && !urlsError && photoList.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-              {photoList.map((photo: any) => (
-                <LazyPhotoCard
-                  key={photo.id}
-                  photoId={photo.id}
-                  photoUrl={getPhotoUrl(photo)}
-                  isFav={isFavorite(photo.id)}
-                  onToggleFavorite={toggleFavorite}
-                  onClick={() => setSelectedPhoto(photo)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+                {paginatedPhotos.map((photo: any) => (
+                  <LazyPhotoCard
+                    key={photo.id}
+                    photoId={photo.id}
+                    photoUrl={getPhotoUrl(photo)}
+                    isFav={isFavorite(photo.id)}
+                    onToggleFavorite={toggleFavorite}
+                    onClick={() => setSelectedPhoto(photo)}
+                  />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-8 flex flex-col items-center gap-3">
+                  <div className="flex items-center gap-2 flex-wrap justify-center">
+                    {page > 1 && (
+                      <button
+                        onClick={() => goToPage(page - 1)}
+                        aria-label="Página anterior"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary/50 transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                    )}
+                    {pageNumbers.map((p, i) =>
+                      p === "ellipsis" ? (
+                        <span key={`e-${i}`} className="px-2 text-muted-foreground">…</span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => goToPage(p)}
+                          className={`min-w-[44px] min-h-[44px] px-3 rounded-lg border text-sm font-medium transition-colors ${
+                            p === page
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background border-border text-foreground hover:bg-secondary/50"
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+                    {page < totalPages && (
+                      <button
+                        onClick={() => goToPage(page + 1)}
+                        aria-label="Próxima página"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg border border-border bg-background hover:bg-secondary/50 transition-colors"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Página {page} de {totalPages}
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -556,6 +635,8 @@ const EventPage = () => {
                   Ir para o carrinho
                 </button>
               </div>
+
+              <PhotoTermsFooter className="mt-4" />
             </div>
           </div>
         </div>
