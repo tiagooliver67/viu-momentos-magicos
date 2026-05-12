@@ -468,24 +468,24 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 flex flex-col justify-start sm:justify-center items-center"
+          className="fixed inset-0 z-50 bg-background/85 backdrop-blur-md flex flex-col justify-start sm:justify-center items-center animate-in fade-in duration-150"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
           <button
             onClick={() => setSelectedPhoto(null)}
-            className="absolute top-3 right-3 z-20 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors"
+            className="absolute top-3 right-3 z-30 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center bg-card/90 hover:bg-card text-foreground rounded-full border border-border shadow-md transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
 
           <div
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full h-[100dvh] sm:h-[90vh] sm:max-w-6xl sm:mx-auto overflow-y-auto"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full h-[100dvh] sm:h-[90vh] sm:max-w-7xl sm:mx-auto sm:gap-6 sm:px-6 overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             {/* Image area — shrink-wrap on mobile, no flex-1 */}
             <div
-              className="relative bg-black flex items-center justify-center p-1 sm:p-2 flex-1 min-h-0"
+              className="relative flex items-center justify-center p-1 sm:p-2 flex-1 min-h-0"
               onTouchStart={(e) => {
                 (e.currentTarget as any)._touchX = e.touches[0].clientX;
               }}
@@ -502,11 +502,11 @@ const EventPage = () => {
               {(() => {
                 const imgSrc = mediumUrl || getPhotoUrl(selectedPhoto);
                 if (mediumLoading && !imgSrc) {
-                  return <Loader2 className="w-8 h-8 text-white/60 animate-spin" />;
+                  return <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />;
                 }
                 if (!imgSrc) {
                   return (
-                    <div className="text-white/40 text-center">
+                    <div className="text-muted-foreground text-center">
                       <Camera className="w-10 h-10 mx-auto mb-2 opacity-50" />
                       <p className="text-sm">Não foi possível carregar a imagem</p>
                     </div>
@@ -516,7 +516,7 @@ const EventPage = () => {
                    <img
                      src={imgSrc}
                      alt=""
-                     className="max-w-full max-h-[55dvh] sm:max-h-[75vh] object-contain rounded"
+                     className="max-w-full max-h-[55dvh] sm:max-h-[80vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200"
                    />
                 );
               })()}
@@ -525,7 +525,7 @@ const EventPage = () => {
                 <button
                   onClick={(e) => { e.stopPropagation(); goPrev(); }}
                   aria-label="Foto anterior"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-all active:scale-90"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center bg-card/90 hover:bg-card text-foreground rounded-full border border-border shadow-md transition-all active:scale-90"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -534,7 +534,7 @@ const EventPage = () => {
                 <button
                   onClick={(e) => { e.stopPropagation(); goNext(); }}
                   aria-label="Próxima foto"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-all active:scale-90"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 min-w-[44px] min-h-[44px] flex items-center justify-center bg-card/90 hover:bg-card text-foreground rounded-full border border-border shadow-md transition-all active:scale-90"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -547,7 +547,7 @@ const EventPage = () => {
                     navigator.clipboard.writeText(url);
                     toast.success("Link copiado!");
                   }}
-                  className="p-2.5 rounded-full bg-black/50 text-white/80 hover:bg-black/70 backdrop-blur-sm transition-all active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  className="p-2.5 rounded-full bg-card/90 text-foreground hover:bg-card border border-border shadow-md transition-all active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <Share2 className="w-5 h-5" />
                 </button>
@@ -557,10 +557,10 @@ const EventPage = () => {
                     toggleFavorite(selectedPhoto.id);
                     toast.success(fav ? "Removido dos favoritos" : "Adicionado aos favoritos ❤️");
                   }}
-                  className={`p-2.5 rounded-full backdrop-blur-sm transition-all active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center ${
+                  className={`p-2.5 rounded-full border shadow-md transition-all active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center ${
                     isFavorite(selectedPhoto.id)
-                      ? "bg-red-500/80 text-white shadow-lg shadow-red-500/30"
-                      : "bg-black/50 text-white/80 hover:bg-black/70"
+                      ? "bg-red-500 text-white border-red-500 shadow-red-500/30"
+                      : "bg-card/90 text-foreground hover:bg-card border-border"
                   }`}
                 >
                   <Heart className={`w-5 h-5 transition-all ${isFavorite(selectedPhoto.id) ? "fill-current" : ""}`} />
@@ -569,7 +569,7 @@ const EventPage = () => {
             </div>
 
             {/* Purchase panel — scrollable on mobile */}
-            <div className="w-full sm:w-80 p-3 sm:p-6 space-y-2 sm:space-y-4 overflow-y-auto bg-background rounded-t-2xl sm:rounded-none shrink-0 max-h-[40dvh] sm:max-h-[75vh]">
+            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-card rounded-t-2xl sm:rounded-2xl shrink-0 max-h-[40dvh] sm:max-h-[80vh] sm:border sm:border-border sm:shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200">
               <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
               <div className="space-y-2">
@@ -636,7 +636,9 @@ const EventPage = () => {
                 </button>
               </div>
 
-              <PhotoTermsFooter className="mt-4" />
+              <p className="text-[11px] text-muted-foreground text-center pt-2 leading-relaxed">
+                Uso exclusivamente pessoal. Comercialização e divulgação editorial requerem autorização (Lei 9.610/98).
+              </p>
             </div>
           </div>
         </div>

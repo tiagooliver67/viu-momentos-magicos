@@ -1,44 +1,36 @@
-## Objetivo
-1. Paginar a galeria de fotos do evento em **32 fotos por página**, com paginação numérica (1, 2, 3, …, próximo) — semelhante ao print do concorrente.
-2. Exibir um **Termo de Uso das Fotos (padrão VIUFOTO)** sempre que o cliente abrir uma foto individualmente (modal/lightbox no `EventPage` e na página `FotoPage`).
+## Redesign do Lightbox da Foto (estilo Fotop)
 
-## Escopo
+Comparando os dois prints, a versão da concorrência (Fotop) é mais limpa, com fundo claro semi-transparente que mantém a galeria visível ao fundo, dando ênfase total à foto. O nosso atual tem fundo preto pesado (`bg-black/95`) que sufoca a experiência.
 
-### 1. Paginação no `src/pages/EventPage.tsx`
-- Hoje todas as fotos são renderizadas de uma vez (sem paginação).
-- Adicionar:
-  - Constante `PHOTOS_PER_PAGE = 32`.
-  - Estado `page` (default 1), reset ao trocar busca/filtro.
-  - `paginatedPhotos = photoList.slice((page-1)*32, page*32)` para renderização do grid.
-  - `totalPages = Math.ceil(photoList.length / 32)`.
-  - Buscar URLs assinadas só das 32 fotos da página visível (otimização — evita gerar 320 URLs de uma vez).
-- Componente de paginação numérica abaixo do grid, mobile-first:
-  - Botões: `1 2 3 4 5 … ▶` (com ellipsis se passar de 7 páginas).
-  - Página atual destacada com `bg-primary`.
-  - Texto auxiliar: "Página X de Y".
-  - Scroll suave para o topo do grid ao trocar de página.
-- Manter scroll/posição quando volta do `FotoPage` (opcional — via querystring `?page=2`).
+### Mudanças no `src/pages/EventPage.tsx` (apenas o bloco do lightbox, linhas ~468-643)
 
-### 2. Termo de Uso na visualização individual
-- Criar componente reutilizável `src/components/PhotoTermsFooter.tsx` com o texto padrão VIUFOTO:
+**1. Backdrop mais leve**
+- Trocar `bg-black/95` por `bg-background/80 backdrop-blur-md` (fundo claro com blur, deixa a galeria entrever atrás)
+- Painel de compra muda para `bg-card` com `shadow-xl rounded-2xl` (cartão flutuante, não mais coluna lateral)
 
-  > **TERMO DE USO DAS FOTOS**
-  > As fotos disponibilizadas são para uso exclusivamente pessoal, incluindo divulgação em redes sociais. Não é permitido a comercialização das mesmas, assim como a divulgação editorial, publicitária e qualquer outro fim sem autorização por escrito da VIUFOTO e do(s) fotografado(s).
+**2. Layout — foto em destaque central**
+- Imagem fica no centro com `max-h-[80vh]` no desktop (mais alta que os atuais 75vh, sem painel lateral comprimindo)
+- Painel de compra vira um card flutuante à direita no desktop (`absolute right-6 top-1/2 -translate-y-1/2 w-80`) ou drawer inferior no mobile (mantém comportamento atual)
+- Setas de navegação ficam fora da área da imagem, sobre o backdrop (estilo Fotop com `<` `>` grandes nas laterais da viewport)
 
-- Aplicar em **dois lugares**:
-  1. **Lightbox/modal de foto individual no `EventPage.tsx`** (quando o usuário clica em "Ver opções disponíveis" / abre a foto grande) — exibir abaixo do painel de compra.
-  2. **`src/pages/FotoPage.tsx`** — abaixo da imagem e do painel de compra, antes do footer.
-- Estilo: texto centralizado, `text-xs text-muted-foreground`, título `font-bold text-foreground`, espaçamento generoso (mt-12), separador sutil (`border-t`).
+**3. Botões de ação (favorito/share/close)**
+- Migrar de fundo preto opaco (`bg-black/50`) para fundo claro (`bg-card/80 text-foreground border border-border`) já que o backdrop ficou claro
+- Posicionar sobre a imagem com offset menor
 
-## Arquivos a alterar
-- `src/pages/EventPage.tsx` — adicionar paginação + footer de termos no modal/lightbox.
-- `src/pages/FotoPage.tsx` — adicionar footer de termos.
-- `src/components/PhotoTermsFooter.tsx` — **novo** componente reutilizável.
+**4. Painel de compra refinado**
+- Header `Foto digital para download` em `text-foreground` (já está)
+- Remover o `PhotoTermsFooter` de dentro do painel (fica visualmente pesado) — mantê-lo apenas na `FotoPage`. No lightbox, deixar um link discreto "Termo de uso das fotos" que abre tooltip/popover
+- Manter as opções de resolução, CTA principal laranja e os dois botões secundários (Continuar comprando / Ir para o carrinho)
 
-## Fora do escopo
-- Não alterar o gerenciador interno do fotógrafo (`PhotoGallery.tsx`) — ele já tem paginação própria de 20 (uso administrativo).
-- Não alterar o `TermosDeUso.tsx` (página de termos gerais do site).
-- Sem mudanças no backend, RLS ou edge functions.
+**5. Animação de entrada**
+- Adicionar `animate-in fade-in zoom-in-95 duration-200` no container da imagem para dar polimento na abertura
 
-## Texto do termo — confirmar
-Vou usar o texto padrão acima (idêntico ao print do concorrente, trocando "Fotop" por "VIUFOTO"). Se você quiser uma redação diferente (ex.: incluir Lei 9.610/98, citar nome do fotógrafo do evento, link para os Termos completos), me diga antes de implementar.
+### Fora de escopo
+- Não mudar `FotoPage.tsx` (página individual já está clara)
+- Não mudar grid da galeria, paginação ou qualquer lógica de dados/preço
+- Não mexer no watermark (continua bakeado na imagem)
+
+### Detalhes técnicos
+- Tudo usa tokens semânticos do design system (`bg-background`, `bg-card`, `text-foreground`, `border-border`, `bg-primary`)
+- Suporta `light` e `dark` automaticamente via tokens HSL
+- Mobile mantém o atual layout vertical (foto em cima 55dvh, painel embaixo 40dvh) — só atualizamos cores
