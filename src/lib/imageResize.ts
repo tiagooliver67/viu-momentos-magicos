@@ -22,7 +22,7 @@ export async function resizeImageWithWatermark(
   file: File,
   maxWidth: number,
   watermarkSrc: string,
-  quality = 0.82
+  quality = 0.78
 ): Promise<Blob> {
   // Load both images in parallel
   const fileUrl = URL.createObjectURL(file);
@@ -86,9 +86,18 @@ export async function resizeImageWithWatermark(
   }
 
   return new Promise((resolve, reject) => {
+    // Prefer WebP (≈30% smaller than JPEG at equivalent quality).
+    // Fallback to JPEG if the browser can't encode WebP via canvas.
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error("toBlob failed"))),
-      "image/jpeg",
+      (blob) => {
+        if (blob && blob.type === "image/webp") return resolve(blob);
+        canvas.toBlob(
+          (jpg) => (jpg ? resolve(jpg) : reject(new Error("toBlob failed"))),
+          "image/jpeg",
+          quality
+        );
+      },
+      "image/webp",
       quality
     );
   });
@@ -100,7 +109,7 @@ export async function resizeImageWithWatermark(
 export async function resizeImage(
   file: File,
   maxWidth: number,
-  quality = 0.82
+  quality = 0.78
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -115,12 +124,16 @@ export async function resizeImage(
       const ctx = canvas.getContext("2d")!;
       ctx.imageSmoothingQuality = "high";
       ctx.drawImage(img, 0, 0, newW, newH);
+      const finish = (blob: Blob | null) => {
+        URL.revokeObjectURL(img.src);
+        blob ? resolve(blob) : reject(new Error("toBlob failed"));
+      };
       canvas.toBlob(
         (blob) => {
-          URL.revokeObjectURL(img.src);
-          blob ? resolve(blob) : reject(new Error("toBlob failed"));
+          if (blob && blob.type === "image/webp") return finish(blob);
+          canvas.toBlob((jpg) => finish(jpg), "image/jpeg", quality);
         },
-        "image/jpeg",
+        "image/webp",
         quality
       );
     };

@@ -94,29 +94,32 @@ Deno.serve(async (req) => {
         });
       }
 
-      const results = [];
-      for (const obj of objects) {
-        const signRes = await fetch(
-          `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=write`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "X-Connection-Api-Key": AWS_S3_API_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ object_path: obj.path }),
+      // Parallel signing — drastically lower wall-clock for large batches.
+      const results = await Promise.all(
+        objects.map(async (obj: { path: string }) => {
+          try {
+            const signRes = await fetch(
+              `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=write`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                  "X-Connection-Api-Key": AWS_S3_API_KEY,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ object_path: obj.path }),
+              }
+            );
+            if (!signRes.ok) {
+              return { path: obj.path, error: await signRes.text() };
+            }
+            const data = await signRes.json();
+            return { path: obj.path, ...data };
+          } catch (e: any) {
+            return { path: obj.path, error: e?.message || "failed" };
           }
-        );
-
-        if (!signRes.ok) {
-          const errText = await signRes.text();
-          results.push({ path: obj.path, error: errText });
-        } else {
-          const data = await signRes.json();
-          results.push({ path: obj.path, ...data });
-        }
-      }
+        })
+      );
 
       return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -161,28 +164,30 @@ Deno.serve(async (req) => {
         });
       }
 
-      const results = [];
-      for (const obj of objects) {
-        const signRes = await fetch(
-          `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=read`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "X-Connection-Api-Key": AWS_S3_API_KEY,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ object_path: obj.path }),
+      // Parallel signing for the gallery — was the main TTFB bottleneck.
+      const results = await Promise.all(
+        objects.map(async (obj: { path: string }) => {
+          try {
+            const signRes = await fetch(
+              `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=read`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                  "X-Connection-Api-Key": AWS_S3_API_KEY,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ object_path: obj.path }),
+              }
+            );
+            if (!signRes.ok) return { path: obj.path, error: "failed" };
+            const data = await signRes.json();
+            return { path: obj.path, ...data };
+          } catch {
+            return { path: obj.path, error: "failed" };
           }
-        );
-
-        if (!signRes.ok) {
-          results.push({ path: obj.path, error: "failed" });
-        } else {
-          const data = await signRes.json();
-          results.push({ path: obj.path, ...data });
-        }
-      }
+        })
+      );
 
       return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Preconnect to image origins to cut TLS/DNS latency on first paint -->
+    <link rel="preconnect" href="https://viufoto-images-bucket.s3.sa-east-1.amazonaws.com" crossorigin />
+    <link rel="dns-prefetch" href="https://viufoto-images-bucket.s3.sa-east-1.amazonaws.com" />
     <!-- TODO: Set the document title to the name of your application -->
     <title>ViuFoto</title>
     <meta name="description" content="Lovable Generated Project">

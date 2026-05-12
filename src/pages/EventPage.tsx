@@ -404,7 +404,7 @@ const EventPage = () => {
           {!urlsLoading && !urlsError && photoList.length > 0 && (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-                {paginatedPhotos.map((photo: any) => (
+                {paginatedPhotos.map((photo: any, idx: number) => (
                   <LazyPhotoCard
                     key={photo.id}
                     photoId={photo.id}
@@ -412,6 +412,7 @@ const EventPage = () => {
                     isFav={isFavorite(photo.id)}
                     onToggleFavorite={toggleFavorite}
                     onClick={() => setSelectedPhoto(photo)}
+                    priority={idx < 10}
                   />
                 ))}
               </div>
