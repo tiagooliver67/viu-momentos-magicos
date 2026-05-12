@@ -325,9 +325,9 @@ const EventPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="pt-14 sm:pt-20">
+      <div className="pt-14 sm:pt-16">
         {/* Event Header */}
-        <div className="relative h-48 sm:h-64 overflow-hidden">
+        <div className="relative h-32 sm:h-40 overflow-hidden">
           <img src={event.cover_url || "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&q=80"} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 container mx-auto px-4">
