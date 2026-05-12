@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import PhotoTermsFooter from "@/components/PhotoTermsFooter";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
@@ -389,6 +390,8 @@ const FotoPage = () => {
           )}
         </div>
       </div>
+
+      <PhotoTermsFooter className="container mx-auto max-w-4xl mt-8 mb-4" />
 
       <Footer />
     </div>
