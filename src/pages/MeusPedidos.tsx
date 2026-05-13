@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
+import { getPhotoCode } from "@/lib/photoCode";
 
 interface OrderItem {
   id: string;
@@ -151,7 +152,14 @@ const MeusPedidos = () => {
                         <Image className="w-8 h-8 text-primary/60" />
                         <div>
                           <p className="text-sm font-medium text-foreground">{file.name || `Arquivo ${i + 1}`}</p>
-                          <p className="text-xs text-muted-foreground capitalize">{file.type}</p>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {file.type}
+                            {file.id && (
+                              <span className="ml-2 font-mono text-[10px] text-muted-foreground/80">
+                                ID: {getPhotoCode(file.id)}
+                              </span>
+                            )}
+                          </p>
                         </div>
                       </div>
                       {file.url ? (
