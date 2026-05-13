@@ -11,6 +11,7 @@ import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { getThumbCdnUrl, getMediumCdnUrl, IS_LAMBDA_PIPELINE_ACTIVE } from "@/lib/cdnConfig";
+import { getPhotoCode } from "@/lib/photoCode";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
@@ -227,6 +228,7 @@ const FotoPage = () => {
           {/* Main content */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
             {/* Photo — watermark is baked in, no overlay */}
+            <div className="space-y-2">
             <div className="relative rounded-xl overflow-hidden bg-secondary/30 aspect-[4/3]">
               <img
                 src={photoSignedUrl || ""}
@@ -255,6 +257,17 @@ const FotoPage = () => {
                 >
                   {copied ? <Check className="w-5 h-5 text-green-400" /> : <Share2 className="w-5 h-5" />}
                 </button>
+              </div>
+            </div>
+              <div
+                onClick={() => {
+                  navigator.clipboard.writeText(getPhotoCode(photo.id));
+                  toast.success(`Código copiado: ${getPhotoCode(photo.id)}`);
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground cursor-pointer select-all"
+                title="Código único desta foto — clique para copiar"
+              >
+                ID: <span className="font-semibold text-foreground">{getPhotoCode(photo.id)}</span>
               </div>
             </div>
 
