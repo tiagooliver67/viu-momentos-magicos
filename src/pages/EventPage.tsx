@@ -14,6 +14,7 @@ import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { getPhotoCode } from "@/lib/photoCode";
+import DiscountBanner from "@/components/event/DiscountBanner";
 import {
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
