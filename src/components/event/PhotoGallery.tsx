@@ -102,18 +102,35 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
     return photo.file_url;
   };
 
+  const filterJpeg = (files: File[]): File[] => {
+    const MAX = 30 * 1024 * 1024;
+    const valid: File[] = [];
+    const invalidFmt: string[] = [];
+    const tooLarge: string[] = [];
+    for (const f of files) {
+      const name = f.name.toLowerCase();
+      const isJpeg = f.type === "image/jpeg" || name.endsWith(".jpg") || name.endsWith(".jpeg");
+      if (!isJpeg) { invalidFmt.push(f.name); continue; }
+      if (f.size > MAX) { tooLarge.push(f.name); continue; }
+      valid.push(f);
+    }
+    if (invalidFmt.length) toast.error("Formato não suportado. Por favor, envie apenas fotos em JPG ou JPEG.");
+    if (tooLarge.length) toast.error(`Arquivo acima de 30MB: ${tooLarge.join(", ")}`);
+    return valid;
+  };
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     if (isUploading) return;
-    const dropped = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+    const dropped = filterJpeg(Array.from(e.dataTransfer.files));
     if (dropped.length > 0) startUpload(dropped);
   }, [onUploadFiles, isUploading]);
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isUploading) return;
     if (e.target.files) {
-      const files = Array.from(e.target.files);
-      startUpload(files);
+      const files = filterJpeg(Array.from(e.target.files));
+      if (files.length > 0) startUpload(files);
       e.target.value = "";
     }
   };
@@ -293,14 +310,14 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
                 <p className="text-sm text-foreground">
                   Arraste ou selecione suas fotos para começar o envio
                 </p>
-                <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WEBP • Máximo 30MB por arquivo</p>
+                <p className="text-xs text-muted-foreground mt-2">JPG ou JPEG • Máximo 30MB por arquivo</p>
               </>
             )}
             <input
               ref={inputRef}
               type="file"
               multiple
-              accept="image/jpeg,image/png,image/webp"
+              accept=".jpg,.jpeg,image/jpeg"
               onChange={handleSelect}
               className="hidden"
               disabled={isUploading}
