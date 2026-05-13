@@ -469,7 +469,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-background/85 backdrop-blur-md flex flex-col justify-start sm:justify-center items-center animate-in fade-in duration-150"
+          className="fixed inset-0 z-50 bg-background/85 backdrop-blur-md flex flex-col justify-start items-center sm:pt-[5vh] animate-in fade-in duration-150"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
@@ -481,7 +481,7 @@ const EventPage = () => {
           </button>
 
           <div
-            className="flex flex-col sm:flex-row sm:items-center sm:justify-center w-full h-[100dvh] sm:h-[90vh] sm:max-w-7xl sm:mx-auto sm:gap-6 sm:px-6 overflow-y-auto"
+            className="flex flex-col sm:flex-row sm:items-start sm:justify-center w-full h-[100dvh] sm:h-[calc(100vh-5vh)] sm:max-h-[calc(100vh-5vh)] sm:max-w-7xl sm:mx-auto sm:gap-6 sm:px-6 overflow-y-auto sm:overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* Image area — shrink-wrap on mobile, no flex-1 */}
@@ -517,7 +517,7 @@ const EventPage = () => {
                    <img
                      src={imgSrc}
                      alt=""
-                     className="max-w-full max-h-[55dvh] sm:max-h-[80vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+                     className="max-w-full max-h-[55dvh] sm:max-h-[calc(100vh-10vh)] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200"
                    />
                 );
               })()}
@@ -570,7 +570,7 @@ const EventPage = () => {
             </div>
 
             {/* Purchase panel — scrollable on mobile */}
-            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-card rounded-t-2xl sm:rounded-2xl shrink-0 max-h-[40dvh] sm:max-h-[80vh] sm:border sm:border-border sm:shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200">
+            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-card rounded-t-2xl sm:rounded-2xl shrink-0 max-h-[40dvh] sm:max-h-[calc(100vh-10vh)] sm:border sm:border-border sm:shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200">
               <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
               <div className="space-y-2">
