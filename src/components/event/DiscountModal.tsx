@@ -24,11 +24,23 @@ interface Props {
   onSave: (pkg: SavePayload) => void;
   isSaving: boolean;
   basePhotoPrice?: number;
+  initialProgressiveEnabled?: boolean;
+  initialProgressiveRules?: ProgressiveRule[];
+  onSaveProgressive?: (rules: ProgressiveRule[], enabled: boolean) => void;
 }
 
 type Tab = "prices" | "packages";
 
-export default function DiscountModal({ open, onClose, onSave, isSaving, basePhotoPrice = 20 }: Props) {
+export default function DiscountModal({
+  open,
+  onClose,
+  onSave,
+  isSaving,
+  basePhotoPrice = 20,
+  initialProgressiveEnabled,
+  initialProgressiveRules,
+  onSaveProgressive,
+}: Props) {
   const [tab, setTab] = useState<Tab>("prices");
 
   // Aba 1 — Preços e descontos
@@ -49,6 +61,21 @@ export default function DiscountModal({ open, onClose, onSave, isSaving, basePho
   useEffect(() => {
     if (!open) setTab("prices");
   }, [open]);
+
+  // Carrega regras existentes ao abrir
+  useEffect(() => {
+    if (!open) return;
+    if (typeof initialProgressiveEnabled === "boolean") {
+      setProgressiveEnabled(initialProgressiveEnabled);
+    }
+    if (initialProgressiveRules && initialProgressiveRules.length > 0) {
+      setRules(initialProgressiveRules.map(r => ({
+        enabled: r.enabled !== false,
+        min_photos: Number(r.min_photos) || 0,
+        discount_pct: Number(r.discount_pct) || 0,
+      })));
+    }
+  }, [open, initialProgressiveEnabled, initialProgressiveRules]);
 
   if (!open) return null;
 
@@ -71,6 +98,10 @@ export default function DiscountModal({ open, onClose, onSave, isSaving, basePho
     const activeRule = progressiveEnabled
       ? rules.find((r) => r.enabled) || rules[0]
       : { min_photos: 0, discount_pct: 0 };
+    // Persiste TODAS as regras progressivas no evento (banner + carrinho)
+    if (onSaveProgressive) {
+      onSaveProgressive(rules, progressiveEnabled);
+    }
     onSave({
       min_photos: activeRule.min_photos,
       discount_pct: activeRule.discount_pct,

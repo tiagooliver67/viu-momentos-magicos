@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { pickDiscount, normalizeRules } from "@/lib/progressiveDiscount";
 
 // Validate Brazilian CPF (11 digits with check digits) — accepts CNPJ (14 digits) loosely as well
 function isValidCpfCnpj(value: string): boolean {
@@ -55,6 +56,29 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
     },
     enabled: !!user?.id && open,
   });
+
+  // Carrega desconto progressivo do evento
+  const { data: eventDiscount } = useQuery({
+    queryKey: ["checkout-discount", eventId],
+    queryFn: async () => {
+      if (!eventId) return null;
+      const { data } = await supabase
+        .from("events")
+        .select("progressive_discount_enabled, progressive_discount_rules")
+        .eq("id", eventId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!eventId && open,
+  });
+
+  const photoCount = items.filter(i => i.photoId).length;
+  const rules = eventDiscount?.progressive_discount_enabled
+    ? normalizeRules(eventDiscount?.progressive_discount_rules)
+    : [];
+  const { pct: discountPct } = pickDiscount(rules, photoCount);
+  const discountFactor = 1 - discountPct / 100;
+  const finalTotal = +(total * discountFactor).toFixed(2);
 
   // Pre-fill form with user data
   useEffect(() => {
@@ -112,10 +136,10 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
         items: items.map(i => ({
           photoId: i.photoId,
           videoId: i.videoId,
-          price: i.price,
+          price: +(i.price * discountFactor).toFixed(2),
           resolution: i.resolution,
         })),
-        total,
+        total: finalTotal,
       });
       setStep("pix");
     } catch (err: any) {
@@ -162,7 +186,19 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="p-3 rounded-xl bg-secondary/30 border border-border/50">
                 <p className="text-sm text-muted-foreground">{items.length} item(ns)</p>
-                <p className="text-xl font-bold text-primary">R$ {total.toFixed(2)}</p>
+                {discountPct > 0 ? (
+                  <>
+                    <p className="text-xs text-muted-foreground line-through">R$ {total.toFixed(2)}</p>
+                    <p className="text-xl font-bold text-primary">
+                      R$ {finalTotal.toFixed(2)}
+                      <span className="ml-2 text-xs font-semibold bg-primary/15 text-primary px-2 py-0.5 rounded-full">
+                        -{discountPct}%
+                      </span>
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xl font-bold text-primary">R$ {total.toFixed(2)}</p>
+                )}
               </div>
 
               <div className="space-y-3">

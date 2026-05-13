@@ -522,6 +522,8 @@ export type Database = {
           owner_commission_pct: number
           password: string | null
           plan_type: string
+          progressive_discount_enabled: boolean
+          progressive_discount_rules: Json
           search_type: string[] | null
           status: Database["public"]["Enums"]["event_status"]
           updated_at: string
@@ -541,6 +543,8 @@ export type Database = {
           owner_commission_pct?: number
           password?: string | null
           plan_type?: string
+          progressive_discount_enabled?: boolean
+          progressive_discount_rules?: Json
           search_type?: string[] | null
           status?: Database["public"]["Enums"]["event_status"]
           updated_at?: string
@@ -560,6 +564,8 @@ export type Database = {
           owner_commission_pct?: number
           password?: string | null
           plan_type?: string
+          progressive_discount_enabled?: boolean
+          progressive_discount_rules?: Json
           search_type?: string[] | null
           status?: Database["public"]["Enums"]["event_status"]
           updated_at?: string
