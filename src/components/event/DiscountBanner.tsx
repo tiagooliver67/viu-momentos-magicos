@@ -11,6 +11,9 @@ export default function DiscountBanner({ rules, enabled }: Props) {
   const norm = normalizeRules(rules);
   if (norm.length === 0) return null;
   const max = maxDiscountPct(norm);
+  const title = norm.length === 1
+    ? <>GANHE <span className="text-primary">{max}% DE DESCONTO!</span></>
+    : <>GANHE ATÉ <span className="text-primary">{max}% DE DESCONTO!</span></>;
 
   return (
     <div className="mb-4 sm:mb-6 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3">
@@ -21,7 +24,7 @@ export default function DiscountBanner({ rules, enabled }: Props) {
         </div>
         <div className="flex-1 text-center sm:text-left">
           <p className="text-lg sm:text-2xl font-black text-foreground leading-tight">
-            GANHE ATÉ <span className="text-primary">{max}% DE DESCONTO!</span>
+            {title}
           </p>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Os descontos são aplicados automaticamente no carrinho.
@@ -33,8 +36,8 @@ export default function DiscountBanner({ rules, enabled }: Props) {
       </div>
 
       {/* Cards dos níveis */}
-      <div className="grid grid-cols-3 lg:flex gap-2">
-        {norm.slice(0, 3).map((r, i) => (
+      <div className={`grid ${norm.length === 1 ? "grid-cols-1" : "grid-cols-2 md:grid-cols-3"} lg:flex gap-2`}>
+        {norm.map((r, i) => (
           <div
             key={i}
             className="rounded-2xl border border-border bg-card px-3 sm:px-5 py-3 sm:py-4 text-center shadow-sm min-w-[88px] flex flex-col justify-center"
