@@ -421,7 +421,18 @@ const EventDashboard = () => {
         <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => { s3UploadPhotos.mutate(files); setShowUploadPhotos(false); }} isUploading={s3UploadPhotos.isPending} type="photos" />
         <UploadModal open={showUploadVideos} onClose={() => setShowUploadVideos(false)} onUpload={(files) => { s3UploadVideos.mutate(files); setShowUploadVideos(false); }} isUploading={s3UploadVideos.isPending} type="videos" />
         <PriceGridModal open={showPriceGrid} onClose={() => setShowPriceGrid(false)} onSave={(g) => { savePriceGrid.mutate(g); setShowPriceGrid(false); }} initial={grid ? { ...grid, photo_high_price: Number(grid.photo_high_price), photo_low_price: Number(grid.photo_low_price), video_price: Number(grid.video_price) } : undefined} isSaving={savePriceGrid.isPending} />
-        <DiscountModal open={showDiscount} onClose={() => setShowDiscount(false)} onSave={(pkg) => { savePackage.mutate(pkg); setShowDiscount(false); }} isSaving={savePackage.isPending} basePhotoPrice={grid ? Number(grid.photo_high_price) : 20} />
+        <DiscountModal
+          open={showDiscount}
+          onClose={() => setShowDiscount(false)}
+          onSave={(pkg) => { savePackage.mutate(pkg); setShowDiscount(false); }}
+          isSaving={savePackage.isPending}
+          basePhotoPrice={grid ? Number(grid.photo_high_price) : 20}
+          initialProgressive={{
+            enabled: !!(event as any)?.progressive_discount_enabled,
+            rules: Array.isArray((event as any)?.progressive_discount_rules) ? (event as any).progressive_discount_rules : [],
+          }}
+          onSaveProgressive={(data) => updateEvent.mutate({ progressive_discount_enabled: data.enabled, progressive_discount_rules: data.rules } as any)}
+        />
         <CouponModal open={showCoupon} onClose={() => setShowCoupon(false)} onSave={(c) => { createCoupon.mutate(c); setShowCoupon(false); }} isSaving={createCoupon.isPending} />
         <EditEventModal open={showEdit} onClose={() => setShowEdit(false)} onSave={(data) => { updateEvent.mutate(data as any); setShowEdit(false); }} initial={{ name: event.name, event_date: event.event_date, event_time: event.event_time, location: event.location, category: event.category, search_type: event.search_type || [], visibility: event.visibility }} isSaving={updateEvent.isPending} />
         <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSave={(pw) => { updateEvent.mutate({ password: pw }); setShowPassword(false); }} currentPassword={event.password} isSaving={updateEvent.isPending} />

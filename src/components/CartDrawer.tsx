@@ -1,4 +1,4 @@
-import { ShoppingCart, X, Trash2, CreditCard } from "lucide-react";
+import { ShoppingCart, X, Trash2, CreditCard, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
 import { toast } from "sonner";
 import { getPhotoCode } from "@/lib/photoCode";
+import { useEventDiscount, computeDiscount } from "@/hooks/useEventDiscount";
 
 const CartDrawer = () => {
   const [open, setOpen] = useState(false);
@@ -17,6 +18,10 @@ const CartDrawer = () => {
 
   // Derive eventId from first cart item
   const eventId = items.length > 0 ? items[0].eventId || "" : "";
+
+  const { data: discountConfig } = useEventDiscount(eventId);
+  const photoCount = items.filter(i => !!i.photoId).length;
+  const { applied, next, discountValue, finalTotal } = computeDiscount(discountConfig, photoCount, total);
 
   const handleCheckout = () => {
     if (items.length === 0) {
@@ -108,9 +113,40 @@ const CartDrawer = () => {
                 </div>
 
                 <div className="p-6 border-t border-border space-y-4">
+                  {discountConfig?.enabled && (applied || next) && (
+                    <div className="rounded-xl border border-primary/30 bg-primary/5 p-3 space-y-1.5">
+                      {applied && (
+                        <div className="flex items-start gap-2 text-xs text-foreground">
+                          <Sparkles className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                          <span>
+                            Parabéns! Você ganhou <strong className="text-primary">{applied.discount_pct}% de desconto</strong> por levar {applied.min_photos} fotos ou mais.
+                          </span>
+                        </div>
+                      )}
+                      {next && (
+                        <p className="text-[11px] text-muted-foreground pl-6">
+                          Adicione mais <strong className="text-foreground">{next.min_photos - photoCount}</strong> {next.min_photos - photoCount === 1 ? "foto" : "fotos"} para ganhar <strong className="text-primary">{next.discount_pct}%</strong>.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {discountValue > 0 && (
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>R$ {total.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-primary">
+                        <span>Desconto ({applied?.discount_pct}%)</span>
+                        <span>− R$ {discountValue.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Total</span>
-                    <span className="text-xl font-bold text-primary">R$ {total.toFixed(2)}</span>
+                    <span className="text-xl font-bold text-primary">R$ {finalTotal.toFixed(2)}</span>
                   </div>
                   <button
                     onClick={handleCheckout}
