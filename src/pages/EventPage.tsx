@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,6 +48,7 @@ async function getPublicSignedUrls(paths: string[]): Promise<Record<string, stri
 
 const EventPage = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const [searchBib, setSearchBib] = useState("");
   const [resolution, setResolution] = useState<"high" | "low">("high");
@@ -249,6 +250,45 @@ const EventPage = () => {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [selectedPhoto, goPrev, goNext]);
+
+  // Body scroll lock while lightbox is open (preserves gallery scroll position)
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [selectedPhoto]);
+
+  // Sync selected photo with ?foto=<id> URL param (back button closes; deep links open)
+  const fotoParam = searchParams.get("foto");
+  useEffect(() => {
+    if (!photoList.length) return;
+    if (fotoParam) {
+      if (!selectedPhoto || selectedPhoto.id !== fotoParam) {
+        const found = photoList.find((p: any) => p.id === fotoParam);
+        if (found) setSelectedPhoto(found);
+      }
+    } else if (selectedPhoto) {
+      setSelectedPhoto(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fotoParam, photoList.length]);
+
+  useEffect(() => {
+    const current = searchParams.get("foto");
+    if (selectedPhoto && current !== selectedPhoto.id) {
+      const next = new URLSearchParams(searchParams);
+      next.set("foto", selectedPhoto.id);
+      setSearchParams(next, { replace: false });
+    } else if (!selectedPhoto && current) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("foto");
+      setSearchParams(next, { replace: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPhoto?.id]);
 
   // Password protection
   if (event?.password && !unlocked) {
@@ -469,7 +509,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-background/85 backdrop-blur-md flex flex-col justify-start items-center sm:pt-[5vh] animate-in fade-in duration-150"
+          className="fixed inset-0 z-[100] w-screen h-[100dvh] overflow-hidden bg-background/85 backdrop-blur-md flex flex-col justify-start items-center sm:pt-[5vh] animate-in fade-in duration-150"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
