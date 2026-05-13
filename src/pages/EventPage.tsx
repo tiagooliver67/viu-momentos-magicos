@@ -393,6 +393,11 @@ const EventPage = () => {
         </div>
 
         <div className="container mx-auto px-4 py-4 sm:py-8">
+          {/* Banner de desconto progressivo */}
+          <DiscountBanner
+            rules={event.progressive_discount_rules}
+            enabled={!!event.progressive_discount_enabled}
+          />
           {/* Search */}
           <div className="glass-card p-3 sm:p-4 mb-6 sm:mb-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2 flex-1">
