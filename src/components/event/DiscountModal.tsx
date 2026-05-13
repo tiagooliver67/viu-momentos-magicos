@@ -24,13 +24,11 @@ interface Props {
   onSave: (pkg: SavePayload) => void;
   isSaving: boolean;
   basePhotoPrice?: number;
-  initialProgressive?: { enabled: boolean; rules: { min_photos: number; discount_pct: number }[] };
-  onSaveProgressive?: (data: { enabled: boolean; rules: { min_photos: number; discount_pct: number }[] }) => void;
 }
 
 type Tab = "prices" | "packages";
 
-export default function DiscountModal({ open, onClose, onSave, isSaving, basePhotoPrice = 20, initialProgressive, onSaveProgressive }: Props) {
+export default function DiscountModal({ open, onClose, onSave, isSaving, basePhotoPrice = 20 }: Props) {
   const [tab, setTab] = useState<Tab>("prices");
 
   // Aba 1 — Preços e descontos
@@ -52,23 +50,6 @@ export default function DiscountModal({ open, onClose, onSave, isSaving, basePho
     if (!open) setTab("prices");
   }, [open]);
 
-  // Hydrate progressive form from props when opening
-  useEffect(() => {
-    if (!open) return;
-    if (initialProgressive) {
-      setProgressiveEnabled(initialProgressive.enabled);
-      if (initialProgressive.rules.length > 0) {
-        setRules(
-          initialProgressive.rules.slice(0, 3).map((r) => ({
-            enabled: true,
-            min_photos: r.min_photos,
-            discount_pct: r.discount_pct,
-          })),
-        );
-      }
-    }
-  }, [open, initialProgressive]);
-
   if (!open) return null;
 
   const addRule = () =>
@@ -87,20 +68,12 @@ export default function DiscountModal({ open, onClose, onSave, isSaving, basePho
   const formatMoney = (n: number) => `R$ ${n.toFixed(2).replace(".", ",")}`;
 
   const handleSave = () => {
-    // Persist progressive rules (up to 3) to the event
-    if (onSaveProgressive) {
-      const activeRules = rules
-        .filter((r) => r.enabled && r.min_photos > 0 && r.discount_pct > 0)
-        .slice(0, 3)
-        .map(({ min_photos, discount_pct }) => ({ min_photos, discount_pct }));
-      onSaveProgressive({ enabled: progressiveEnabled, rules: activeRules });
-    }
-
-    // Keep package payload (legacy)
-    const firstRule = rules.find((r) => r.enabled) || rules[0];
+    const activeRule = progressiveEnabled
+      ? rules.find((r) => r.enabled) || rules[0]
+      : { min_photos: 0, discount_pct: 0 };
     onSave({
-      min_photos: firstRule.min_photos,
-      discount_pct: firstRule.discount_pct,
+      min_photos: activeRule.min_photos,
+      discount_pct: activeRule.discount_pct,
       package_type: packageType,
       display_mode: displayMode,
       active: packageEnabled,

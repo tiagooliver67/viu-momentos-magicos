@@ -14,7 +14,6 @@ import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { getPhotoCode } from "@/lib/photoCode";
-import DiscountBanner from "@/components/event/DiscountBanner";
 import {
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
@@ -394,7 +393,6 @@ const EventPage = () => {
         </div>
 
         <div className="container mx-auto px-4 py-4 sm:py-8">
-          {id && <DiscountBanner eventId={id} />}
           {/* Search */}
           <div className="glass-card p-3 sm:p-4 mb-6 sm:mb-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2 flex-1">
