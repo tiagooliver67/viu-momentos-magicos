@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Plus, Trash2, Info, Tag, Package } from "lucide-react";
 
 interface ProgressiveRule {
+  active?: boolean;
   enabled: boolean;
   min_photos: number;
   discount_pct: number;
@@ -70,7 +71,8 @@ export default function DiscountModal({
     }
     if (initialProgressiveRules && initialProgressiveRules.length > 0) {
       setRules(initialProgressiveRules.map(r => ({
-        enabled: r.enabled !== false,
+        active: r.active !== false,
+        enabled: r.enabled !== false && r.active !== false,
         min_photos: Number(r.min_photos) || 0,
         discount_pct: Number(r.discount_pct) || 0,
       })));
@@ -95,12 +97,16 @@ export default function DiscountModal({
   const formatMoney = (n: number) => `R$ ${n.toFixed(2).replace(".", ",")}`;
 
   const handleSave = () => {
+    const persistedRules = rules.map((rule) => ({
+      ...rule,
+      active: rule.enabled,
+    }));
     const activeRule = progressiveEnabled
-      ? rules.find((r) => r.enabled) || rules[0]
+      ? persistedRules.find((r) => r.enabled) || persistedRules[0]
       : { min_photos: 0, discount_pct: 0 };
     // Persiste TODAS as regras progressivas no evento (banner + carrinho)
     if (onSaveProgressive) {
-      onSaveProgressive(rules, progressiveEnabled);
+      onSaveProgressive(persistedRules, progressiveEnabled);
     }
     onSave({
       min_photos: activeRule.min_photos,

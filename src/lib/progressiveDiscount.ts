@@ -1,4 +1,5 @@
 export interface ProgressiveRule {
+  active?: boolean;
   enabled?: boolean;
   min_photos: number;
   discount_pct: number;
@@ -8,11 +9,12 @@ export function normalizeRules(raw: unknown): ProgressiveRule[] {
   if (!Array.isArray(raw)) return [];
   return raw
     .map((r: any) => ({
-      enabled: r?.enabled !== false,
+      active: r?.active !== false,
+      enabled: r?.enabled !== false && r?.active !== false,
       min_photos: Number(r?.min_photos) || 0,
       discount_pct: Number(r?.discount_pct) || 0,
     }))
-    .filter(r => r.enabled && r.min_photos > 0 && r.discount_pct > 0)
+    .filter(r => r.enabled && r.active !== false && r.min_photos > 0 && r.discount_pct > 0)
     .sort((a, b) => a.min_photos - b.min_photos);
 }
 
