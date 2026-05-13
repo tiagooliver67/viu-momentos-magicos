@@ -29,6 +29,9 @@ export function useEvent(eventId: string | undefined) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["public-event", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["event-discount", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["checkout-discount", eventId] });
       toast.success("Evento atualizado!");
     },
     onError: (e) => toast.error("Erro ao atualizar: " + e.message),
