@@ -570,7 +570,7 @@ const EventPage = () => {
             </div>
 
             {/* Purchase panel — scrollable on mobile */}
-            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-card rounded-t-2xl sm:rounded-2xl shrink-0 max-h-[40dvh] sm:max-h-[80vh] sm:border sm:border-border sm:shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200">
+            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-card rounded-t-2xl sm:rounded-2xl shrink-0 max-h-[40dvh] sm:max-h-[calc(100vh-10vh)] sm:border sm:border-border sm:shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200">
               <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
               <div className="space-y-2">
