@@ -509,7 +509,7 @@ const EventPage = () => {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-background/85 backdrop-blur-md flex flex-col justify-start items-center sm:pt-[5vh] animate-in fade-in duration-150"
+          className="fixed inset-0 z-[100] w-screen h-[100dvh] overflow-hidden bg-background/85 backdrop-blur-md flex flex-col justify-start items-center sm:pt-[5vh] animate-in fade-in duration-150"
           onClick={() => setSelectedPhoto(null)}
         >
           {/* Close button — always visible */}
