@@ -24,8 +24,8 @@ interface Props {
   onSave: (pkg: SavePayload) => void;
   isSaving: boolean;
   basePhotoPrice?: number;
-  initialProgressive?: { enabled: boolean; rules: ProgressiveRule[] };
-  onSaveProgressive?: (data: { enabled: boolean; rules: ProgressiveRule[] }) => void;
+  initialProgressive?: { enabled: boolean; rules: { min_photos: number; discount_pct: number }[] };
+  onSaveProgressive?: (data: { enabled: boolean; rules: { min_photos: number; discount_pct: number }[] }) => void;
 }
 
 type Tab = "prices" | "packages";
