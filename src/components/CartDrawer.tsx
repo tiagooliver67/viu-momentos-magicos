@@ -5,6 +5,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
 import { toast } from "sonner";
+import { getPhotoCode } from "@/lib/photoCode";
 
 const CartDrawer = () => {
   const [open, setOpen] = useState(false);
@@ -87,6 +88,11 @@ const CartDrawer = () => {
                         <p className="text-xs text-muted-foreground">
                           {item.resolution === "high" ? "Alta resolução" : "Baixa resolução"}
                         </p>
+                        {item.photoId && (
+                          <p className="text-[10px] font-mono text-muted-foreground/80 mt-0.5">
+                            ID: {getPhotoCode(item.photoId)}
+                          </p>
+                        )}
                         <p className="text-sm font-bold text-primary mt-1">
                           R$ {item.price.toFixed(2)}
                         </p>

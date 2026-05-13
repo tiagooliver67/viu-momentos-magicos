@@ -13,6 +13,7 @@ import PhotoTermsFooter from "@/components/PhotoTermsFooter";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
+import { getPhotoCode } from "@/lib/photoCode";
 import {
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
@@ -583,6 +584,18 @@ const EventPage = () => {
               )}
               {/* Favorite & Share in lightbox */}
               <div className="absolute top-4 left-4 flex gap-2">
+                {/* Photo unique code — for support / direct lookup */}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(getPhotoCode(selectedPhoto.id));
+                    toast.success(`Código copiado: ${getPhotoCode(selectedPhoto.id)}`);
+                  }}
+                  title="Clique para copiar"
+                  className="px-3 h-[44px] flex items-center rounded-full bg-card/90 hover:bg-card border border-border shadow-md text-xs font-mono font-semibold text-foreground/80 cursor-pointer transition-all active:scale-95"
+                >
+                  ID: {getPhotoCode(selectedPhoto.id)}
+                </div>
                 <button
                   onClick={() => {
                     const url = `${window.location.origin}/foto/${selectedPhoto.id}`;
