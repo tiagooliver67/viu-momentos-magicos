@@ -1,11 +1,14 @@
-import { ShoppingCart, X, Trash2, CreditCard } from "lucide-react";
+import { ShoppingCart, X, Trash2, CreditCard, PartyPopper } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/contexts/AuthContext";
 import CheckoutModal from "@/components/checkout/CheckoutModal";
 import { toast } from "sonner";
 import { getPhotoCode } from "@/lib/photoCode";
+import { pickDiscount, normalizeRules } from "@/lib/progressiveDiscount";
 
 const CartDrawer = () => {
   const [open, setOpen] = useState(false);
@@ -17,6 +20,30 @@ const CartDrawer = () => {
 
   // Derive eventId from first cart item
   const eventId = items.length > 0 ? items[0].eventId || "" : "";
+
+  // Carrega regras de desconto do evento associado ao carrinho
+  const { data: eventDiscount } = useQuery({
+    queryKey: ["event-discount", eventId],
+    queryFn: async () => {
+      if (!eventId) return null;
+      const { data, error } = await supabase
+        .from("events")
+        .select("progressive_discount_enabled, progressive_discount_rules")
+        .eq("id", eventId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!eventId,
+  });
+
+  const photoCount = items.filter(i => i.photoId).length;
+  const rules = eventDiscount?.progressive_discount_enabled
+    ? normalizeRules(eventDiscount?.progressive_discount_rules)
+    : [];
+  const { pct: discountPct, rule: activeRule, next: nextRule } = pickDiscount(rules, photoCount);
+  const discountValue = +(total * (discountPct / 100)).toFixed(2);
+  const finalTotal = +(total - discountValue).toFixed(2);
 
   const handleCheckout = () => {
     if (items.length === 0) {
@@ -108,9 +135,36 @@ const CartDrawer = () => {
                 </div>
 
                 <div className="p-6 border-t border-border space-y-4">
+                  {discountPct > 0 && activeRule && (
+                    <div className="rounded-xl bg-primary/10 border border-primary/30 p-3 flex items-start gap-2">
+                      <PartyPopper className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-foreground leading-snug">
+                        <strong>Parabéns!</strong> Você ganhou <strong className="text-primary">{discountPct}% de desconto</strong> por levar mais de {activeRule.min_photos} fotos.
+                      </p>
+                    </div>
+                  )}
+                  {discountPct === 0 && nextRule && photoCount > 0 && (
+                    <div className="rounded-xl bg-secondary/40 border border-border p-3">
+                      <p className="text-xs text-muted-foreground leading-snug">
+                        Adicione mais <strong className="text-foreground">{nextRule.min_photos - photoCount} foto(s)</strong> para ganhar <strong className="text-primary">{nextRule.discount_pct}% de desconto</strong>.
+                      </p>
+                    </div>
+                  )}
+                  {discountPct > 0 && (
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between text-muted-foreground">
+                        <span>Subtotal</span>
+                        <span>R$ {total.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-primary font-semibold">
+                        <span>Desconto ({discountPct}%)</span>
+                        <span>- R$ {discountValue.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Total</span>
-                    <span className="text-xl font-bold text-primary">R$ {total.toFixed(2)}</span>
+                    <span className="text-xl font-bold text-primary">R$ {finalTotal.toFixed(2)}</span>
                   </div>
                   <button
                     onClick={handleCheckout}
