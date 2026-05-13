@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { useEventDiscount, computeDiscount } from "@/hooks/useEventDiscount";
 
 // Validate Brazilian CPF (11 digits with check digits) — accepts CNPJ (14 digits) loosely as well
 function isValidCpfCnpj(value: string): boolean {
@@ -40,6 +41,10 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
   const { user } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", cpfCnpj: "" });
   const [step, setStep] = useState<"form" | "pix" | "success">("form");
+
+  const { data: discountConfig } = useEventDiscount(eventId);
+  const photoCount = items.filter(i => !!i.photoId).length;
+  const { applied, discountValue, finalTotal } = computeDiscount(discountConfig, photoCount, total);
 
   // Fetch profile to pre-fill form
   const { data: profile } = useQuery({
@@ -115,7 +120,7 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
           price: i.price,
           resolution: i.resolution,
         })),
-        total,
+        total: finalTotal,
       });
       setStep("pix");
     } catch (err: any) {
@@ -162,7 +167,17 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="p-3 rounded-xl bg-secondary/30 border border-border/50">
                 <p className="text-sm text-muted-foreground">{items.length} item(ns)</p>
-                <p className="text-xl font-bold text-primary">R$ {total.toFixed(2)}</p>
+                {discountValue > 0 && applied ? (
+                  <>
+                    <p className="text-xs text-muted-foreground line-through">R$ {total.toFixed(2)}</p>
+                    <p className="text-xl font-bold text-primary">R$ {finalTotal.toFixed(2)}</p>
+                    <p className="text-[11px] text-primary font-semibold mt-0.5">
+                      Desconto de {applied.discount_pct}% aplicado automaticamente
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xl font-bold text-primary">R$ {total.toFixed(2)}</p>
+                )}
               </div>
 
               <div className="space-y-3">
