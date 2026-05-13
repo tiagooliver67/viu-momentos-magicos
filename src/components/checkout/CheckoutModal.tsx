@@ -44,6 +44,19 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
 
   // Fetch profile to pre-fill form
   const { data: profile } = useQuery({
+    queryKey: ["checkout-profile", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, cpf_cnpj")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id && open,
+  });
+
   // Carrega desconto progressivo do evento
   const { data: eventDiscount } = useQuery({
     queryKey: ["checkout-discount", eventId],
@@ -66,18 +79,6 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
   const { pct: discountPct } = pickDiscount(rules, photoCount);
   const discountFactor = 1 - discountPct / 100;
   const finalTotal = +(total * discountFactor).toFixed(2);
-    queryKey: ["checkout-profile", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name, cpf_cnpj")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user?.id && open,
-  });
 
   // Pre-fill form with user data
   useEffect(() => {
