@@ -28,21 +28,21 @@ export function cdnUrl(objectPath: string): string | null {
   return `${base}/${path}`;
 }
 
-/** Derive thumb path from original */
+/** Derive thumb path from original — always /thumb/<nome-original>.webp (preserva caixa) */
 export function toThumbPath(originalPath: string): string {
   const lastSlash = originalPath.lastIndexOf("/");
   if (lastSlash === -1) return originalPath;
   const dir = originalPath.substring(0, lastSlash);
-  const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
+  const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".webp");
   return `${dir}/thumb/${filename}`;
 }
 
-/** Derive medium path from original */
+/** Derive medium path from original — always /medium/<nome-original>.webp (preserva caixa) */
 export function toMediumPath(originalPath: string): string {
   const lastSlash = originalPath.lastIndexOf("/");
   if (lastSlash === -1) return originalPath;
   const dir = originalPath.substring(0, lastSlash);
-  const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
+  const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".webp");
   return `${dir}/medium/${filename}`;
 }
 
