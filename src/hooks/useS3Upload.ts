@@ -50,21 +50,21 @@ export async function getSignedReadUrls(paths: string[]): Promise<Record<string,
   return map;
 }
 
-/** Convert an original S3 path to its thumbnail variant */
+/** Convert an original S3 path to its thumbnail variant — /thumb/<nome>.webp */
 export function toThumbPath(originalPath: string): string {
   const lastSlash = originalPath.lastIndexOf("/");
   if (lastSlash === -1) return originalPath;
   const dir = originalPath.substring(0, lastSlash);
-  const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
+  const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".webp");
   return `${dir}/thumb/${filename}`;
 }
 
-/** Convert an original S3 path to its medium variant */
+/** Convert an original S3 path to its medium variant — /medium/<nome>.webp */
 export function toMediumPath(originalPath: string): string {
   const lastSlash = originalPath.lastIndexOf("/");
   if (lastSlash === -1) return originalPath;
   const dir = originalPath.substring(0, lastSlash);
-  const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
+  const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".webp");
   return `${dir}/medium/${filename}`;
 }
 
