@@ -4,6 +4,11 @@ import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
 import {
+  getThumbCdnUrl,
+  toThumbPath as cdnToThumbPath,
+  IS_LAMBDA_PIPELINE_ACTIVE,
+} from "@/lib/cdnConfig";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
