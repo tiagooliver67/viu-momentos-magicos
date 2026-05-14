@@ -98,6 +98,20 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
+      // Multi-tenant path: include the event OWNER (organizer) id as the root.
+      // Falls back to the uploader's id if the event lookup fails (defensive).
+      let ownerId = user.id;
+      try {
+        const { data: ev } = await supabase
+          .from("events")
+          .select("organizer_id")
+          .eq("id", eventId)
+          .single();
+        if (ev?.organizer_id) ownerId = ev.organizer_id;
+      } catch (e) {
+        console.warn("[S3Upload] Falha ao obter organizer_id, usando uploader id:", e);
+      }
+
       const MAX_SIZE = 30 * 1024 * 1024;
       const validFiles: File[] = [];
       const invalidFiles: string[] = [];
@@ -116,7 +130,7 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       // Generate S3 paths
       const objects = validFiles.map(f => {
         const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-        return { path: `eventos/${eventId}/${type}/${uid}-${f.name}`, file: f, uid };
+        return { path: `usuarios/${ownerId}/eventos/${eventId}/${type}/${uid}-${f.name}`, file: f, uid };
       });
 
       const progressMap: UploadProgress[] = objects.map(o => ({
