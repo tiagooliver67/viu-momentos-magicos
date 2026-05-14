@@ -4,6 +4,11 @@ import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
 import {
+  getThumbCdnUrl,
+  toThumbPath as cdnToThumbPath,
+  IS_LAMBDA_PIPELINE_ACTIVE,
+} from "@/lib/cdnConfig";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -85,18 +90,44 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   // Resolve signed URLs for S3 paths
   useEffect(() => {
     if (!open || photos.length === 0) return;
-    const s3Paths = photos
-      .filter(p => p.file_url.startsWith("eventos/"))
-      .map(p => p.file_url)
-      .filter(p => !signedUrls[p]);
-    if (s3Paths.length === 0) return;
-    getSignedReadUrls(s3Paths).then(urls => {
-      setSignedUrls(prev => ({ ...prev, ...urls }));
+    const storagePhotos = photos.filter(
+      p => p.file_url.startsWith("eventos/") || p.file_url.startsWith("usuarios/")
+    );
+    if (storagePhotos.length === 0) return;
+
+    // CDN active: use public thumb URLs directly
+    if (IS_LAMBDA_PIPELINE_ACTIVE) {
+      const map: Record<string, string> = {};
+      for (const p of storagePhotos) {
+        if (signedUrls[p.file_url]) continue;
+        const u = getThumbCdnUrl(p.file_url);
+        if (u) map[p.file_url] = u;
+      }
+      if (Object.keys(map).length > 0) {
+        setSignedUrls(prev => ({ ...prev, ...map }));
+      }
+      return;
+    }
+
+    // Fallback: signed URLs for the watermarked thumb variant
+    const pending = storagePhotos
+      .map(p => ({ original: p.file_url, thumb: cdnToThumbPath(p.file_url) }))
+      .filter(x => !signedUrls[x.original]);
+    if (pending.length === 0) return;
+    getSignedReadUrls(pending.map(x => x.thumb)).then(urls => {
+      const indexed: Record<string, string> = {};
+      for (const x of pending) {
+        if (urls[x.thumb]) indexed[x.original] = urls[x.thumb];
+      }
+      setSignedUrls(prev => ({ ...prev, ...indexed }));
     }).catch(console.error);
   }, [open, photos]);
 
   const getPhotoUrl = (photo: Photo) => {
-    if (photo.file_url.startsWith("eventos/")) {
+    if (
+      photo.file_url.startsWith("eventos/") ||
+      photo.file_url.startsWith("usuarios/")
+    ) {
       return signedUrls[photo.file_url] || "";
     }
     return photo.file_url;

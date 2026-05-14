@@ -1,36 +1,56 @@
-## Redesign do Lightbox da Foto (estilo Fotop)
+# Auditoria: fotos ficam brancas no upload/dashboard
 
-Comparando os dois prints, a versão da concorrência (Fotop) é mais limpa, com fundo claro semi-transparente que mantém a galeria visível ao fundo, dando ênfase total à foto. O nosso atual tem fundo preto pesado (`bg-black/95`) que sufoca a experiência.
+## Diagnóstico
+O problema está **principalmente no frontend atual do dashboard**, não em um bloqueio geral externo de WebP.
 
-### Mudanças no `src/pages/EventPage.tsx` (apenas o bloco do lightbox, linhas ~468-643)
+### Evidências encontradas
+- No banco, as fotos novas estão sendo salvas com o novo caminho multi-tenant:
+  - `usuarios/{userId}/eventos/{eventId}/fotos/...`
+- O código público do site (`src/pages/EventPage.tsx`) já usa a lógica nova de miniaturas:
+  - monta `/thumb/...webp`
+  - usa CDN diretamente quando disponível
+- O componente do dashboard (`src/components/event/PhotoGallery.tsx`) **ainda está preso à lógica antiga**:
+  - só trata paths que começam com `eventos/`
+  - ignora paths que começam com `usuarios/`
+  - nesses casos, usa `photo.file_url` cru no `<img src>`
+- Testei URLs reais de thumbs no CDN para esse evento e elas responderam **200 OK** com `content-type: image/webp`.
 
-**1. Backdrop mais leve**
-- Trocar `bg-black/95` por `bg-background/80 backdrop-blur-md` (fundo claro com blur, deixa a galeria entrever atrás)
-- Painel de compra muda para `bg-card` com `shadow-xl rounded-2xl` (cartão flutuante, não mais coluna lateral)
+## Conclusão da auditoria
+### O que é interno
+- O dashboard/gerenciador de fotos está montando a URL errada para as imagens após a mudança para a estrutura `usuarios/{userId}/...`.
+- Por isso as miniaturas ficam brancas ali.
 
-**2. Layout — foto em destaque central**
-- Imagem fica no centro com `max-h-[80vh]` no desktop (mais alta que os atuais 75vh, sem painel lateral comprimindo)
-- Painel de compra vira um card flutuante à direita no desktop (`absolute right-6 top-1/2 -translate-y-1/2 w-80`) ou drawer inferior no mobile (mantém comportamento atual)
-- Setas de navegação ficam fora da área da imagem, sobre o backdrop (estilo Fotop com `<` `>` grandes nas laterais da viewport)
+### O que não parece ser o problema principal
+- **Não há evidência de bloqueio de WebP no frontend como um todo.**
+- **Não há evidência, nas amostras testadas, de falha externa geral no CDN/S3**, porque os thumbs `.webp` existem e respondem corretamente.
 
-**3. Botões de ação (favorito/share/close)**
-- Migrar de fundo preto opaco (`bg-black/50`) para fundo claro (`bg-card/80 text-foreground border border-border`) já que o backdrop ficou claro
-- Posicionar sobre a imagem com offset menor
+### Por que ao clicar no site aparece
+- A página pública (`EventPage`) já está buscando a miniatura/medium com a lógica nova.
+- O dashboard (`PhotoGallery`) não foi atualizado junto e ficou incompatível com o novo formato de caminho.
 
-**4. Painel de compra refinado**
-- Header `Foto digital para download` em `text-foreground` (já está)
-- Remover o `PhotoTermsFooter` de dentro do painel (fica visualmente pesado) — mantê-lo apenas na `FotoPage`. No lightbox, deixar um link discreto "Termo de uso das fotos" que abre tooltip/popover
-- Manter as opções de resolução, CTA principal laranja e os dois botões secundários (Continuar comprando / Ir para o carrinho)
+## Plano de correção
+1. **Unificar a resolução de URLs no dashboard**
+   - Fazer `PhotoGallery` parar de depender de `startsWith("eventos/")`.
+   - Tratar `usuarios/...` como caminho válido de storage.
 
-**5. Animação de entrada**
-- Adicionar `animate-in fade-in zoom-in-95 duration-200` no container da imagem para dar polimento na abertura
+2. **Usar a mesma estratégia do site público no dashboard**
+   - Grid: carregar `thumb/.webp`
+   - Lightbox: carregar `medium/.webp` ou original assinado quando fizer sentido
+   - Reaproveitar helpers de `cdnConfig.ts`
 
-### Fora de escopo
-- Não mudar `FotoPage.tsx` (página individual já está clara)
-- Não mudar grid da galeria, paginação ou qualquer lógica de dados/preço
-- Não mexer no watermark (continua bakeado na imagem)
+3. **Adicionar fallback e rastreabilidade**
+   - `onError` nas imagens para registrar falha real de carregamento
+   - fallback visual quando a thumb não existir
+   - isso separa claramente erro interno de erro externo em próximas auditorias
 
-### Detalhes técnicos
-- Tudo usa tokens semânticos do design system (`bg-background`, `bg-card`, `text-foreground`, `border-border`, `bg-primary`)
-- Suporta `light` e `dark` automaticamente via tokens HSL
-- Mobile mantém o atual layout vertical (foto em cima 55dvh, painel embaixo 40dvh) — só atualizamos cores
+4. **Validar após ajuste**
+   - conferir dashboard do evento com fotos novas
+   - conferir que as requests vão para `usuarios/.../thumb/*.webp`
+   - confirmar que o site público continua funcionando
+
+## Resultado esperado
+- As fotos deixam de aparecer brancas no gerenciador.
+- O comportamento do dashboard fica consistente com o site público.
+- Se houver algum caso realmente externo no futuro, ele ficará explícito via erro de carregamento, em vez de “blanco silencioso”.
+
+Se você quiser, no próximo passo eu implemento essa correção no dashboard e valido o fluxo inteiro.
