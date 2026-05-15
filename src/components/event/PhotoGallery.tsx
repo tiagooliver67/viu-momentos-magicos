@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star, AlertTriangle } from "lucide-react";
+import ProcessingPlaceholder from "@/components/ProcessingPlaceholder";
 import { Progress } from "@/components/ui/progress";
-import { getSignedReadUrls, getSignedReadUrl } from "@/hooks/useS3Upload";
+import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
 import {
   getThumbCdnUrl,
@@ -22,82 +23,49 @@ import { useDuplicateFileCheck } from "@/hooks/useDuplicateFileCheck";
 import DuplicateFileModal from "./DuplicateFileModal";
 
 /**
- * Defensive image renderer — if the CDN thumb (.webp) returns 403/404 because the
- * AWS Lambda pipeline failed to generate the variant (known issue with horizontal
- * landscape originals), it falls back to a signed URL of the original file so the
- * photographer still sees the photo. Displays an orange warning icon to flag the
- * incident for monitoring.
+ * Secure image renderer.
+ *
+ * SECURITY: This renderer NEVER falls back to the original (unwatermarked) file.
+ * If the CDN thumb (.webp) is missing or returns 403/404, we display the
+ * ProcessingPlaceholder until the backend pipeline (Lambda + Sharp) generates
+ * the safe variant. The original `file_url` is only ever requested when the
+ * authorized buyer downloads after purchase (server-mediated).
  */
 function PhotoThumb({
   src,
-  filePath,
   alt,
-  isStoragePath,
 }: {
   src: string;
-  filePath: string;
+  /** Kept only for stable React keys / a11y; never used to fetch the original. */
+  filePath?: string;
   alt: string;
-  isStoragePath: boolean;
+  isStoragePath?: boolean;
 }) {
-  const [currentSrc, setCurrentSrc] = useState(src);
-  const [usingFallback, setUsingFallback] = useState(false);
-  const [fallbackTried, setFallbackTried] = useState(false);
-  const [hardError, setHardError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
 
-  // Reset when the upstream src changes (e.g. signed URL resolved later)
   useEffect(() => {
-    setCurrentSrc(src);
-    setUsingFallback(false);
-    setFallbackTried(false);
-    setHardError(false);
+    setLoaded(false);
+    setErrored(false);
   }, [src]);
 
-  const handleError = async () => {
-    if (fallbackTried || !isStoragePath) {
-      setHardError(true);
-      return;
-    }
-    setFallbackTried(true);
-    try {
-      const signed = await getSignedReadUrl(filePath);
-      if (signed) {
-        setCurrentSrc(signed);
-        setUsingFallback(true);
-        return;
-      }
-    } catch (e) {
-      console.warn("[PhotoThumb] fallback signed URL failed for", filePath, e);
-    }
-    setHardError(true);
-  };
-
-  if (hardError) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-muted-foreground bg-secondary">
-        <AlertCircle className="w-6 h-6 text-destructive/70" />
-        <span className="text-[10px] text-center px-2">Falha ao carregar</span>
-      </div>
-    );
-  }
+  const showPlaceholder = !src || errored || !loaded;
 
   return (
     <>
-      <img
-        src={currentSrc}
-        alt={alt}
-        loading="lazy"
-        onError={handleError}
-        className="w-full h-full object-cover"
-      />
-      {usingFallback && (
-        <div
-          title="Pré-visualização não foi gerada pelo pipeline. Exibindo o original. Verifique o monitoramento."
-          className="absolute top-2 left-2 z-30 flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/95 text-white text-[10px] font-semibold shadow-md backdrop-blur-sm"
-        >
-          <AlertTriangle className="w-3 h-3" />
-          Sem preview
-        </div>
+      {src && !errored && (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+          onError={() => setErrored(true)}
+          className={`w-full h-full object-cover transition-opacity duration-300 ${
+            loaded ? "opacity-100" : "opacity-0"
+          }`}
+        />
       )}
+      {showPlaceholder && <ProcessingPlaceholder variant="watermark" />}
     </>
   );
 }

@@ -12,6 +12,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { getThumbCdnUrl, getMediumCdnUrl, IS_LAMBDA_PIPELINE_ACTIVE } from "@/lib/cdnConfig";
 import { getPhotoCode } from "@/lib/photoCode";
+import ProcessingPlaceholder from "@/components/ProcessingPlaceholder";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
@@ -230,11 +231,15 @@ const FotoPage = () => {
             {/* Photo — watermark is baked in, no overlay */}
             <div className="space-y-2">
             <div className="relative rounded-xl overflow-hidden bg-secondary/30 aspect-[4/3]">
-              <img
-                src={photoSignedUrl || ""}
-                alt=""
-                className="w-full h-full object-contain"
-              />
+              {photoSignedUrl ? (
+                <img
+                  src={photoSignedUrl}
+                  alt=""
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <ProcessingPlaceholder variant="watermark" />
+              )}
 
               {/* Action buttons overlay */}
               <div className="absolute top-3 right-3 flex gap-2">
@@ -396,12 +401,16 @@ const FotoPage = () => {
                       to={`/foto/${rp.id}`}
                       className="relative rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30 group"
                     >
-                      <img
-                        src={thumbUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
+                      {thumbUrl ? (
+                        <img
+                          src={thumbUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <ProcessingPlaceholder variant="watermark" compact />
+                      )}
                       <div className="absolute inset-0 bg-background/0 group-hover:bg-background/30 transition-all" />
                     </Link>
                   );

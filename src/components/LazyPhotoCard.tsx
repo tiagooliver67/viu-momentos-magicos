@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, memo } from "react";
 import { Heart, Share2 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import ProcessingPlaceholder from "@/components/ProcessingPlaceholder";
 
 interface LazyPhotoCardProps {
   photoId: string;
@@ -27,6 +27,7 @@ const LazyPhotoCard = memo(({
 }: LazyPhotoCardProps) => {
   const [isVisible, setIsVisible] = useState(priority);
   const [loaded, setLoaded] = useState(false);
+  const [errored, setErrored] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,24 +47,32 @@ const LazyPhotoCard = memo(({
     return () => observer.disconnect();
   }, [priority]);
 
+  useEffect(() => {
+    setLoaded(false);
+    setErrored(false);
+  }, [photoUrl]);
+
   return (
     <div
       ref={ref}
       className="relative group cursor-pointer rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30"
     >
-      {isVisible && photoUrl ? (
+      {isVisible ? (
         <>
-          {!loaded && <Skeleton className="absolute inset-0 rounded-none" />}
+          {(!loaded || errored || !photoUrl) && <ProcessingPlaceholder variant="watermark" />}
           <div onClick={onClick} className="w-full h-full relative">
-            <img
-              src={photoUrl}
-              alt=""
-              loading={priority ? "eager" : "lazy"}
-              decoding="async"
-              {...(priority ? { fetchPriority: "high" as any } : { fetchPriority: "low" as any })}
-              onLoad={() => setLoaded(true)}
-              className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
-            />
+            {photoUrl && !errored && (
+              <img
+                src={photoUrl}
+                alt=""
+                loading={priority ? "eager" : "lazy"}
+                decoding="async"
+                {...(priority ? { fetchPriority: "high" as any } : { fetchPriority: "low" as any })}
+                onLoad={() => setLoaded(true)}
+                onError={() => setErrored(true)}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+              />
+            )}
           </div>
 
           {/* Action buttons */}
@@ -98,7 +107,7 @@ const LazyPhotoCard = memo(({
           <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-all pointer-events-none" />
         </>
       ) : (
-        <Skeleton className="w-full h-full rounded-none" />
+        <ProcessingPlaceholder variant="watermark" />
       )}
     </div>
   );
