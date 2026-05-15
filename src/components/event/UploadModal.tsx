@@ -1,8 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { X, Upload, Image } from "lucide-react";
 import { toast } from "sonner";
-import { useDuplicateFileCheck } from "@/hooks/useDuplicateFileCheck";
-import DuplicateFileModal from "./DuplicateFileModal";
 
 const MAX_SIZE_BYTES = 30 * 1024 * 1024;
 
@@ -32,13 +30,11 @@ interface Props {
   onUpload: (files: File[]) => void;
   isUploading: boolean;
   type: "photos" | "videos";
-  eventId?: string;
 }
 
-export default function UploadModal({ open, onClose, onUpload, isUploading, type, eventId }: Props) {
+export default function UploadModal({ open, onClose, onUpload, isUploading, type }: Props) {
   const [files, setFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-  const dupCheck = useDuplicateFileCheck(eventId, type === "photos" ? "event_photos" : "event_videos");
 
   const addPhotos = useCallback((incoming: File[]) => {
     const { valid, invalidFormat, tooLarge } = filterPhotos(incoming);
@@ -66,15 +62,9 @@ export default function UploadModal({ open, onClose, onUpload, isUploading, type
     e.target.value = "";
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (files.length === 0) return;
-    const finalFiles = type === "photos" ? await dupCheck.check(files) : files;
-    if (finalFiles.length === 0) {
-      toast.info("Nenhum arquivo novo para enviar.");
-      setFiles([]);
-      return;
-    }
-    onUpload(finalFiles);
+    onUpload(files);
     setFiles([]);
   };
 
@@ -133,7 +123,6 @@ export default function UploadModal({ open, onClose, onUpload, isUploading, type
           </button>
         </div>
       </div>
-      <DuplicateFileModal state={dupCheck.prompt} onCancelAll={dupCheck.cancelAll} />
     </div>
   );
 }

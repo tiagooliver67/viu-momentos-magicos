@@ -1,6 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star, AlertTriangle } from "lucide-react";
-import ProcessingPlaceholder from "@/components/ProcessingPlaceholder";
+import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
@@ -19,56 +18,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useDuplicateFileCheck } from "@/hooks/useDuplicateFileCheck";
-import DuplicateFileModal from "./DuplicateFileModal";
-
-/**
- * Secure image renderer.
- *
- * SECURITY: This renderer NEVER falls back to the original (unwatermarked) file.
- * If the CDN thumb (.webp) is missing or returns 403/404, we display the
- * ProcessingPlaceholder until the backend pipeline (Lambda + Sharp) generates
- * the safe variant. The original `file_url` is only ever requested when the
- * authorized buyer downloads after purchase (server-mediated).
- */
-function PhotoThumb({
-  src,
-  alt,
-}: {
-  src: string;
-  /** Kept only for stable React keys / a11y; never used to fetch the original. */
-  filePath?: string;
-  alt: string;
-  isStoragePath?: boolean;
-}) {
-  const [loaded, setLoaded] = useState(false);
-  const [errored, setErrored] = useState(false);
-
-  useEffect(() => {
-    setLoaded(false);
-    setErrored(false);
-  }, [src]);
-
-  const showPlaceholder = !src || errored || !loaded;
-
-  return (
-    <>
-      {src && !errored && (
-        <img
-          src={src}
-          alt={alt}
-          loading="lazy"
-          onLoad={() => setLoaded(true)}
-          onError={() => setErrored(true)}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
-            loaded ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      )}
-      {showPlaceholder && <ProcessingPlaceholder variant="watermark" />}
-    </>
-  );
-}
 
 interface Photo {
   id: string;
@@ -90,7 +39,6 @@ export interface UploadFileProgress {
 interface Props {
   open: boolean;
   onClose: () => void;
-  eventId?: string;
   photos: Photo[];
   onDelete: (id: string) => void;
   isDeleting: boolean;
@@ -106,8 +54,7 @@ interface Props {
 
 const PHOTOS_PER_PAGE = 20;
 
-export default function PhotoGallery({ open, onClose, eventId, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [], coverUrl, onSetCover, onBulkDelete }: Props) {
-  const dupCheck = useDuplicateFileCheck(eventId, "event_photos");
+export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [], coverUrl, onSetCover, onBulkDelete }: Props) {
   const [search, setSearch] = useState("");
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -219,20 +166,15 @@ export default function PhotoGallery({ open, onClose, eventId, photos, onDelete,
     }
   };
 
-  const startUpload = async (files: File[]) => {
-    const finalFiles = await dupCheck.check(files);
-    if (finalFiles.length === 0) {
-      toast.info("Nenhuma foto nova para enviar.");
-      return;
-    }
+  const startUpload = (files: File[]) => {
     const newPreviews: Record<string, string> = {};
-    finalFiles.forEach(f => {
+    files.forEach(f => {
       newPreviews[f.name] = URL.createObjectURL(f);
     });
     setPreviews(prev => ({ ...prev, ...newPreviews }));
-    filesRef.current = finalFiles;
+    filesRef.current = files;
     setFailedFiles([]);
-    onUploadFiles?.(finalFiles);
+    onUploadFiles?.(files);
   };
 
   const handleRetry = () => {
@@ -510,15 +452,7 @@ export default function PhotoGallery({ open, onClose, eventId, photos, onDelete,
               const isSelected = selectedIds.has(photo.id);
               return (
               <div key={photo.id} className={`relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5] ${isSelected ? "ring-2 ring-primary" : ""}`}>
-                <PhotoThumb
-                  src={url}
-                  filePath={photo.file_url}
-                  alt={photo.file_name || ""}
-                  isStoragePath={
-                    photo.file_url.startsWith("eventos/") ||
-                    photo.file_url.startsWith("usuarios/")
-                  }
-                />
+                <img src={url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
 
                 <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2 z-20">
                   {isCover ? (
@@ -625,8 +559,6 @@ export default function PhotoGallery({ open, onClose, eventId, photos, onDelete,
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <DuplicateFileModal state={dupCheck.prompt} onCancelAll={dupCheck.cancelAll} />
     </div>
   );
 }
