@@ -418,8 +418,8 @@ const EventDashboard = () => {
         </div>
 
         {/* ======= MODALS ======= */}
-        <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => { s3UploadPhotos.mutate(files); setShowUploadPhotos(false); }} isUploading={s3UploadPhotos.isPending} type="photos" />
-        <UploadModal open={showUploadVideos} onClose={() => setShowUploadVideos(false)} onUpload={(files) => { s3UploadVideos.mutate(files); setShowUploadVideos(false); }} isUploading={s3UploadVideos.isPending} type="videos" />
+        <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => { s3UploadPhotos.mutate(files); setShowUploadPhotos(false); }} isUploading={s3UploadPhotos.isPending} type="photos" eventId={id} />
+        <UploadModal open={showUploadVideos} onClose={() => setShowUploadVideos(false)} onUpload={(files) => { s3UploadVideos.mutate(files); setShowUploadVideos(false); }} isUploading={s3UploadVideos.isPending} type="videos" eventId={id} />
         <PriceGridModal open={showPriceGrid} onClose={() => setShowPriceGrid(false)} onSave={(g) => { savePriceGrid.mutate(g); setShowPriceGrid(false); }} initial={grid ? { ...grid, photo_high_price: Number(grid.photo_high_price), photo_low_price: Number(grid.photo_low_price), video_price: Number(grid.video_price) } : undefined} isSaving={savePriceGrid.isPending} />
         <DiscountModal
           open={showDiscount}
@@ -442,6 +442,7 @@ const EventDashboard = () => {
         <PhotoGallery
           open={showGallery}
           onClose={() => setShowGallery(false)}
+          eventId={id}
           photos={photos}
           onDelete={(pid) => deletePhoto.mutate(pid)}
           isDeleting={deletePhoto.isPending}
