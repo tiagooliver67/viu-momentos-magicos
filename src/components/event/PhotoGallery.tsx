@@ -18,6 +18,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useDuplicateFileCheck } from "@/hooks/useDuplicateFileCheck";
+import DuplicateFileModal from "./DuplicateFileModal";
 
 /**
  * Defensive image renderer — if the CDN thumb (.webp) returns 403/404 because the
@@ -120,6 +122,7 @@ export interface UploadFileProgress {
 interface Props {
   open: boolean;
   onClose: () => void;
+  eventId?: string;
   photos: Photo[];
   onDelete: (id: string) => void;
   isDeleting: boolean;
@@ -135,7 +138,8 @@ interface Props {
 
 const PHOTOS_PER_PAGE = 20;
 
-export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [], coverUrl, onSetCover, onBulkDelete }: Props) {
+export default function PhotoGallery({ open, onClose, eventId, photos, onDelete, isDeleting, totalPhotos, onUploadFiles, onRetryFiles, isUploading, uploadProgress = [], coverUrl, onSetCover, onBulkDelete }: Props) {
+  const dupCheck = useDuplicateFileCheck(eventId, "event_photos");
   const [search, setSearch] = useState("");
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -247,15 +251,20 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
     }
   };
 
-  const startUpload = (files: File[]) => {
+  const startUpload = async (files: File[]) => {
+    const finalFiles = await dupCheck.check(files);
+    if (finalFiles.length === 0) {
+      toast.info("Nenhuma foto nova para enviar.");
+      return;
+    }
     const newPreviews: Record<string, string> = {};
-    files.forEach(f => {
+    finalFiles.forEach(f => {
       newPreviews[f.name] = URL.createObjectURL(f);
     });
     setPreviews(prev => ({ ...prev, ...newPreviews }));
-    filesRef.current = files;
+    filesRef.current = finalFiles;
     setFailedFiles([]);
-    onUploadFiles?.(files);
+    onUploadFiles?.(finalFiles);
   };
 
   const handleRetry = () => {
@@ -648,6 +657,8 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <DuplicateFileModal state={dupCheck.prompt} onCancelAll={dupCheck.cancelAll} />
     </div>
   );
 }
