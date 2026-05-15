@@ -657,6 +657,8 @@ export default function PhotoGallery({ open, onClose, eventId, photos, onDelete,
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <DuplicateFileModal state={dupCheck.prompt} onCancelAll={dupCheck.cancelAll} />
     </div>
   );
 }
