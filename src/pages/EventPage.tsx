@@ -194,7 +194,34 @@ const EventPage = () => {
 
   const highPrice = priceGrid?.photo_high_price ?? 15;
   const lowPrice = priceGrid?.photo_low_price ?? 11;
-  const photoList = photos || [];
+  const allPhotos = photos || [];
+
+  // --- FASE 1: Busca por número de peito ---
+  const trimmedBib = searchBib.trim();
+  const isValidBibQuery = /^\d{1,6}$/.test(trimmedBib);
+
+  const { data: bibMatchIds, isFetching: bibSearching } = useQuery({
+    queryKey: ["bib-search", id, trimmedBib],
+    queryFn: async () => {
+      if (!id || !isValidBibQuery) return null;
+      const { data, error } = await supabase
+        .from("photo_bib_numbers")
+        .select("photo_id")
+        .eq("event_id", id)
+        .eq("number", trimmedBib);
+      if (error) throw error;
+      return new Set((data || []).map((r: any) => r.photo_id));
+    },
+    enabled: !!id && isValidBibQuery,
+    staleTime: 60_000,
+  });
+
+  const photoList = useMemo(() => {
+    if (!trimmedBib) return allPhotos;
+    if (!isValidBibQuery) return allPhotos;
+    if (!bibMatchIds) return allPhotos;
+    return allPhotos.filter((p: any) => bibMatchIds.has(p.id));
+  }, [allPhotos, trimmedBib, isValidBibQuery, bibMatchIds]);
 
   const PHOTOS_PER_PAGE = 32;
   const totalPages = Math.max(1, Math.ceil(photoList.length / PHOTOS_PER_PAGE));
@@ -416,6 +443,26 @@ const EventPage = () => {
               Reconhecimento Facial
             </button>
           </div>
+
+          {/* Feedback da busca por número de peito */}
+          {trimmedBib && (
+            <div className="mb-4 text-sm text-muted-foreground">
+              {!isValidBibQuery ? (
+                <span>Digite apenas números (1 a 6 dígitos).</span>
+              ) : bibSearching ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Buscando fotos com o número {trimmedBib}…
+                </span>
+              ) : (
+                <span>
+                  {photoList.length === 0
+                    ? `Nenhuma foto encontrada para o número ${trimmedBib}. As fotos podem ainda não ter sido indexadas.`
+                    : `${photoList.length} foto(s) encontrada(s) para o número ${trimmedBib}.`}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Skeleton loading */}
           {urlsLoading && photoList.length > 0 && (

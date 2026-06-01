@@ -41,6 +41,39 @@ export type Database = {
         }
         Relationships: []
       }
+      bib_detection_errors: {
+        Row: {
+          created_at: string
+          error_code: string | null
+          error_message: string | null
+          event_id: string | null
+          id: string
+          photo_id: string | null
+          retry_count: number
+          s3_key: string
+        }
+        Insert: {
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          event_id?: string | null
+          id?: string
+          photo_id?: string | null
+          retry_count?: number
+          s3_key: string
+        }
+        Update: {
+          created_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          event_id?: string | null
+          id?: string
+          photo_id?: string | null
+          retry_count?: number
+          s3_key?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
@@ -331,6 +364,8 @@ export type Database = {
       event_photos: {
         Row: {
           album: string | null
+          bibs_count: number
+          bibs_indexed_at: string | null
           created_at: string
           event_id: string
           file_name: string | null
@@ -341,6 +376,8 @@ export type Database = {
         }
         Insert: {
           album?: string | null
+          bibs_count?: number
+          bibs_indexed_at?: string | null
           created_at?: string
           event_id: string
           file_name?: string | null
@@ -351,6 +388,8 @@ export type Database = {
         }
         Update: {
           album?: string | null
+          bibs_count?: number
+          bibs_indexed_at?: string | null
           created_at?: string
           event_id?: string
           file_name?: string | null
@@ -509,6 +548,8 @@ export type Database = {
       }
       events: {
         Row: {
+          bib_number_pattern: string
+          bib_search_enabled: boolean
           category: string
           collab_note: string | null
           cover_url: string | null
@@ -530,6 +571,8 @@ export type Database = {
           visibility: boolean
         }
         Insert: {
+          bib_number_pattern?: string
+          bib_search_enabled?: boolean
           category?: string
           collab_note?: string | null
           cover_url?: string | null
@@ -551,6 +594,8 @@ export type Database = {
           visibility?: boolean
         }
         Update: {
+          bib_number_pattern?: string
+          bib_search_enabled?: boolean
           category?: string
           collab_note?: string | null
           cover_url?: string | null
@@ -772,6 +817,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      photo_bib_numbers: {
+        Row: {
+          bbox: Json
+          confidence: number
+          detected_at: string
+          event_id: string
+          id: string
+          number: string
+          photo_id: string
+          raw_text: string
+        }
+        Insert: {
+          bbox?: Json
+          confidence: number
+          detected_at?: string
+          event_id: string
+          id?: string
+          number: string
+          photo_id: string
+          raw_text: string
+        }
+        Update: {
+          bbox?: Json
+          confidence?: number
+          detected_at?: string
+          event_id?: string
+          id?: string
+          number?: string
+          photo_id?: string
+          raw_text?: string
+        }
+        Relationships: []
       }
       photographer_sites: {
         Row: {
