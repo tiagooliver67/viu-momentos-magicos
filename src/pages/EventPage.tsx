@@ -21,7 +21,6 @@ import {
   getThumbCdnUrl,
   getMediumCdnUrl,
   IS_LAMBDA_PIPELINE_ACTIVE,
-  isStoragePath,
 } from "@/lib/cdnConfig";
 
 /** Fetch signed read URLs without requiring auth */
@@ -231,11 +230,6 @@ const EventPage = () => {
     const thumbPath = toThumbPath(photo.file_url);
     return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
   }, [thumbUrls, toThumbPath]);
-
-  const getPhotoFallbackUrl = useCallback((photo: any) => {
-    if (!photo?.file_url || !isStoragePath(photo.file_url)) return photo?.file_url || "";
-    return photo.file_url;
-  }, []);
 
   const selectedIndex = selectedPhoto
     ? photoList.findIndex((p: any) => p.id === selectedPhoto.id)
@@ -463,7 +457,6 @@ const EventPage = () => {
                     key={photo.id}
                     photoId={photo.id}
                     photoUrl={getPhotoUrl(photo)}
-                    fallbackPhotoUrl={getPhotoFallbackUrl(photo)}
                     isFav={isFavorite(photo.id)}
                     onToggleFavorite={toggleFavorite}
                     onClick={() => setSelectedPhoto(photo)}
