@@ -10,7 +10,7 @@ import PhotoTermsFooter from "@/components/PhotoTermsFooter";
 import { useCart } from "@/hooks/useCart";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
-import { getThumbCdnUrl, getMediumCdnUrl, IS_LAMBDA_PIPELINE_ACTIVE } from "@/lib/cdnConfig";
+import { getThumbCdnUrl, getMediumCdnUrl, IS_LAMBDA_PIPELINE_ACTIVE, toThumbPath, toMediumPath } from "@/lib/cdnConfig";
 import { getPhotoCode } from "@/lib/photoCode";
 
 /** Fetch signed read URLs without requiring auth */
@@ -109,8 +109,9 @@ const FotoPage = () => {
       if (IS_LAMBDA_PIPELINE_ACTIVE) {
         return getMediumCdnUrl(photo.file_url) || "";
       }
-      const res = await getPublicSignedUrls([photo.file_url]);
-      return res[photo.file_url] || "";
+      const mediumPath = toMediumPath(photo.file_url);
+      const res = await getPublicSignedUrls([mediumPath, photo.file_url]);
+      return res[mediumPath] || res[photo.file_url] || "";
     },
     enabled: !!photo?.file_url,
     staleTime: 60 * 60 * 1000,
@@ -147,7 +148,14 @@ const FotoPage = () => {
         }
         return map;
       }
-      return getPublicSignedUrls(relatedPhotos.map(p => p.file_url));
+      const thumbPaths = relatedPhotos.map(p => toThumbPath(p.file_url));
+      const urls = await getPublicSignedUrls([...thumbPaths, ...relatedPhotos.map(p => p.file_url)]);
+      for (const p of relatedPhotos) {
+        const thumbPath = toThumbPath(p.file_url);
+        if (urls[thumbPath]) map[p.file_url] = urls[thumbPath];
+        else if (urls[p.file_url]) map[p.file_url] = urls[p.file_url];
+      }
+      return map;
     },
     enabled: !!relatedPhotos && relatedPhotos.length > 0,
     staleTime: 60 * 60 * 1000,

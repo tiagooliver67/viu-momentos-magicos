@@ -6,11 +6,13 @@ import { toast } from "sonner";
 interface LazyPhotoCardProps {
   photoId: string;
   photoUrl: string;
+  fallbackPhotoUrl?: string;
   isFav: boolean;
   onToggleFavorite: (id: string) => void;
   onClick: () => void;
   /** When true, image loads eagerly with high fetch priority (above-the-fold) */
   priority?: boolean;
+  unavailableLabel?: string;
 }
 
 /**
@@ -20,14 +22,24 @@ interface LazyPhotoCardProps {
 const LazyPhotoCard = memo(({
   photoId,
   photoUrl,
+  fallbackPhotoUrl,
   isFav,
   onToggleFavorite,
   onClick,
   priority = false,
+  unavailableLabel = "Miniatura indisponível",
 }: LazyPhotoCardProps) => {
   const [isVisible, setIsVisible] = useState(priority);
   const [loaded, setLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(photoUrl);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCurrentSrc(photoUrl);
+    setLoaded(false);
+    setHasError(false);
+  }, [photoUrl, fallbackPhotoUrl]);
 
   useEffect(() => {
     if (priority) return;
@@ -51,19 +63,34 @@ const LazyPhotoCard = memo(({
       ref={ref}
       className="relative group cursor-pointer rounded-lg overflow-hidden aspect-[3/4] bg-secondary/30"
     >
-      {isVisible && photoUrl ? (
+      {isVisible && currentSrc ? (
         <>
-          {!loaded && <Skeleton className="absolute inset-0 rounded-none" />}
-          <div onClick={onClick} className="w-full h-full relative">
-            <img
-              src={photoUrl}
-              alt=""
-              loading={priority ? "eager" : "lazy"}
-              decoding="async"
-              {...(priority ? { fetchPriority: "high" as any } : { fetchPriority: "low" as any })}
-              onLoad={() => setLoaded(true)}
-              className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
-            />
+          {!loaded && !hasError && <Skeleton className="absolute inset-0 rounded-none" />}
+          <div onClick={!hasError ? onClick : undefined} className="w-full h-full relative">
+            {hasError ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-secondary/60 p-3 text-center">
+                <span className="text-xs font-medium text-muted-foreground">{unavailableLabel}</span>
+              </div>
+            ) : (
+              <img
+                src={currentSrc}
+                alt=""
+                loading={priority ? "eager" : "lazy"}
+                decoding="async"
+                {...(priority ? { fetchPriority: "high" as any } : { fetchPriority: "low" as any })}
+                onLoad={() => setLoaded(true)}
+                onError={() => {
+                  if (fallbackPhotoUrl && currentSrc !== fallbackPhotoUrl) {
+                    setLoaded(false);
+                    setCurrentSrc(fallbackPhotoUrl);
+                    return;
+                  }
+                  setLoaded(true);
+                  setHasError(true);
+                }}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+              />
+            )}
           </div>
 
           {/* Action buttons */}
@@ -97,6 +124,10 @@ const LazyPhotoCard = memo(({
 
           <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-all pointer-events-none" />
         </>
+      ) : isVisible ? (
+        <div className="w-full h-full flex items-center justify-center bg-secondary/60 p-3 text-center">
+          <span className="text-xs font-medium text-muted-foreground">{unavailableLabel}</span>
+        </div>
       ) : (
         <Skeleton className="w-full h-full rounded-none" />
       )}

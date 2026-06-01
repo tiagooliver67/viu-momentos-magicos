@@ -7,6 +7,7 @@ import {
   getThumbCdnUrl,
   toThumbPath as cdnToThumbPath,
   IS_LAMBDA_PIPELINE_ACTIVE,
+  isStoragePath,
 } from "@/lib/cdnConfig";
 import {
   AlertDialog,
@@ -64,6 +65,7 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState<{ ids: string[]; bulk: boolean } | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [thumbErrors, setThumbErrors] = useState<Record<string, boolean>>({});
   const inputRef = useRef<HTMLInputElement>(null);
   const filesRef = useRef<File[]>([]);
 
@@ -124,12 +126,14 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   }, [open, photos]);
 
   const getPhotoUrl = (photo: Photo) => {
-    if (
-      photo.file_url.startsWith("eventos/") ||
-      photo.file_url.startsWith("usuarios/")
-    ) {
+    if (isStoragePath(photo.file_url)) {
       return signedUrls[photo.file_url] || "";
     }
+    return photo.file_url;
+  };
+
+  const getPhotoFallbackUrl = (photo: Photo) => {
+    if (!isStoragePath(photo.file_url)) return photo.file_url;
     return photo.file_url;
   };
 
@@ -452,7 +456,26 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
               const isSelected = selectedIds.has(photo.id);
               return (
               <div key={photo.id} className={`relative group rounded-lg overflow-hidden bg-secondary aspect-[4/5] ${isSelected ? "ring-2 ring-primary" : ""}`}>
-                <img src={url} alt={photo.file_name || ""} className="w-full h-full object-cover" loading="lazy" />
+                {!thumbErrors[photo.id] ? (
+                  <img
+                    src={url}
+                    alt={photo.file_name || ""}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      const fallbackUrl = getPhotoFallbackUrl(photo);
+                      if (fallbackUrl && e.currentTarget.src !== fallbackUrl) {
+                        e.currentTarget.src = fallbackUrl;
+                        return;
+                      }
+                      setThumbErrors((prev) => ({ ...prev, [photo.id]: true }));
+                    }}
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-secondary/70 p-3 text-center text-xs font-medium text-muted-foreground">
+                    Miniatura indisponível
+                  </div>
+                )}
 
                 <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2 z-20">
                   {isCover ? (
