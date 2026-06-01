@@ -105,6 +105,7 @@ const App = () => (
                 <Route index element={<Overview />} />
                 <Route path="usuarios" element={<AdminUsers />} />
                 <Route path="fotografos" element={<AdminPhotographers />} />
+                <Route path="fotografos/:id" element={<AdminPhotographerDetail />} />
                 <Route path="eventos" element={<AdminEvents />} />
                 <Route path="financeiro" element={<AdminFinance />} />
                 <Route path="pagamentos" element={<AdminPayments />} />
