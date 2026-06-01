@@ -10,15 +10,17 @@
 
 /**
  * CloudFront base URL.
- * Default: ViuFoto's production CloudFront distribution backed by S3 + Lambda image pipeline.
- * Override via VITE_CDN_BASE_URL if needed (e.g. staging).
+ * It must be configured explicitly in the environment after the derivative pipeline
+ * (thumb/medium generation) is actually online.
  */
-const CDN_BASE: string =
-  (import.meta.env.VITE_CDN_BASE_URL as string | undefined) ||
-  "https://d30bj690qj992h.cloudfront.net";
+const CDN_BASE = (import.meta.env.VITE_CDN_BASE_URL as string | undefined)?.trim() || null;
 
-/** Whether backend Lambda pipeline is active (generates thumb/medium automatically) */
-export const IS_LAMBDA_PIPELINE_ACTIVE = !!CDN_BASE;
+/**
+ * Whether the derivative pipeline is explicitly enabled.
+ * A bare CDN URL is not enough — the backend processor must exist and be live.
+ */
+export const IS_LAMBDA_PIPELINE_ACTIVE =
+  import.meta.env.VITE_ENABLE_DERIVATIVE_CDN === "true" && !!CDN_BASE;
 
 /** Build a public CDN URL for an S3 object path */
 export function cdnUrl(objectPath: string): string | null {
@@ -26,6 +28,11 @@ export function cdnUrl(objectPath: string): string | null {
   const base = CDN_BASE.replace(/\/+$/, "");
   const path = objectPath.replace(/^\/+/, "");
   return `${base}/${path}`;
+}
+
+/** True when the value is a storage object key instead of an absolute URL */
+export function isStoragePath(objectPath: string): boolean {
+  return objectPath.startsWith("eventos/") || objectPath.startsWith("usuarios/");
 }
 
 /** Derive thumb path from original — always /thumb/<nome-original>.webp (preserva caixa) */
