@@ -444,6 +444,26 @@ const EventPage = () => {
             </button>
           </div>
 
+          {/* Feedback da busca por número de peito */}
+          {trimmedBib && (
+            <div className="mb-4 text-sm text-muted-foreground">
+              {!isValidBibQuery ? (
+                <span>Digite apenas números (1 a 6 dígitos).</span>
+              ) : bibSearching ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Buscando fotos com o número {trimmedBib}…
+                </span>
+              ) : (
+                <span>
+                  {photoList.length === 0
+                    ? `Nenhuma foto encontrada para o número ${trimmedBib}. As fotos podem ainda não ter sido indexadas.`
+                    : `${photoList.length} foto(s) encontrada(s) para o número ${trimmedBib}.`}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Skeleton loading */}
           {urlsLoading && photoList.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
