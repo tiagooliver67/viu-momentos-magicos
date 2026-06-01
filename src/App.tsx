@@ -40,6 +40,7 @@ import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminEvents from "./pages/admin/AdminEvents";
 import AdminPhotographers from "./pages/admin/AdminPhotographers";
+import AdminPhotographerDetail from "./pages/admin/AdminPhotographerDetail";
 import AdminFinance from "./pages/admin/AdminFinance";
 import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSupport from "./pages/admin/AdminSupport";
@@ -105,6 +106,7 @@ const App = () => (
                 <Route index element={<Overview />} />
                 <Route path="usuarios" element={<AdminUsers />} />
                 <Route path="fotografos" element={<AdminPhotographers />} />
+                <Route path="fotografos/:id" element={<AdminPhotographerDetail />} />
                 <Route path="eventos" element={<AdminEvents />} />
                 <Route path="financeiro" element={<AdminFinance />} />
                 <Route path="pagamentos" element={<AdminPayments />} />
