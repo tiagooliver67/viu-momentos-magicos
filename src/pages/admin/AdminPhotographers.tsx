@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Loader2, DollarSign, Camera, CheckCircle, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,6 +17,7 @@ const AdminPhotographers = () => {
   const [search, setSearch] = useState("");
   const [photographers, setPhotographers] = useState<PhotographerData[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetch = async () => {
@@ -110,7 +112,11 @@ const AdminPhotographers = () => {
             </thead>
             <tbody>
               {filtered.map(p => (
-                <tr key={p.user_id} className="border-b border-border/50 hover:bg-secondary/30 transition-colors">
+                <tr
+                  key={p.user_id}
+                  onClick={() => navigate(`/admin/fotografos/${p.user_id}`)}
+                  className="border-b border-border/50 hover:bg-secondary/30 transition-colors cursor-pointer"
+                >
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
