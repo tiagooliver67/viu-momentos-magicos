@@ -40,6 +40,7 @@ import Overview from "./pages/admin/Overview";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminEvents from "./pages/admin/AdminEvents";
 import AdminPhotographers from "./pages/admin/AdminPhotographers";
+import AdminPhotographerDetail from "./pages/admin/AdminPhotographerDetail";
 import AdminFinance from "./pages/admin/AdminFinance";
 import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSupport from "./pages/admin/AdminSupport";
