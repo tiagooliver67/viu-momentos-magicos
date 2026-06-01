@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, MapPin, Loader2, Eye, EyeOff, Trash2 } from "lucide-react";
+import { Search, MapPin, Loader2, Eye, EyeOff, Trash2, ScanText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -72,6 +72,27 @@ const AdminEvents = () => {
     if (error) { toast.error("Erro ao excluir evento"); return; }
     toast.success("Evento excluído");
     fetchEvents();
+  };
+
+  const [reindexing, setReindexing] = useState<string | null>(null);
+  const reindexBibs = async (eventId: string, force: boolean) => {
+    setReindexing(eventId);
+    const tId = toast.loading(force ? "Reprocessando todas as fotos…" : "Indexando fotos pendentes…");
+    try {
+      const { data, error } = await supabase.functions.invoke("bib-reindex-event", {
+        body: { event_id: eventId, force, limit: 50 },
+      });
+      if (error) throw error;
+      toast.success(
+        `OCR concluído: ${data.processed} fotos · ${data.total_detections} números · ${data.errors_count} erros`,
+        { id: tId, duration: 6000 }
+      );
+      if (data.remaining_hint) toast.message(data.remaining_hint);
+    } catch (e) {
+      toast.error(`Falha: ${e instanceof Error ? e.message : String(e)}`, { id: tId });
+    } finally {
+      setReindexing(null);
+    }
   };
 
   const filtered = events.filter((e) => {
@@ -150,6 +171,15 @@ const AdminEvents = () => {
                 </button>
                 <button onClick={() => deleteEvent(event.id)} className="flex items-center gap-1 px-2 py-1 rounded text-xs text-destructive hover:bg-destructive/10 transition-colors">
                   <Trash2 className="w-3.5 h-3.5" /> Excluir
+                </button>
+                <button
+                  onClick={() => reindexBibs(event.id, false)}
+                  disabled={reindexing === event.id}
+                  title="Detectar números de peito nas fotos ainda não indexadas (lote de 50)"
+                  className="flex items-center gap-1 px-2 py-1 rounded text-xs text-accent hover:bg-accent/10 transition-colors disabled:opacity-50 ml-auto"
+                >
+                  {reindexing === event.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ScanText className="w-3.5 h-3.5" />}
+                  Indexar nº peito
                 </button>
               </div>
             </div>
