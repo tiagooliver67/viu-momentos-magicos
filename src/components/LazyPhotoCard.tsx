@@ -124,6 +124,10 @@ const LazyPhotoCard = memo(({
 
           <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-all pointer-events-none" />
         </>
+      ) : isVisible ? (
+        <div className="w-full h-full flex items-center justify-center bg-secondary/60 p-3 text-center">
+          <span className="text-xs font-medium text-muted-foreground">{unavailableLabel}</span>
+        </div>
       ) : (
         <Skeleton className="w-full h-full rounded-none" />
       )}
