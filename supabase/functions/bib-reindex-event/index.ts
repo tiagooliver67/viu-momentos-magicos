@@ -108,6 +108,26 @@ Deno.serve(async (req) => {
         const fault = anyE?.$fault ?? null;
         const awsCode = anyE?.Code ?? null;
         const stack = anyE?.stack || null;
+        const requestId = anyE?.$metadata?.requestId ?? null;
+        const extendedRequestId = anyE?.$metadata?.extendedRequestId ?? null;
+        const cfId = anyE?.$cfId ?? anyE?.$metadata?.cfId ?? null;
+        const attempts = anyE?.$metadata?.attempts ?? null;
+        const totalRetryDelay = anyE?.$metadata?.totalRetryDelay ?? null;
+        const response = anyE?.$response ? {
+          statusCode: anyE.$response.statusCode ?? null,
+          headers: anyE.$response.headers ?? null,
+          body: (() => { try { return typeof anyE.$response.body === "string" ? anyE.$response.body.slice(0, 2000) : null; } catch { return null; } })(),
+        } : null;
+        // Enumerate ALL own properties of the error (some SDK errors stash data on non-standard keys)
+        const allKeys: Record<string, unknown> = {};
+        try {
+          for (const k of Object.getOwnPropertyNames(anyE)) {
+            if (["stack", "message", "name", "$metadata", "$response", "$fault"].includes(k)) continue;
+            const v = (anyE as any)[k];
+            if (typeof v === "function") continue;
+            try { allKeys[k] = JSON.parse(JSON.stringify(v)); } catch { allKeys[k] = String(v); }
+          }
+        } catch {}
         const diag = {
           bucket: S3_BUCKET,
           key,
@@ -117,6 +137,13 @@ Deno.serve(async (req) => {
           httpStatus,
           fault,
           awsCode,
+          requestId,
+          extendedRequestId,
+          cfId,
+          attempts,
+          totalRetryDelay,
+          response,
+          allKeys,
           stack,
         };
         console.error("[bib-reindex-event] Rekognition failure", JSON.stringify(diag));
@@ -126,7 +153,7 @@ Deno.serve(async (req) => {
           event_id,
           s3_key: key,
           error_code: name,
-          error_message: JSON.stringify({ message, httpStatus, fault, awsCode, region: AWS_REGION, bucket: S3_BUCKET, stack }),
+          error_message: JSON.stringify({ message, httpStatus, fault, awsCode, requestId, extendedRequestId, cfId, response, allKeys, region: AWS_REGION, bucket: S3_BUCKET, stack }),
         });
       }
     }
