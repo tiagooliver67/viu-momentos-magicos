@@ -56,6 +56,14 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    let isServiceRole = false;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1] || ""));
+      if (payload?.role === "service_role") isServiceRole = true;
+    } catch { /* ignore */ }
+
+    if (!isServiceRole) {
     const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -80,6 +88,7 @@ Deno.serve(async (req) => {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
     }
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
