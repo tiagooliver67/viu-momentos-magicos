@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { RekognitionClient, DetectTextCommand } from "npm:@aws-sdk/client-rekognition@3";
 import { S3Client, GetObjectCommand } from "npm:@aws-sdk/client-s3@3";
+import { decode as decodeWebp } from "https://deno.land/x/[email protected]/mod.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -64,6 +65,26 @@ async function streamToBytes(body: any): Promise<Uint8Array> {
   return out;
 }
 
+/** Detect image format from magic bytes. */
+function detectFormat(bytes: Uint8Array): "jpeg" | "png" | "webp" | "unknown" {
+  if (bytes.length < 12) return "unknown";
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpeg";
+  // PNG: 89 50 4E 47
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return "png";
+  // WEBP: "RIFF"...."WEBP"
+  if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return "webp";
+  return "unknown";
+}
+
+/** Convert WebP bytes to JPEG bytes (Rekognition only accepts JPEG/PNG). */
+async function webpToJpeg(webpBytes: Uint8Array): Promise<Uint8Array> {
+  const img = await decodeWebp(webpBytes);
+  // imagescript returns an Image; encodeJPEG quality 0-100
+  return await img.encodeJPEG(85);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -121,6 +142,15 @@ Deno.serve(async (req) => {
         if (!imageBytes || imageBytes.byteLength === 0) {
           throw new Error(`Empty image bytes for ${usedKey}`);
         }
+
+        // Rekognition only accepts JPEG / PNG. Convert WebP → JPEG.
+        const fmt = detectFormat(imageBytes);
+        if (fmt === "webp") {
+          imageBytes = await webpToJpeg(imageBytes);
+        } else if (fmt === "unknown") {
+          throw new Error(`Unsupported image format for ${usedKey} (magic bytes not JPEG/PNG/WebP)`);
+        }
+
         if (imageBytes.byteLength > 5 * 1024 * 1024) {
           throw new Error(`Image ${usedKey} exceeds 5MB Rekognition Bytes limit (${imageBytes.byteLength} bytes)`);
         }
