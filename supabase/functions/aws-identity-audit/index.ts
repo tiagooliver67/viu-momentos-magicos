@@ -1,3 +1,4 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { STSClient, GetCallerIdentityCommand } from "npm:@aws-sdk/client-sts@3";
 import {
@@ -13,6 +14,9 @@ import {
 const AWS_REGION = Deno.env.get("AWS_REKOGNITION_REGION") || "sa-east-1";
 const AWS_ACCESS_KEY_ID = Deno.env.get("AWS_REKOGNITION_ACCESS_KEY_ID")!;
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_REKOGNITION_SECRET_ACCESS_KEY")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const DEFAULT_BUCKET = "viufoto-images-bucket";
 const DEFAULT_KEY = "usuarios/51b2e653-4d0a-4cd0-998a-89a3ab79fc7d/eventos/78d56cc0-96bc-4907-8b93-ef268e25cdf0/fotos/1780406967699-z8ba-dsc09009_2322380_276663.jpg";
 
@@ -50,6 +54,33 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const authHeader = req.headers.get("Authorization") || "";
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
+    const { data: roleRow } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "super_admin")
+      .maybeSingle();
+
+    if (!roleRow) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const bucket = typeof body?.bucket === "string" && body.bucket ? body.bucket : DEFAULT_BUCKET;
     const key = typeof body?.key === "string" && body.key ? body.key : DEFAULT_KEY;
