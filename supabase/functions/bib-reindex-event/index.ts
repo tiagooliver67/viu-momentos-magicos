@@ -1,17 +1,25 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { RekognitionClient, DetectTextCommand } from "npm:@aws-sdk/client-rekognition@3";
+import { S3Client, GetObjectCommand } from "npm:@aws-sdk/client-s3@3";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-// TEMP DEBUG: forçar us-east-1 para validar hipótese de região como causa do AccessDeniedException
-const AWS_REGION = "us-east-1";
+// Rekognition em us-east-1 (DetectText indisponível em sa-east-1 para esta conta)
+const REK_REGION = "us-east-1";
+// S3 bucket permanece em sa-east-1
+const S3_REGION = Deno.env.get("AWS_S3_REGION") || "sa-east-1";
 const AWS_ACCESS_KEY_ID = Deno.env.get("AWS_REKOGNITION_ACCESS_KEY_ID")!;
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_REKOGNITION_SECRET_ACCESS_KEY")!;
 const S3_BUCKET = "viufoto-images-bucket";
 
 const rek = new RekognitionClient({
-  region: AWS_REGION,
+  region: REK_REGION,
+  credentials: { accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY },
+});
+
+const s3 = new S3Client({
+  region: S3_REGION,
   credentials: { accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY },
 });
 
@@ -24,6 +32,36 @@ function extractKey(fileUrl: string): string {
   } catch {
     return fileUrl;
   }
+}
+
+/** Derive the /medium/<name>.webp variant from an original key. */
+function toMediumKey(originalKey: string): string {
+  const slash = originalKey.lastIndexOf("/");
+  if (slash === -1) return originalKey;
+  const dir = originalKey.substring(0, slash);
+  const name = originalKey.substring(slash + 1).replace(/\.[^.]+$/, ".webp");
+  return `${dir}/medium/${name}`;
+}
+
+async function streamToBytes(body: any): Promise<Uint8Array> {
+  if (body instanceof Uint8Array) return body;
+  if (typeof body?.transformToByteArray === "function") {
+    return await body.transformToByteArray();
+  }
+  // Fallback: ReadableStream
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    total += value.length;
+  }
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { out.set(c, off); off += c.length; }
+  return out;
 }
 
 Deno.serve(async (req) => {
@@ -65,9 +103,30 @@ Deno.serve(async (req) => {
 
     for (const p of photos || []) {
       const key = extractKey(p.file_url);
+      const mediumKey = toMediumKey(key);
+      let usedKey = mediumKey;
+      let imageBytes: Uint8Array | null = null;
       try {
+        // 1) Try /medium/<name>.webp first (≤5MB target)
+        try {
+          const obj = await s3.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key: mediumKey }));
+          imageBytes = await streamToBytes(obj.Body);
+        } catch (mediumErr) {
+          // Fallback to original if medium variant doesn't exist yet
+          usedKey = key;
+          const obj = await s3.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key: key }));
+          imageBytes = await streamToBytes(obj.Body);
+        }
+
+        if (!imageBytes || imageBytes.byteLength === 0) {
+          throw new Error(`Empty image bytes for ${usedKey}`);
+        }
+        if (imageBytes.byteLength > 5 * 1024 * 1024) {
+          throw new Error(`Image ${usedKey} exceeds 5MB Rekognition Bytes limit (${imageBytes.byteLength} bytes)`);
+        }
+
         const out = await rek.send(new DetectTextCommand({
-          Image: { S3Object: { Bucket: S3_BUCKET, Name: key } },
+          Image: { Bytes: imageBytes },
           Filters: { WordFilter: { MinConfidence: 70 } },
         }));
         const words = (out.TextDetections || []).filter(t => t.Type === "WORD");
@@ -132,7 +191,10 @@ Deno.serve(async (req) => {
         const diag = {
           bucket: S3_BUCKET,
           key,
-          region: AWS_REGION,
+          usedKey,
+          imageBytesSize: imageBytes?.byteLength ?? null,
+          rekRegion: REK_REGION,
+          s3Region: S3_REGION,
           name,
           message,
           httpStatus,
@@ -154,7 +216,7 @@ Deno.serve(async (req) => {
           event_id,
           s3_key: key,
           error_code: name,
-          error_message: JSON.stringify({ message, httpStatus, fault, awsCode, requestId, extendedRequestId, cfId, response, allKeys, region: AWS_REGION, bucket: S3_BUCKET, stack }),
+          error_message: JSON.stringify({ message, httpStatus, fault, awsCode, requestId, extendedRequestId, cfId, response, allKeys, usedKey, imageBytesSize: imageBytes?.byteLength ?? null, rekRegion: REK_REGION, s3Region: S3_REGION, bucket: S3_BUCKET, stack }),
         });
       }
     }
