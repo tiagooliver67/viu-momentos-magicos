@@ -11,6 +11,21 @@ import {
   GetBucketAclCommand,
 } from "npm:@aws-sdk/client-s3@3";
 import { RekognitionClient, DetectTextCommand } from "npm:@aws-sdk/client-rekognition@3";
+import {
+  IAMClient,
+  SimulatePrincipalPolicyCommand,
+  ListAttachedUserPoliciesCommand,
+  ListUserPoliciesCommand,
+  ListGroupsForUserCommand,
+  ListAttachedGroupPoliciesCommand,
+  ListGroupPoliciesCommand,
+  GetUserCommand,
+} from "npm:@aws-sdk/client-iam@3";
+import {
+  OrganizationsClient,
+  DescribeOrganizationCommand,
+  ListPoliciesForTargetCommand,
+} from "npm:@aws-sdk/client-organizations@3";
 
 const AWS_REGION = Deno.env.get("AWS_REKOGNITION_REGION") || "sa-east-1";
 const AWS_ACCESS_KEY_ID = Deno.env.get("AWS_REKOGNITION_ACCESS_KEY_ID")!;
@@ -102,6 +117,8 @@ Deno.serve(async (req) => {
     const sts = new STSClient({ region: AWS_REGION, credentials });
     const s3 = new S3Client({ region: AWS_REGION, credentials });
     const rekognition = new RekognitionClient({ region: AWS_REGION, credentials });
+    const iam = new IAMClient({ region: "us-east-1", credentials });
+    const orgs = new OrganizationsClient({ region: "us-east-1", credentials });
 
     const identityResult = await runAndCapture(async () => {
       const out = await sts.send(new GetCallerIdentityCommand({}));
