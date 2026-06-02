@@ -2,7 +2,9 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { RekognitionClient, DetectTextCommand } from "npm:@aws-sdk/client-rekognition@3";
 import { S3Client, GetObjectCommand } from "npm:@aws-sdk/client-s3@3";
-import { decode as decodeWebp } from "https://deno.land/x/[email protected]/mod.ts";
+// WebP → JPEG conversion via jsquash (WASM). imagescript does NOT support WebP decoding.
+import decodeWebp from "https://esm.sh/@jsquash/[email protected]/decode";
+import encodeJpeg from "https://esm.sh/@jsquash/[email protected]/encode";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -80,9 +82,10 @@ function detectFormat(bytes: Uint8Array): "jpeg" | "png" | "webp" | "unknown" {
 
 /** Convert WebP bytes to JPEG bytes (Rekognition only accepts JPEG/PNG). */
 async function webpToJpeg(webpBytes: Uint8Array): Promise<Uint8Array> {
-  const img = await decodeWebp(webpBytes);
-  // imagescript returns an Image; encodeJPEG quality 0-100
-  return await img.encodeJPEG(85);
+  // jsquash decode returns ImageData { data: Uint8ClampedArray (RGBA), width, height }
+  const imageData = await decodeWebp(webpBytes);
+  const jpegAb = await encodeJpeg(imageData, { quality: 85 });
+  return new Uint8Array(jpegAb);
 }
 
 Deno.serve(async (req) => {
@@ -145,11 +148,13 @@ Deno.serve(async (req) => {
 
         // Rekognition only accepts JPEG / PNG. Convert WebP → JPEG.
         const fmt = detectFormat(imageBytes);
+        const sizeBefore = imageBytes.byteLength;
         if (fmt === "webp") {
           imageBytes = await webpToJpeg(imageBytes);
         } else if (fmt === "unknown") {
           throw new Error(`Unsupported image format for ${usedKey} (magic bytes not JPEG/PNG/WebP)`);
         }
+        console.log(`[bib-reindex-event] photo ${p.id} key=${usedKey} fmt=${fmt} sizeBefore=${sizeBefore} sizeAfter=${imageBytes.byteLength}`);
 
         if (imageBytes.byteLength > 5 * 1024 * 1024) {
           throw new Error(`Image ${usedKey} exceeds 5MB Rekognition Bytes limit (${imageBytes.byteLength} bytes)`);
