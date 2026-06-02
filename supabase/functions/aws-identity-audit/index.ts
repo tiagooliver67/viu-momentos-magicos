@@ -11,6 +11,21 @@ import {
   GetBucketAclCommand,
 } from "npm:@aws-sdk/client-s3@3";
 import { RekognitionClient, DetectTextCommand } from "npm:@aws-sdk/client-rekognition@3";
+import {
+  IAMClient,
+  SimulatePrincipalPolicyCommand,
+  ListAttachedUserPoliciesCommand,
+  ListUserPoliciesCommand,
+  ListGroupsForUserCommand,
+  ListAttachedGroupPoliciesCommand,
+  ListGroupPoliciesCommand,
+  GetUserCommand,
+} from "npm:@aws-sdk/client-iam@3";
+import {
+  OrganizationsClient,
+  DescribeOrganizationCommand,
+  ListPoliciesForTargetCommand,
+} from "npm:@aws-sdk/client-organizations@3";
 
 const AWS_REGION = Deno.env.get("AWS_REKOGNITION_REGION") || "sa-east-1";
 const AWS_ACCESS_KEY_ID = Deno.env.get("AWS_REKOGNITION_ACCESS_KEY_ID")!;
@@ -102,6 +117,8 @@ Deno.serve(async (req) => {
     const sts = new STSClient({ region: AWS_REGION, credentials });
     const s3 = new S3Client({ region: AWS_REGION, credentials });
     const rekognition = new RekognitionClient({ region: AWS_REGION, credentials });
+    const iam = new IAMClient({ region: "us-east-1", credentials });
+    const orgs = new OrganizationsClient({ region: "us-east-1", credentials });
 
     const identityResult = await runAndCapture(async () => {
       const out = await sts.send(new GetCallerIdentityCommand({}));
@@ -274,6 +291,107 @@ Deno.serve(async (req) => {
       };
     });
 
+    const userName = "viufoto-s3-user";
+
+    const iamGetUserResult = await runAndCapture(async () => {
+      const out = await iam.send(new GetUserCommand({ UserName: userName }));
+      return {
+        UserName: out.User?.UserName ?? null,
+        Arn: out.User?.Arn ?? null,
+        UserId: out.User?.UserId ?? null,
+        CreateDate: out.User?.CreateDate?.toISOString?.() ?? null,
+        PermissionsBoundary: out.User?.PermissionsBoundary ?? null,
+        Tags: out.User?.Tags ?? [],
+      };
+    });
+
+    const attachedUserPoliciesResult = await runAndCapture(async () => {
+      const out = await iam.send(new ListAttachedUserPoliciesCommand({ UserName: userName }));
+      return out.AttachedPolicies ?? [];
+    });
+
+    const inlineUserPoliciesResult = await runAndCapture(async () => {
+      const out = await iam.send(new ListUserPoliciesCommand({ UserName: userName }));
+      return out.PolicyNames ?? [];
+    });
+
+    const groupsResult = await runAndCapture(async () => {
+      const out = await iam.send(new ListGroupsForUserCommand({ UserName: userName }));
+      const groups = out.Groups ?? [];
+      const enriched = await Promise.all(groups.map(async (g) => {
+        const attached = await iam.send(new ListAttachedGroupPoliciesCommand({ GroupName: g.GroupName! })).catch((e) => ({ error: serializeAwsError(e) }));
+        const inline = await iam.send(new ListGroupPoliciesCommand({ GroupName: g.GroupName! })).catch((e) => ({ error: serializeAwsError(e) }));
+        return {
+          GroupName: g.GroupName,
+          Arn: g.Arn,
+          AttachedPolicies: (attached as any).AttachedPolicies ?? (attached as any).error ?? [],
+          InlinePolicies: (inline as any).PolicyNames ?? (inline as any).error ?? [],
+        };
+      }));
+      return enriched;
+    });
+
+    const userArn = `arn:aws:iam::987292390239:user/${userName}`;
+
+    const simulateDetectTextResult = await runAndCapture(async () => {
+      const out = await iam.send(new SimulatePrincipalPolicyCommand({
+        PolicySourceArn: userArn,
+        ActionNames: ["rekognition:DetectText"],
+      }));
+      const results = (out.EvaluationResults ?? []).map((r) => ({
+        EvalActionName: r.EvalActionName,
+        EvalResourceName: r.EvalResourceName,
+        EvalDecision: r.EvalDecision,
+        MatchedStatements: r.MatchedStatements ?? [],
+        MissingContextValues: r.MissingContextValues ?? [],
+        OrganizationsDecisionDetail: r.OrganizationsDecisionDetail ?? null,
+        PermissionsBoundaryDecisionDetail: r.PermissionsBoundaryDecisionDetail ?? null,
+        EvalDecisionDetails: r.EvalDecisionDetails ?? null,
+        ResourceSpecificResults: r.ResourceSpecificResults ?? [],
+      }));
+      return { EvaluationResults: results, IsTruncated: out.IsTruncated ?? false };
+    });
+
+    const simulateMultiResult = await runAndCapture(async () => {
+      const out = await iam.send(new SimulatePrincipalPolicyCommand({
+        PolicySourceArn: userArn,
+        ActionNames: [
+          "rekognition:DetectText",
+          "rekognition:DetectLabels",
+          "rekognition:DetectFaces",
+          "s3:GetObject",
+        ],
+        ResourceArns: [
+          `arn:aws:s3:::viufoto-images-bucket/${key}`,
+        ],
+      }));
+      return (out.EvaluationResults ?? []).map((r) => ({
+        EvalActionName: r.EvalActionName,
+        EvalDecision: r.EvalDecision,
+        MatchedStatementsCount: (r.MatchedStatements ?? []).length,
+        OrganizationsDecisionDetail: r.OrganizationsDecisionDetail ?? null,
+        PermissionsBoundaryDecisionDetail: r.PermissionsBoundaryDecisionDetail ?? null,
+      }));
+    });
+
+    const organizationsResult = await runAndCapture(async () => {
+      const out = await orgs.send(new DescribeOrganizationCommand({}));
+      return {
+        Id: out.Organization?.Id ?? null,
+        MasterAccountId: out.Organization?.MasterAccountId ?? null,
+        FeatureSet: out.Organization?.FeatureSet ?? null,
+        AvailablePolicyTypes: out.Organization?.AvailablePolicyTypes ?? [],
+      };
+    });
+
+    const scpResult = await runAndCapture(async () => {
+      const out = await orgs.send(new ListPoliciesForTargetCommand({
+        TargetId: "987292390239",
+        Filter: "SERVICE_CONTROL_POLICY",
+      }));
+      return out.Policies ?? [];
+    });
+
     return new Response(JSON.stringify({
       ok: true,
       configuredRegion: AWS_REGION,
@@ -290,6 +408,18 @@ Deno.serve(async (req) => {
       getObject: getObjectResult,
       rekognitionS3Object: rekognitionS3ObjectResult,
       rekognitionBytes: rekognitionBytesResult,
+      iam: {
+        getUser: iamGetUserResult,
+        attachedUserPolicies: attachedUserPoliciesResult,
+        inlineUserPolicies: inlineUserPoliciesResult,
+        groups: groupsResult,
+        simulateDetectText: simulateDetectTextResult,
+        simulateMulti: simulateMultiResult,
+      },
+      organizations: {
+        describe: organizationsResult,
+        scpForAccount: scpResult,
+      },
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
