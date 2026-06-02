@@ -250,18 +250,8 @@ Deno.serve(async (req) => {
       if (!obj.Body) throw new Error("S3 GetObject returned empty body");
       const bytes = await (obj.Body as any).transformToByteArray();
 
-      // Rekognition Bytes limit is 5MB. If larger, report and skip.
-      if (bytes.length > 5 * 1024 * 1024) {
-        return {
-          mode: "Bytes",
-          bucket,
-          key,
-          skipped: true,
-          reason: "Image exceeds Rekognition 5MB Bytes limit",
-          downloadedBytes: bytes.length,
-        };
-      }
-
+      // Note: Rekognition Bytes hard limit is 5MB. We send anyway to capture
+      // the real exception type — this isolates auth vs. size errors.
       const out = await rekognition.send(new DetectTextCommand({
         Image: { Bytes: bytes },
       }));
