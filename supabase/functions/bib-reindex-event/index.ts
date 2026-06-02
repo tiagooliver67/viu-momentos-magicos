@@ -4,7 +4,8 @@ import { RekognitionClient, DetectTextCommand } from "npm:@aws-sdk/client-rekogn
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const AWS_REGION = Deno.env.get("AWS_REKOGNITION_REGION") || "sa-east-1";
+// TEMP DEBUG: forçar us-east-1 para validar hipótese de região como causa do AccessDeniedException
+const AWS_REGION = "us-east-1";
 const AWS_ACCESS_KEY_ID = Deno.env.get("AWS_REKOGNITION_ACCESS_KEY_ID")!;
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_REKOGNITION_SECRET_ACCESS_KEY")!;
 const S3_BUCKET = "viufoto-images-bucket";
