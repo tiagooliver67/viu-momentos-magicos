@@ -1563,6 +1563,93 @@ export type Database = {
       }
     }
     Views: {
+      photographer_sites_public: {
+        Row: {
+          allow_custom_links: boolean | null
+          avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          facebook: string | null
+          id: string | null
+          instagram: string | null
+          linkedin: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          seo_keywords: string | null
+          seo_title: string | null
+          slug: string | null
+          template: string | null
+          tiktok: string | null
+          twitter: string | null
+          updated_at: string | null
+          user_id: string | null
+          watermark_opacity: number | null
+          watermark_position: string | null
+          watermark_size: number | null
+          watermark_url: string | null
+          whatsapp: string | null
+          youtube: string | null
+        }
+        Insert: {
+          allow_custom_links?: boolean | null
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          facebook?: string | null
+          id?: string | null
+          instagram?: string | null
+          linkedin?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
+          template?: string | null
+          tiktok?: string | null
+          twitter?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          watermark_opacity?: number | null
+          watermark_position?: string | null
+          watermark_size?: number | null
+          watermark_url?: string | null
+          whatsapp?: string | null
+          youtube?: string | null
+        }
+        Update: {
+          allow_custom_links?: boolean | null
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          facebook?: string | null
+          id?: string | null
+          instagram?: string | null
+          linkedin?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
+          slug?: string | null
+          template?: string | null
+          tiktok?: string | null
+          twitter?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          watermark_opacity?: number | null
+          watermark_position?: string | null
+          watermark_size?: number | null
+          watermark_url?: string | null
+          whatsapp?: string | null
+          youtube?: string | null
+        }
+        Relationships: []
+      }
       profiles_public: {
         Row: {
           avatar_url: string | null
@@ -1586,6 +1673,14 @@ export type Database = {
       }
     }
     Functions: {
+      get_registration_availability: {
+        Args: { _event_id: string }
+        Returns: {
+          category: string
+          category_id: string
+          shirt_size: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

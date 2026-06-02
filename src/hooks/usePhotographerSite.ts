@@ -79,12 +79,12 @@ export function usePhotographerSiteBySlug(slug: string | undefined) {
     queryFn: async () => {
       if (!slug) return null;
       const { data, error } = await supabase
-        .from("photographer_sites")
+        .from("photographer_sites_public" as any)
         .select("*")
         .eq("slug", slug)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data as any;
     },
     enabled: !!slug,
   });

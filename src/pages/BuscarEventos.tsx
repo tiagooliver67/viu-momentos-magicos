@@ -41,7 +41,7 @@ const BuscarEventos = () => {
     queryFn: async () => {
       if (!searchTerm.trim()) return [];
       const { data } = await supabase
-        .from("photographer_sites")
+        .from("photographer_sites_public" as any)
         .select("*")
         .ilike("display_name", `%${searchTerm}%`)
         .limit(10);

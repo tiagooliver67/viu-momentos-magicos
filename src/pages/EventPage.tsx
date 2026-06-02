@@ -183,11 +183,11 @@ const EventPage = () => {
     queryFn: async () => {
       if (!event?.organizer_id) return null;
       const { data } = await supabase
-        .from("photographer_sites")
+        .from("photographer_sites_public" as any)
         .select("watermark_url, display_name, slug, watermark_position, watermark_opacity, watermark_size")
         .eq("user_id", event.organizer_id)
         .maybeSingle();
-      return data;
+      return data as any;
     },
     enabled: !!event?.organizer_id,
   });
