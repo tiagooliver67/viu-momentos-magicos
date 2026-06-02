@@ -1,65 +1,237 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { STSClient, GetCallerIdentityCommand } from "npm:@aws-sdk/client-sts@3";
+import {
+  S3Client,
+  HeadObjectCommand,
+  GetObjectCommand,
+  GetBucketLocationCommand,
+  GetBucketPolicyCommand,
+  GetBucketOwnershipControlsCommand,
+  GetBucketAclCommand,
+} from "npm:@aws-sdk/client-s3@3";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const AWS_REGION = Deno.env.get("AWS_REKOGNITION_REGION") || "sa-east-1";
 const AWS_ACCESS_KEY_ID = Deno.env.get("AWS_REKOGNITION_ACCESS_KEY_ID")!;
 const AWS_SECRET_ACCESS_KEY = Deno.env.get("AWS_REKOGNITION_SECRET_ACCESS_KEY")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const DEFAULT_BUCKET = "viufoto-images-bucket";
+const DEFAULT_KEY = "usuarios/51b2e653-4d0a-4cd0-998a-89a3ab79fc7d/eventos/78d56cc0-96bc-4907-8b93-ef268e25cdf0/fotos/1780406967699-z8ba-dsc09009_2322380_276663.jpg";
+
+const credentials = {
+  accessKeyId: AWS_ACCESS_KEY_ID,
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+};
+
+function serializeAwsError(error: unknown) {
+  const anyE = error as any;
+  return {
+    name: anyE?.name ?? null,
+    code: anyE?.Code ?? anyE?.code ?? null,
+    message: anyE?.message ?? String(error),
+    httpStatus: anyE?.$metadata?.httpStatusCode ?? null,
+    requestId: anyE?.$metadata?.requestId ?? null,
+    extendedRequestId: anyE?.$metadata?.extendedRequestId ?? null,
+    cfId: anyE?.$metadata?.cfId ?? null,
+    attempts: anyE?.$metadata?.attempts ?? null,
+    totalRetryDelay: anyE?.$metadata?.totalRetryDelay ?? null,
+    fault: anyE?.$fault ?? null,
+    stack: anyE?.stack ?? null,
+  };
+}
+
+async function runAndCapture<T>(op: () => Promise<T>) {
+  try {
+    return { ok: true, data: await op(), error: null };
+  } catch (error) {
+    return { ok: false, data: null, error: serializeAwsError(error) };
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
   try {
-    // Diagnostic-only. Returns masked identity info — no secret material exposed.
-    void SUPABASE_URL; void SERVICE_ROLE;
+    const authHeader = req.headers.get("Authorization") || "";
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
+    const { data: roleRow } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "super_admin")
+      .maybeSingle();
+
+    if (!roleRow) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+    const bucket = typeof body?.bucket === "string" && body.bucket ? body.bucket : DEFAULT_BUCKET;
+    const key = typeof body?.key === "string" && body.key ? body.key : DEFAULT_KEY;
 
     const keyId = AWS_ACCESS_KEY_ID || "";
     const keyPrefix = keyId.slice(0, 4);
     const keyMasked = keyId ? `${keyId.slice(0, 4)}...${keyId.slice(-4)}` : null;
-    const keyLength = keyId.length;
-    const secretPresent = !!AWS_SECRET_ACCESS_KEY;
-    const secretLength = AWS_SECRET_ACCESS_KEY?.length || 0;
 
-    const sts = new STSClient({
-      region: AWS_REGION,
-      credentials: { accessKeyId: AWS_ACCESS_KEY_ID, secretAccessKey: AWS_SECRET_ACCESS_KEY },
-    });
+    const sts = new STSClient({ region: AWS_REGION, credentials });
+    const s3 = new S3Client({ region: AWS_REGION, credentials });
 
-    let identity: any = null;
-    let identityError: any = null;
-    try {
+    const identityResult = await runAndCapture(async () => {
       const out = await sts.send(new GetCallerIdentityCommand({}));
-      identity = {
-        Account: out.Account,
-        Arn: out.Arn,
-        UserId: out.UserId,
+      return {
+        Account: out.Account ?? null,
+        Arn: out.Arn ?? null,
+        UserId: out.UserId ?? null,
         IAMUserName: out.Arn?.split("/").pop() || null,
       };
-    } catch (e) {
-      const anyE = e as any;
-      identityError = {
-        name: anyE?.name,
-        message: anyE?.message,
-        httpStatus: anyE?.$metadata?.httpStatusCode,
-        fault: anyE?.$fault,
-        code: anyE?.Code,
+    });
+
+    const bucketLocationResult = await runAndCapture(async () => {
+      const out = await s3.send(new GetBucketLocationCommand({ Bucket: bucket }));
+      return {
+        bucket,
+        locationConstraint: out.LocationConstraint ?? null,
+        resolvedRegion: out.LocationConstraint || "us-east-1",
       };
-    }
+    });
+
+    const bucketPolicyResult = await runAndCapture(async () => {
+      const out = await s3.send(new GetBucketPolicyCommand({ Bucket: bucket }));
+      const policyText = out.Policy ?? null;
+      let policyJson: any = null;
+      let explicitDenyStatements: any[] = [];
+
+      if (policyText) {
+        try {
+          policyJson = JSON.parse(policyText);
+          const statements = Array.isArray(policyJson?.Statement)
+            ? policyJson.Statement
+            : policyJson?.Statement
+              ? [policyJson.Statement]
+              : [];
+          explicitDenyStatements = statements.filter((statement: any) => statement?.Effect === "Deny");
+        } catch {
+          policyJson = { parseError: "Bucket policy is not valid JSON", raw: policyText };
+        }
+      }
+
+      return {
+        bucket,
+        hasPolicy: !!policyText,
+        explicitDenyFound: explicitDenyStatements.length > 0,
+        explicitDenyStatements,
+        policy: policyJson,
+      };
+    });
+
+    const ownershipControlsResult = await runAndCapture(async () => {
+      const out = await s3.send(new GetBucketOwnershipControlsCommand({ Bucket: bucket }));
+      return {
+        bucket,
+        rules: out.OwnershipControls?.Rules ?? [],
+      };
+    });
+
+    const bucketAclResult = await runAndCapture(async () => {
+      const out = await s3.send(new GetBucketAclCommand({ Bucket: bucket }));
+      return {
+        bucket,
+        owner: out.Owner ?? null,
+        grants: (out.Grants ?? []).map((grant) => ({
+          permission: grant.Permission ?? null,
+          type: grant.Grantee?.Type ?? null,
+          uri: grant.Grantee?.URI ?? null,
+          id: grant.Grantee?.ID ?? null,
+          displayName: grant.Grantee?.DisplayName ?? null,
+        })),
+      };
+    });
+
+    const headObjectResult = await runAndCapture(async () => {
+      const out = await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+      return {
+        bucket,
+        key,
+        httpStatus: out.$metadata.httpStatusCode ?? null,
+        contentLength: out.ContentLength ?? null,
+        contentType: out.ContentType ?? null,
+        eTag: out.ETag ?? null,
+        lastModified: out.LastModified?.toISOString?.() ?? null,
+        serverSideEncryption: out.ServerSideEncryption ?? null,
+        metadata: out.Metadata ?? {},
+      };
+    });
+
+    const getObjectResult = await runAndCapture(async () => {
+      const out = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key, Range: "bytes=0-0" }));
+      if (out.Body) {
+        const stream = out.Body.transformToByteArray
+          ? await out.Body.transformToByteArray()
+          : new Uint8Array();
+        return {
+          bucket,
+          key,
+          httpStatus: out.$metadata.httpStatusCode ?? null,
+          contentLength: out.ContentLength ?? null,
+          contentRange: out.ContentRange ?? null,
+          contentType: out.ContentType ?? null,
+          acceptRanges: out.AcceptRanges ?? null,
+          bodyBytesRead: stream.length,
+          serverSideEncryption: out.ServerSideEncryption ?? null,
+        };
+      }
+
+      return {
+        bucket,
+        key,
+        httpStatus: out.$metadata.httpStatusCode ?? null,
+        contentLength: out.ContentLength ?? null,
+        contentRange: out.ContentRange ?? null,
+        contentType: out.ContentType ?? null,
+        acceptRanges: out.AcceptRanges ?? null,
+        bodyBytesRead: 0,
+        serverSideEncryption: out.ServerSideEncryption ?? null,
+      };
+    });
 
     return new Response(JSON.stringify({
       ok: true,
-      region: AWS_REGION,
-      access_key_id_prefix: keyPrefix,
-      access_key_id_masked: keyMasked,
-      access_key_id_length: keyLength,
-      secret_present: secretPresent,
-      secret_length: secretLength,
-      identity,
-      identity_error: identityError,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      configuredRegion: AWS_REGION,
+      accessKeyIdPrefix: keyPrefix,
+      accessKeyIdMasked: keyMasked,
+      accessKeyIdLength: keyId.length,
+      target: { bucket, key },
+      identity: identityResult,
+      bucketLocation: bucketLocationResult,
+      bucketPolicy: bucketPolicyResult,
+      ownershipControls: ownershipControlsResult,
+      bucketAcl: bucketAclResult,
+      headObject: headObjectResult,
+      getObject: getObjectResult,
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    return new Response(JSON.stringify({ error: msg }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
