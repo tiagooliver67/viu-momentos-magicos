@@ -101,10 +101,32 @@ Deno.serve(async (req) => {
         await admin.from("event_photos").update({ bibs_indexed_at: new Date().toISOString(), bibs_count: matches.size }).eq("id", p.id);
         processed++;
       } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        errors.push({ photo_id: p.id, message: msg });
+        const anyE = e as any;
+        const name = anyE?.name || "UnknownError";
+        const message = anyE?.message || String(e);
+        const httpStatus = anyE?.$metadata?.httpStatusCode ?? null;
+        const fault = anyE?.$fault ?? null;
+        const awsCode = anyE?.Code ?? null;
+        const stack = anyE?.stack || null;
+        const diag = {
+          bucket: S3_BUCKET,
+          key,
+          region: AWS_REGION,
+          name,
+          message,
+          httpStatus,
+          fault,
+          awsCode,
+          stack,
+        };
+        console.error("[bib-reindex-event] Rekognition failure", JSON.stringify(diag));
+        errors.push({ photo_id: p.id, message: `${name}: ${message}` });
         await admin.from("bib_detection_errors").insert({
-          photo_id: p.id, event_id, s3_key: key, error_message: msg, error_code: "REINDEX_FAIL",
+          photo_id: p.id,
+          event_id,
+          s3_key: key,
+          error_code: name,
+          error_message: JSON.stringify({ message, httpStatus, fault, awsCode, region: AWS_REGION, bucket: S3_BUCKET, stack }),
         });
       }
     }
