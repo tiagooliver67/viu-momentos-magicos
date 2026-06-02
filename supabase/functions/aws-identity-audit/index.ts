@@ -10,6 +10,7 @@ import {
   GetBucketOwnershipControlsCommand,
   GetBucketAclCommand,
 } from "npm:@aws-sdk/client-s3@3";
+import { RekognitionClient, DetectTextCommand } from "npm:@aws-sdk/client-rekognition@3";
 
 const AWS_REGION = Deno.env.get("AWS_REKOGNITION_REGION") || "sa-east-1";
 const AWS_ACCESS_KEY_ID = Deno.env.get("AWS_REKOGNITION_ACCESS_KEY_ID")!;
@@ -91,6 +92,7 @@ Deno.serve(async (req) => {
 
     const sts = new STSClient({ region: AWS_REGION, credentials });
     const s3 = new S3Client({ region: AWS_REGION, credentials });
+    const rekognition = new RekognitionClient({ region: AWS_REGION, credentials });
 
     const identityResult = await runAndCapture(async () => {
       const out = await sts.send(new GetCallerIdentityCommand({}));
@@ -210,6 +212,69 @@ Deno.serve(async (req) => {
       };
     });
 
+    // TEST 1: DetectText using S3Object reference
+    const rekognitionS3ObjectResult = await runAndCapture(async () => {
+      const out = await rekognition.send(new DetectTextCommand({
+        Image: { S3Object: { Bucket: bucket, Name: key } },
+      }));
+      return {
+        mode: "S3Object",
+        bucket,
+        key,
+        httpStatus: out.$metadata.httpStatusCode ?? null,
+        requestId: out.$metadata.requestId ?? null,
+        extendedRequestId: out.$metadata.extendedRequestId ?? null,
+        attempts: out.$metadata.attempts ?? null,
+        textDetectionsCount: out.TextDetections?.length ?? 0,
+        textDetectionsSample: (out.TextDetections ?? []).slice(0, 10).map((t) => ({
+          DetectedText: t.DetectedText,
+          Type: t.Type,
+          Id: t.Id,
+          Confidence: t.Confidence,
+        })),
+      };
+    });
+
+    // TEST 2: DetectText using Bytes (download via GetObject then send buffer)
+    const rekognitionBytesResult = await runAndCapture(async () => {
+      const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+      if (!obj.Body) throw new Error("S3 GetObject returned empty body");
+      const bytes = await (obj.Body as any).transformToByteArray();
+
+      // Rekognition Bytes limit is 5MB. If larger, report and skip.
+      if (bytes.length > 5 * 1024 * 1024) {
+        return {
+          mode: "Bytes",
+          bucket,
+          key,
+          skipped: true,
+          reason: "Image exceeds Rekognition 5MB Bytes limit",
+          downloadedBytes: bytes.length,
+        };
+      }
+
+      const out = await rekognition.send(new DetectTextCommand({
+        Image: { Bytes: bytes },
+      }));
+      return {
+        mode: "Bytes",
+        bucket,
+        key,
+        downloadedBytes: bytes.length,
+        httpStatus: out.$metadata.httpStatusCode ?? null,
+        requestId: out.$metadata.requestId ?? null,
+        extendedRequestId: out.$metadata.extendedRequestId ?? null,
+        attempts: out.$metadata.attempts ?? null,
+        textDetectionsCount: out.TextDetections?.length ?? 0,
+        textDetectionsSample: (out.TextDetections ?? []).slice(0, 10).map((t) => ({
+          DetectedText: t.DetectedText,
+          Type: t.Type,
+          Id: t.Id,
+          Confidence: t.Confidence,
+        })),
+      };
+    });
+
     return new Response(JSON.stringify({
       ok: true,
       configuredRegion: AWS_REGION,
@@ -224,6 +289,8 @@ Deno.serve(async (req) => {
       bucketAcl: bucketAclResult,
       headObject: headObjectResult,
       getObject: getObjectResult,
+      rekognitionS3Object: rekognitionS3ObjectResult,
+      rekognitionBytes: rekognitionBytesResult,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
