@@ -92,11 +92,11 @@ const FotoPage = () => {
     queryFn: async () => {
       if (!event?.organizer_id) return null;
       const { data } = await supabase
-        .from("photographer_sites")
+        .from("photographer_sites_public" as any)
         .select("display_name, slug")
         .eq("user_id", event.organizer_id)
         .maybeSingle();
-      return data;
+      return data as any;
     },
     enabled: !!event?.organizer_id,
   });
