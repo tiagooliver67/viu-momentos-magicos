@@ -47,9 +47,9 @@ export default function InscricaoPublic() {
           supabase.from("registration_price_tiers").select("*").eq("registration_event_id", ev.id).order("sort_order"),
           supabase.from("registration_categories").select("*").eq("registration_event_id", ev.id).order("sort_order"),
           supabase.from("registration_shirt_stock").select("*").eq("registration_event_id", ev.id).order("sort_order"),
-          supabase.from("event_registrations").select("*").eq("registration_event_id", ev.id),
+          supabase.rpc("get_registration_availability" as any, { _event_id: ev.id }),
         ]);
-        setTiers(t ?? []); setCategories(c ?? []); setShirts(s ?? []); setRegs(r ?? []);
+        setTiers(t ?? []); setCategories(c ?? []); setShirts(s ?? []); setRegs((r as any) ?? []);
       }
       setLoading(false);
     })();
