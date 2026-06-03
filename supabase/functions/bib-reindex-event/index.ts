@@ -126,13 +126,29 @@ Deno.serve(async (req) => {
 
     let processed = 0;
     let totalDetections = 0;
+    let skippedTooBig = 0;
+    let skippedNoFile = 0;
+    const details: Array<{
+      photo_id: string;
+      usedKey: string;
+      used_medium: boolean;
+      fmt: string;
+      size_before: number | null;
+      size_after: number | null;
+      outcome: "processed" | "skipped_too_big" | "skipped_no_file" | "error";
+      detections?: number;
+      error?: string;
+    }> = [];
     const errors: Array<{ photo_id: string; message: string }> = [];
 
     for (const p of photos || []) {
       const key = extractKey(p.file_url);
       const mediumKey = toMediumKey(key);
       let usedKey = mediumKey;
+      let usedMedium = true;
       let imageBytes: Uint8Array | null = null;
+      let fmtCaptured = "unknown";
+      let sizeBeforeCaptured: number | null = null;
       try {
         // 1) Try /medium/<name>.webp first (≤5MB target)
         try {
@@ -141,26 +157,35 @@ Deno.serve(async (req) => {
         } catch (mediumErr) {
           // Fallback to original if medium variant doesn't exist yet
           usedKey = key;
+          usedMedium = false;
           const obj = await s3.send(new GetObjectCommand({ Bucket: S3_BUCKET, Key: key }));
           imageBytes = await streamToBytes(obj.Body);
         }
 
         if (!imageBytes || imageBytes.byteLength === 0) {
-          throw new Error(`Empty image bytes for ${usedKey}`);
+          skippedNoFile++;
+          details.push({ photo_id: p.id, usedKey, used_medium: usedMedium, fmt: "n/a", size_before: 0, size_after: 0, outcome: "skipped_no_file" });
+          console.warn(`[bib-reindex] photo=${p.id} usedKey=${usedKey} SKIPPED no_file (empty bytes)`);
+          continue;
         }
 
         // Rekognition only accepts JPEG / PNG. Convert WebP → JPEG.
         const fmt = detectFormat(imageBytes);
         const sizeBefore = imageBytes.byteLength;
+        fmtCaptured = fmt;
+        sizeBeforeCaptured = sizeBefore;
         if (fmt === "webp") {
           imageBytes = await webpToJpeg(imageBytes);
         } else if (fmt === "unknown") {
           throw new Error(`Unsupported image format for ${usedKey} (magic bytes not JPEG/PNG/WebP)`);
         }
-        console.log(`[bib-reindex-event] photo ${p.id} key=${usedKey} fmt=${fmt} sizeBefore=${sizeBefore} sizeAfter=${imageBytes.byteLength}`);
+        console.log(`[bib-reindex] photo=${p.id} usedKey=${usedKey} used_medium=${usedMedium} fmt=${fmt} size_before=${sizeBefore} size_after=${imageBytes.byteLength}`);
 
         if (imageBytes.byteLength > 5 * 1024 * 1024) {
-          throw new Error(`Image ${usedKey} exceeds 5MB Rekognition Bytes limit (${imageBytes.byteLength} bytes)`);
+          skippedTooBig++;
+          details.push({ photo_id: p.id, usedKey, used_medium: usedMedium, fmt, size_before: sizeBefore, size_after: imageBytes.byteLength, outcome: "skipped_too_big" });
+          console.warn(`[bib-reindex] photo=${p.id} usedKey=${usedKey} SKIPPED too_big size=${imageBytes.byteLength}`);
+          continue;
         }
 
         const out = await rek.send(new DetectTextCommand({
@@ -198,6 +223,8 @@ Deno.serve(async (req) => {
         }
         await admin.from("event_photos").update({ bibs_indexed_at: new Date().toISOString(), bibs_count: matches.size }).eq("id", p.id);
         processed++;
+        details.push({ photo_id: p.id, usedKey, used_medium: usedMedium, fmt: fmtCaptured, size_before: sizeBeforeCaptured, size_after: imageBytes.byteLength, outcome: "processed", detections: matches.size });
+        console.log(`[bib-reindex] photo=${p.id} OK detections=${matches.size}`);
       } catch (e) {
         const anyE = e as any;
         const name = anyE?.name || "UnknownError";
@@ -247,8 +274,10 @@ Deno.serve(async (req) => {
           allKeys,
           stack,
         };
-        console.error("[bib-reindex-event] Rekognition failure", JSON.stringify(diag));
+        console.error(`[bib-reindex] photo=${p.id} usedKey=${usedKey} ERROR ${name}: ${message}`);
+        console.error(`[bib-reindex] diag ${JSON.stringify(diag)}`);
         errors.push({ photo_id: p.id, message: `${name}: ${message}` });
+        details.push({ photo_id: p.id, usedKey, used_medium: usedMedium, fmt: fmtCaptured, size_before: sizeBeforeCaptured, size_after: imageBytes?.byteLength ?? null, outcome: "error", error: `${name}: ${message}` });
         await admin.from("bib_detection_errors").insert({
           photo_id: p.id,
           event_id,
@@ -264,8 +293,12 @@ Deno.serve(async (req) => {
       event_id,
       processed,
       total_detections: totalDetections,
+      skipped_too_big: skippedTooBig,
+      skipped_no_file: skippedNoFile,
       errors_count: errors.length,
       errors: errors.slice(0, 10),
+      details,
+      regions: { rekognition: REK_REGION, s3: S3_REGION, bucket: S3_BUCKET },
       remaining_hint: (photos?.length || 0) === Math.min(Math.max(limit, 1), 200) ? "Há mais fotos; rode novamente." : null,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
