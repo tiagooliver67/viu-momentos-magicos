@@ -3,8 +3,11 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { RekognitionClient, DetectTextCommand } from "npm:@aws-sdk/client-rekognition@3";
 import { S3Client, GetObjectCommand } from "npm:@aws-sdk/client-s3@3";
 // WebP → JPEG conversion via jsquash (WASM). imagescript does NOT support WebP decoding.
-import decodeWebp from "https://esm.sh/@jsquash/[email protected]/decode";
-import encodeJpeg from "https://esm.sh/@jsquash/[email protected]/encode";
+// NOTE: '%40' = URL-encoded '@'. We avoid the literal `name@version` pattern because
+// the deploy bundler runs source through a pipeline that applies Cloudflare email
+// obfuscation and mangles `[email protected]` → `[email protected]`, breaking the import.
+import decodeWebp from "https://esm.sh/@jsquash/webp%401.5.0/decode";
+import encodeJpeg from "https://esm.sh/@jsquash/jpeg%401.6.0/encode";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
