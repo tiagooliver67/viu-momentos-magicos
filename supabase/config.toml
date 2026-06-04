@@ -1,4 +1,1 @@
 project_id = "ccyrargjjpokfwbqkgcl"
-
-[functions.get-service-key]
-verify_jwt = false
