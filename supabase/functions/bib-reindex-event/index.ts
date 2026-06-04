@@ -102,7 +102,11 @@ Deno.serve(async (req) => {
     if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const body = await req.json().catch(() => ({}));
-    const { event_id, force = false, limit = 50 } = body as { event_id?: string; force?: boolean; limit?: number };
+    // Lote pequeno: jsquash (WASM WebP decode) é CPU-intensivo e o Edge Function
+    // tem orçamento de CPU restrito. Acima de ~3 fotos por invocação o runtime
+    // mata o processo com "CPU Time exceeded". Cliente deve clicar novamente
+    // para processar o próximo lote.
+    const { event_id, force = false, limit = 3 } = body as { event_id?: string; force?: boolean; limit?: number };
     if (!event_id) return new Response(JSON.stringify({ error: "event_id required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
@@ -119,7 +123,10 @@ Deno.serve(async (req) => {
 
     const pattern = new RegExp(ev.bib_number_pattern || "^\\d{1,6}$");
 
-    let q = admin.from("event_photos").select("id, file_url, bibs_indexed_at").eq("event_id", event_id).order("created_at", { ascending: false }).limit(Math.min(Math.max(limit, 1), 200));
+    // Cap defensivo: nunca aceitar mais que 3 por invocação, mesmo se cliente
+    // pedir mais, pois o limite real é CPU e não wall-clock.
+    const effectiveLimit = Math.min(Math.max(limit, 1), 3);
+    let q = admin.from("event_photos").select("id, file_url, bibs_indexed_at").eq("event_id", event_id).order("created_at", { ascending: false }).limit(effectiveLimit);
     if (!force) q = q.is("bibs_indexed_at", null);
     const { data: photos, error: photosErr } = await q;
     if (photosErr) throw photosErr;
@@ -299,7 +306,7 @@ Deno.serve(async (req) => {
       errors: errors.slice(0, 10),
       details,
       regions: { rekognition: REK_REGION, s3: S3_REGION, bucket: S3_BUCKET },
-      remaining_hint: (photos?.length || 0) === Math.min(Math.max(limit, 1), 200) ? "Há mais fotos; rode novamente." : null,
+      remaining_hint: (photos?.length || 0) === effectiveLimit ? "Há mais fotos pendentes — clique novamente em 'Indexar nº peito' para processar o próximo lote." : null,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
