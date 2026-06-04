@@ -87,7 +87,7 @@ const AdminEvents = () => {
         `OCR concluído: ${data.processed} fotos · ${data.total_detections} números · ${data.errors_count} erros`,
         { id: tId, duration: 6000 }
       );
-      if (data.remaining_hint) toast.message(data.remaining_hint);
+      if (data.remaining_hint) toast.warning(data.remaining_hint, { duration: 8000 });
     } catch (e) {
       toast.error(`Falha: ${e instanceof Error ? e.message : String(e)}`, { id: tId });
     } finally {
