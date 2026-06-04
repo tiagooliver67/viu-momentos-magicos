@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, Loader2, Eye, EyeOff, Trash2, ScanText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { IndexingProgressCard } from "@/components/admin/IndexingProgressCard";
 
 interface EventData {
   id: string;
@@ -164,6 +165,8 @@ const AdminEvents = () => {
                 </div>
               </div>
 
+              <IndexingProgressCard eventId={event.id} />
+
               <div className="flex flex-wrap gap-2 border-t border-border pt-3">
                 <button onClick={() => toggleVisibility(event.id, event.visibility)} className="flex items-center gap-1 px-2 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
                   {event.visibility ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
@@ -175,11 +178,11 @@ const AdminEvents = () => {
                 <button
                   onClick={() => reindexBibs(event.id, false)}
                   disabled={reindexing === event.id}
-                  title="Detectar números de peito nas fotos ainda não indexadas (lote de 50)"
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-accent text-accent-foreground hover:bg-accent/90 transition-colors disabled:opacity-50 sm:ml-auto"
+                  title="Fallback: reprocessar fotos que falharam no OCR automático"
+                  className="flex items-center gap-1 px-2 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-50 sm:ml-auto"
                 >
                   {reindexing === event.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ScanText className="w-3.5 h-3.5" />}
-                  Indexar nº peito
+                  Reprocessar OCR
                 </button>
               </div>
             </div>
