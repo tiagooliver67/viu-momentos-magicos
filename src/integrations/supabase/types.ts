@@ -279,6 +279,39 @@ export type Database = {
           },
         ]
       }
+      event_indexing_progress: {
+        Row: {
+          bibs_done: number
+          bibs_errors: number
+          created_at: string
+          event_id: string
+          faces_done: number
+          faces_errors: number
+          last_updated_at: string
+          total_photos: number
+        }
+        Insert: {
+          bibs_done?: number
+          bibs_errors?: number
+          created_at?: string
+          event_id: string
+          faces_done?: number
+          faces_errors?: number
+          last_updated_at?: string
+          total_photos?: number
+        }
+        Update: {
+          bibs_done?: number
+          bibs_errors?: number
+          created_at?: string
+          event_id?: string
+          faces_done?: number
+          faces_errors?: number
+          last_updated_at?: string
+          total_photos?: number
+        }
+        Relationships: []
+      }
       event_partners: {
         Row: {
           commission_pct: number
@@ -368,10 +401,12 @@ export type Database = {
           bibs_indexed_at: string | null
           created_at: string
           event_id: string
+          faces_indexed_at: string | null
           file_name: string | null
           file_url: string
           id: string
           identified: boolean
+          indexing_status: string
           photographer_id: string | null
         }
         Insert: {
@@ -380,10 +415,12 @@ export type Database = {
           bibs_indexed_at?: string | null
           created_at?: string
           event_id: string
+          faces_indexed_at?: string | null
           file_name?: string | null
           file_url: string
           id?: string
           identified?: boolean
+          indexing_status?: string
           photographer_id?: string | null
         }
         Update: {
@@ -392,10 +429,12 @@ export type Database = {
           bibs_indexed_at?: string | null
           created_at?: string
           event_id?: string
+          faces_indexed_at?: string | null
           file_name?: string | null
           file_url?: string
           id?: string
           identified?: boolean
+          indexing_status?: string
           photographer_id?: string | null
         }
         Relationships: [
