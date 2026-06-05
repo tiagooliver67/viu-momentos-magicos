@@ -255,7 +255,15 @@ const EventPage = () => {
 
   const getPhotoUrl = useCallback((photo: any) => {
     const thumbPath = toThumbPath(photo.file_url);
-    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+    const thumbUrl = thumbUrls?.[thumbPath];
+    const originalUrl = thumbUrls?.[photo.file_url];
+    // [debug-bib] TEMP logs — remover após diagnóstico
+    console.log("PHOTO ID:", photo.id);
+    console.log("FILE URL:", photo.file_url);
+    console.log("THUMB PATH:", thumbPath);
+    console.log("THUMB URL:", thumbUrl);
+    console.log("ORIGINAL URL:", originalUrl);
+    return thumbUrl || originalUrl || "";
   }, [thumbUrls, toThumbPath]);
 
   const selectedIndex = selectedPhoto
