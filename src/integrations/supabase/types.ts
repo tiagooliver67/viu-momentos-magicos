@@ -1400,6 +1400,33 @@ export type Database = {
           },
         ]
       }
+      sync_state: {
+        Row: {
+          last_error: string | null
+          last_rows_synced: number | null
+          last_run_at: string | null
+          last_synced_at: string
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          last_error?: string | null
+          last_rows_synced?: number | null
+          last_run_at?: string | null
+          last_synced_at?: string
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          last_error?: string | null
+          last_rows_synced?: number | null
+          last_run_at?: string | null
+          last_synced_at?: string
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       two_factor_codes: {
         Row: {
           action: string
