@@ -255,7 +255,15 @@ const EventPage = () => {
 
   const getPhotoUrl = useCallback((photo: any) => {
     const thumbPath = toThumbPath(photo.file_url);
-    return thumbUrls?.[thumbPath] || thumbUrls?.[photo.file_url] || "";
+    const thumbUrl = thumbUrls?.[thumbPath];
+    const originalUrl = thumbUrls?.[photo.file_url];
+    // [debug-bib] TEMP logs — remover após diagnóstico
+    console.log("PHOTO ID:", photo.id);
+    console.log("FILE URL:", photo.file_url);
+    console.log("THUMB PATH:", thumbPath);
+    console.log("THUMB URL:", thumbUrl);
+    console.log("ORIGINAL URL:", originalUrl);
+    return thumbUrl || originalUrl || "";
   }, [thumbUrls, toThumbPath]);
 
   const selectedIndex = selectedPhoto
@@ -499,17 +507,26 @@ const EventPage = () => {
           {!urlsLoading && !urlsError && photoList.length > 0 && (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-                {paginatedPhotos.map((photo: any, idx: number) => (
+                {paginatedPhotos.map((photo: any, idx: number) => {
+                  const resolvedUrl = getPhotoUrl(photo);
+                  // [debug-bib] TEMP — remover após diagnóstico
+                  console.log("RENDER PHOTO", {
+                    id: photo.id,
+                    file_url: photo.file_url,
+                    resolvedUrl,
+                  });
+                  return (
                   <LazyPhotoCard
                     key={photo.id}
                     photoId={photo.id}
-                    photoUrl={getPhotoUrl(photo)}
+                    photoUrl={resolvedUrl}
                     isFav={isFavorite(photo.id)}
                     onToggleFavorite={toggleFavorite}
                     onClick={() => setSelectedPhoto(photo)}
                     priority={idx < 10}
                   />
-                ))}
+                  );
+                })}
               </div>
 
               {totalPages > 1 && (

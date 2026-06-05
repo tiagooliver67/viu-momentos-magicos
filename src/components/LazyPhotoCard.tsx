@@ -79,7 +79,12 @@ const LazyPhotoCard = memo(({
                 decoding="async"
                 {...(priority ? { fetchPriority: "high" as any } : { fetchPriority: "low" as any })}
                 onLoad={() => setLoaded(true)}
-                onError={() => {
+                onError={(e) => {
+                  // [debug-bib] TEMP — remover após diagnóstico
+                  console.error("IMAGE LOAD ERROR", {
+                    photoId,
+                    src: (e.currentTarget as HTMLImageElement).src,
+                  });
                   if (fallbackPhotoUrl && currentSrc !== fallbackPhotoUrl) {
                     setLoaded(false);
                     setCurrentSrc(fallbackPhotoUrl);
