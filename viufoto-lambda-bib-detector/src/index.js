@@ -6,6 +6,12 @@
  * - Tries Image.S3Object first (zero data transfer). If cross-region or any S3Object error,
  *   falls back to Image.Bytes (download from S3 -> send raw bytes to Rekognition).
  * - Updates event_photos.indexing_status and event_indexing_progress for the realtime UI.
+ *
+ * Phase 1 (estabilidade):
+ *  - Usa o ARQUIVO ORIGINAL (JPG/JPEG) no Rekognition (DetectText não suporta WebP).
+ *  - Se a linha em event_photos ainda não existir, LANÇA erro para a mensagem retornar
+ *    ao fluxo de retry da SQS (e eventualmente ir para a DLQ após visibilityTimeout/maxReceiveCount).
+ *  - Logs explícitos em cada etapa para auditoria.
  */
 const { RekognitionClient, DetectTextCommand } = require("@aws-sdk/client-rekognition");
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
@@ -24,15 +30,6 @@ const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_R
   auth: { persistSession: false },
 });
 
-/** Convert an original S3 key to its /medium/<name>.webp variant. */
-function toMediumKey(originalKey) {
-  const slash = originalKey.lastIndexOf("/");
-  if (slash === -1) return originalKey;
-  const dir = originalKey.substring(0, slash);
-  const name = originalKey.substring(slash + 1).replace(/\.[^.]+$/, ".webp");
-  return `${dir}/medium/${name}`;
-}
-
 /** Extract eventId from path: usuarios/{uid}/eventos/{eventId}/fotos/... */
 function parseEventId(key) {
   const m = key.match(/^usuarios\/[^/]+\/eventos\/([^/]+)\/fotos\//);
@@ -46,19 +43,19 @@ async function streamToBytes(body) {
   return Buffer.concat(chunks);
 }
 
-async function detectText(mediumKey) {
+async function detectText(s3Key) {
   // 1) Try S3Object (works only when Rekognition region == S3 region).
   if (REK_REGION === S3_REGION) {
     try {
       return await rek.send(new DetectTextCommand({
-        Image: { S3Object: { Bucket: BUCKET, Name: mediumKey } },
+        Image: { S3Object: { Bucket: BUCKET, Name: s3Key } },
       }));
     } catch (err) {
       console.warn("S3Object failed, falling back to Bytes:", err.name, err.message);
     }
   }
   // 2) Cross-region or fallback: download from S3 and send bytes.
-  const obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: mediumKey }));
+  const obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: s3Key }));
   const bytes = await streamToBytes(obj.Body);
   if (bytes.length > MAX_BYTES) {
     const e = new Error(`Image exceeds Rekognition 5MB limit (${bytes.length} bytes)`);
@@ -107,6 +104,7 @@ async function processKey(originalKey) {
     console.log("Skip (no eventId in path):", originalKey);
     return;
   }
+  console.log(`[bib] eventId=${eventId} originalKey=${originalKey}`);
 
   const event = await fetchEventContext(eventId);
   if (!event) {
@@ -114,29 +112,37 @@ async function processKey(originalKey) {
     return;
   }
   if (event.bib_search_enabled === false) {
-    console.log("Skip (bib_search_enabled = false):", eventId);
+    console.log(`[bib] Skip eventId=${eventId} (bib_search_enabled=false)`);
     return;
   }
 
   const photoId = await findPhotoId(eventId, originalKey);
   if (!photoId) {
-    console.log("Skip (photo row not found yet):", originalKey);
-    return;
+    // FIX A: NÃO silenciar. Lançar erro para SQS reentregar (retry/DLQ).
+    const msg = `event_photos row not found yet for key=${originalKey} (eventId=${eventId})`;
+    console.warn(`[bib] photoId=NOT_FOUND -> throwing for SQS retry. ${msg}`);
+    const e = new Error(msg);
+    e.name = "PhotoRowNotReadyException";
+    throw e;
   }
+  console.log(`[bib] photoId=${photoId} (found)`);
 
-  const mediumKey = toMediumKey(originalKey);
+  // FIX B: Usar o ORIGINAL (JPG/JPEG). Rekognition DetectText não suporta WebP.
+  const imageKey = originalKey;
   const regex = new RegExp(event.bib_number_pattern || DEFAULT_REGEX);
+  console.log(`[bib] OCR image=${imageKey} regex=${regex}`);
 
   await sb.from("event_photos").update({ indexing_status: "processing" }).eq("id", photoId);
 
   let resp;
   try {
-    resp = await detectText(mediumKey);
+    resp = await detectText(imageKey);
   } catch (err) {
+    console.error(`[bib] Rekognition error photoId=${photoId} key=${imageKey} -> ${err.name}: ${err.message}`);
     await sb.from("bib_detection_errors").insert({
       photo_id: photoId,
       event_id: eventId,
-      s3_key: mediumKey,
+      s3_key: imageKey,
       error_code: err.name,
       error_message: err.message,
     });
@@ -169,13 +175,20 @@ async function processKey(originalKey) {
     confidence: v.confidence,
     bbox: v.bbox,
   }));
+  console.log(`[bib] detections=${detections.length} valid=${rows.length} numbers=[${rows.map(r=>r.number).join(",")}]`);
 
   if (rows.length > 0) {
     const { error } = await sb.from("photo_bib_numbers").insert(rows);
-    if (error) throw error;
+    if (error) {
+      console.error(`[bib] insert photo_bib_numbers FAILED photoId=${photoId}: ${error.message}`);
+      throw error;
+    }
+    console.log(`[bib] photo_bib_numbers INSERT ok photoId=${photoId} rows=${rows.length}`);
+  } else {
+    console.log(`[bib] photo_bib_numbers INSERT skipped photoId=${photoId} (no valid numbers)`);
   }
 
-  await sb
+  const { error: updErr } = await sb
     .from("event_photos")
     .update({
       bibs_indexed_at: new Date().toISOString(),
@@ -183,8 +196,14 @@ async function processKey(originalKey) {
       indexing_status: "done",
     })
     .eq("id", photoId);
+  if (updErr) {
+    console.error(`[bib] event_photos UPDATE FAILED photoId=${photoId}: ${updErr.message}`);
+    throw updErr;
+  }
+  console.log(`[bib] event_photos UPDATE ok photoId=${photoId} status=done bibs_count=${rows.length}`);
 
   await bumpProgress(eventId, "done");
+  console.log(`[bib] event_indexing_progress bumped eventId=${eventId} field=done`);
 
   console.log(`Indexed ${rows.length} bib(s) for photo ${photoId}`);
 }
