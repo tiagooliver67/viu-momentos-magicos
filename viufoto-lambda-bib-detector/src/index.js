@@ -151,7 +151,16 @@ async function processKey(originalKey) {
     throw err;
   }
 
-  const detections = (resp.TextDetections || []).filter((d) => d.Type === "WORD");
+  const allDetections = resp.TextDetections || [];
+  // TEMP DEBUG: log every detection (text/type/confidence) to diagnose low recognition rate.
+  for (const d of allDetections) {
+    console.log(
+      `[bib][raw] photoId=${photoId} type=${d.Type} text="${d.DetectedText}" conf=${(d.Confidence || 0).toFixed(2)}`
+    );
+  }
+  console.log(`[bib] rawDetections=${allDetections.length} (WORD=${allDetections.filter(d=>d.Type==='WORD').length} LINE=${allDetections.filter(d=>d.Type==='LINE').length})`);
+  // Accept BOTH WORD and LINE. LINE often groups multi-digit numbers that WORD splits.
+  const detections = allDetections.filter((d) => d.Type === "WORD" || d.Type === "LINE");
   const seen = new Map(); // number -> best detection
   for (const d of detections) {
     const text = (d.DetectedText || "").trim();
