@@ -473,6 +473,53 @@ const EventPage = () => {
             </button>
           </div>
 
+          {/* Breadcrumb folder when navegando dentro de uma pasta */}
+          {selectedFolder !== null && !trimmedBib && (
+            <div className="mb-4 flex items-center gap-2 text-sm">
+              <button
+                onClick={() => setSelectedFolder(null)}
+                className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Todas as pastas
+              </button>
+              <span className="text-muted-foreground">/</span>
+              <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                <Folder className="w-4 h-4 text-primary" />
+                {selectedFolder === "__root__" ? "Geral" : selectedFolder}
+              </span>
+            </div>
+          )}
+
+          {/* Folder hub — exibido apenas quando há pastas e nenhuma busca/pasta selecionada */}
+          {showFolderHub && (
+            <div className="mb-8">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Todas as pastas</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {folders.map((f) => {
+                  const label = f.name === "__root__" ? "Geral" : f.name;
+                  return (
+                    <button
+                      key={f.name}
+                      onClick={() => setSelectedFolder(f.name)}
+                      className="glass-card p-4 flex items-center gap-3 hover:border-primary/50 hover:shadow-md transition-all text-left min-h-[64px]"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Folder className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate">{label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {f.count} {f.count === 1 ? "foto" : "fotos"}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Feedback da busca por número de peito */}
           {trimmedBib && (
             <div className="mb-4 text-sm text-muted-foreground">
@@ -494,7 +541,7 @@ const EventPage = () => {
           )}
 
           {/* Skeleton loading */}
-          {urlsLoading && photoList.length > 0 && (
+          {!showFolderHub && urlsLoading && photoList.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
               {Array.from({ length: Math.min(photoList.length, 20) }).map((_, i) => (
                 <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
@@ -518,14 +565,14 @@ const EventPage = () => {
           )}
 
           {/* Photo Grid with watermarks */}
-          {!urlsLoading && !urlsError && photoList.length === 0 && (
+          {!showFolderHub && !urlsLoading && !urlsError && photoList.length === 0 && (
             <div className="text-center py-16 text-muted-foreground">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>Nenhuma foto publicada neste evento ainda.</p>
             </div>
           )}
 
-          {!urlsLoading && !urlsError && photoList.length > 0 && (
+          {!showFolderHub && !urlsLoading && !urlsError && photoList.length > 0 && (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                 {paginatedPhotos.map((photo: any, idx: number) => {
