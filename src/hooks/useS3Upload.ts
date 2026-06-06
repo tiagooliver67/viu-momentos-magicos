@@ -94,7 +94,9 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
   const UPLOAD_CONCURRENCY = 6;
 
   return useMutation({
-    mutationFn: async (files: File[]) => {
+    mutationFn: async (input: File[] | { files: File[]; album?: string | null }) => {
+      const files: File[] = Array.isArray(input) ? input : input.files;
+      const album: string | null = Array.isArray(input) ? null : (input.album ?? null);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
@@ -255,6 +257,9 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
             file_url: obj.path,
             file_name: obj.file.name,
           };
+          if (isPhoto && album) {
+            insertData.album = album;
+          }
 
           const { data, error } = await supabase
             .from(tableName)
