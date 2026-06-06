@@ -446,7 +446,7 @@ const EventDashboard = () => {
           onDelete={(pid) => deletePhoto.mutate(pid)}
           isDeleting={deletePhoto.isPending}
           totalPhotos={photos.length}
-          onUploadFiles={(files) => s3UploadPhotos.mutate(files)}
+          onUploadFiles={(files, album) => s3UploadPhotos.mutate({ files, album })}
           isUploading={s3UploadPhotos.isPending}
           uploadProgress={photoUploadProgress}
           coverUrl={event?.cover_url}
