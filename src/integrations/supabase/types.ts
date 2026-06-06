@@ -1400,6 +1400,75 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          admin_response: string | null
+          assigned_photographer_id: string | null
+          attachment_url: string | null
+          category: string
+          created_at: string
+          escalate_after: string | null
+          escalated_at: string | null
+          event_id: string | null
+          id: string
+          message: string
+          photo_id: string | null
+          photo_url: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_name: string | null
+        }
+        Insert: {
+          admin_response?: string | null
+          assigned_photographer_id?: string | null
+          attachment_url?: string | null
+          category: string
+          created_at?: string
+          escalate_after?: string | null
+          escalated_at?: string | null
+          event_id?: string | null
+          id?: string
+          message: string
+          photo_id?: string | null
+          photo_url?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_email: string
+          user_id: string
+          user_name?: string | null
+        }
+        Update: {
+          admin_response?: string | null
+          assigned_photographer_id?: string | null
+          attachment_url?: string | null
+          category?: string
+          created_at?: string
+          escalate_after?: string | null
+          escalated_at?: string | null
+          event_id?: string | null
+          id?: string
+          message?: string
+          photo_id?: string | null
+          photo_url?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       sync_state: {
         Row: {
           last_error: string | null
