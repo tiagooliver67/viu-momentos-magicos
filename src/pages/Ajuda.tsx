@@ -238,9 +238,11 @@ function PrivacyForm({
   onLogin: () => void;
 }) {
   const [message, setMessage] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [routedTo, setRoutedTo] = useState<"photographer" | "super_admin" | null>(null);
 
   if (!user) {
     return (
@@ -261,7 +263,10 @@ function PrivacyForm({
   if (done) {
     return (
       <div className="mt-4 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-sm text-foreground">
-        Solicitação enviada com sucesso! Nossa equipe analisará no painel administrativo e entrará em contato pelo seu e-mail cadastrado.
+        Solicitação enviada com sucesso!{" "}
+        {routedTo === "photographer"
+          ? "Identificamos o fotógrafo responsável pela foto e ele tem 24h para resolver. Caso não responda, o caso é escalado automaticamente para nossa equipe."
+          : "Nossa equipe analisará no painel administrativo e entrará em contato pelo seu e-mail cadastrado."}
       </div>
     );
   }
@@ -282,31 +287,48 @@ function PrivacyForm({
     }
     setSubmitting(true);
     try {
-      const { data: ticket, error } = await (supabase as any)
-        .from("support_tickets")
-        .insert({
-          user_id: user.id,
-          user_email: userEmail ?? "",
-          user_name: userName,
-          category: "Privacidade e Remoção",
-          subject,
-          message: message.trim(),
-          status: "aberto",
-        })
-        .select()
-        .single();
-      if (error) throw error;
-
-      if (allowAttachment && file && ticket) {
-        const ext = file.name.split(".").pop() || "bin";
-        const path = `${user.id}/${ticket.id}/anexo.${ext}`;
-        const up = await supabase.storage.from("support-attachments").upload(path, file, { upsert: true });
-        if (!up.error) {
-          await (supabase as any).from("support_tickets").update({ attachment_url: path }).eq("id", ticket.id);
+      if (kind === "remove_photo") {
+        // Upload attachment first (if any) to a temp path under user folder
+        let attachmentPath: string | null = null;
+        if (file) {
+          const ext = file.name.split(".").pop() || "bin";
+          const tempId = crypto.randomUUID();
+          const path = `${user.id}/${tempId}/anexo.${ext}`;
+          const up = await supabase.storage.from("support-attachments").upload(path, file, { upsert: true });
+          if (up.error) throw up.error;
+          attachmentPath = path;
         }
+
+        const { data, error } = await supabase.functions.invoke("create-removal-ticket", {
+          body: {
+            message: message.trim(),
+            photo_url: photoUrl.trim(),
+            attachment_url: attachmentPath,
+            user_name: userName,
+          },
+        });
+        if (error) throw error;
+        const res = data as { routed_to?: "photographer" | "super_admin" };
+        setRoutedTo(res?.routed_to ?? "super_admin");
+      } else {
+        // Account deletion (LGPD) → straight to super admin
+        const { error } = await (supabase as any)
+          .from("support_tickets")
+          .insert({
+            user_id: user.id,
+            user_email: userEmail ?? "",
+            user_name: userName,
+            category: "Privacidade e Remoção",
+            subject,
+            message: message.trim(),
+            status: "aberto",
+          });
+        if (error) throw error;
+        setRoutedTo("super_admin");
       }
       setDone(true);
       setMessage("");
+      setPhotoUrl("");
       setFile(null);
     } catch (err: any) {
       toast({ title: "Erro ao enviar", description: err?.message ?? "Tente novamente.", variant: "destructive" });
@@ -317,6 +339,15 @@ function PrivacyForm({
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-3 border-t border-border pt-4">
+      {kind === "remove_photo" && (
+        <input
+          type="url"
+          value={photoUrl}
+          onChange={(e) => setPhotoUrl(e.target.value)}
+          placeholder="Link da foto (ex: https://viufoto.com.br/foto/...)"
+          className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm outline-none focus:border-primary"
+        />
+      )}
       <Textarea
         required
         minLength={10}
