@@ -74,6 +74,60 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          excerpt: string | null
+          featured_image: string | null
+          id: string
+          meta_description: string | null
+          meta_title: string | null
+          published_at: string | null
+          read_minutes: number | null
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          read_minutes?: number | null
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          featured_image?: string | null
+          id?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          published_at?: string | null
+          read_minutes?: number | null
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
@@ -1823,6 +1877,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_blog_views: { Args: { _slug: string }; Returns: undefined }
       is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
       is_event_photographer: { Args: { _event_id: string }; Returns: boolean }
       is_proposal_party: { Args: { _proposal_id: string }; Returns: boolean }
