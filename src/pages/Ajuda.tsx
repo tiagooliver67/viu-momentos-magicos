@@ -223,3 +223,137 @@ const Ajuda = () => {
 };
 
 export default Ajuda;
+
+function PrivacyForm({
+  kind,
+  user,
+  userEmail,
+  userName,
+  onLogin,
+}: {
+  kind: FormKind;
+  user: { id: string } | null;
+  userEmail: string | null;
+  userName: string | null;
+  onLogin: () => void;
+}) {
+  const [message, setMessage] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  if (!user) {
+    return (
+      <div className="mt-4 p-4 rounded-xl border border-primary/30 bg-primary/5 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1 text-sm text-foreground">
+          Para solicitar ações de privacidade ou remoção de conteúdo, por favor, faça login ou crie uma conta no site.
+        </div>
+        <button
+          onClick={onLogin}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
+        >
+          <LogIn className="w-4 h-4" /> Entrar
+        </button>
+      </div>
+    );
+  }
+
+  if (done) {
+    return (
+      <div className="mt-4 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-sm text-foreground">
+        Solicitação enviada com sucesso! Nossa equipe analisará no painel administrativo e entrará em contato pelo seu e-mail cadastrado.
+      </div>
+    );
+  }
+
+  const subject = kind === "remove_photo" ? "Remoção de Foto" : "Exclusão de Conta (LGPD)";
+  const allowAttachment = kind === "remove_photo";
+  const placeholder =
+    kind === "remove_photo"
+      ? "Cole o link da foto ou descreva os detalhes aqui..."
+      : "Confirmo o pedido de exclusão definitiva da minha conta e estou ciente de que esta ação é irreversível...";
+  const buttonLabel = kind === "remove_photo" ? "Enviar Solicitação de Remoção" : "Solicitar Exclusão Definitiva";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (message.trim().length < 10) {
+      toast({ title: "Mensagem muito curta", description: "Descreva sua solicitação com pelo menos 10 caracteres.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data: ticket, error } = await supabase
+        .from("support_tickets")
+        .insert({
+          user_id: user.id,
+          user_email: userEmail ?? "",
+          user_name: userName,
+          category: "Privacidade e Remoção",
+          subject,
+          message: message.trim(),
+          status: "aberto",
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      if (allowAttachment && file && ticket) {
+        const ext = file.name.split(".").pop() || "bin";
+        const path = `${user.id}/${ticket.id}/anexo.${ext}`;
+        const up = await supabase.storage.from("support-attachments").upload(path, file, { upsert: true });
+        if (!up.error) {
+          await supabase.from("support_tickets").update({ attachment_url: path }).eq("id", ticket.id);
+        }
+      }
+      setDone(true);
+      setMessage("");
+      setFile(null);
+    } catch (err: any) {
+      toast({ title: "Erro ao enviar", description: err?.message ?? "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 space-y-3 border-t border-border pt-4">
+      <Textarea
+        required
+        minLength={10}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder={placeholder}
+        className="min-h-[120px] bg-background"
+      />
+      {allowAttachment && (
+        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background text-sm cursor-pointer hover:bg-secondary transition-colors w-fit">
+          <Paperclip className="w-4 h-4" />
+          <span>{file ? file.name : "Anexar imagem (opcional)"}</span>
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/jpg"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              if (f && f.size > 5 * 1024 * 1024) {
+                toast({ title: "Arquivo muito grande", description: "Máximo de 5MB.", variant: "destructive" });
+                return;
+              }
+              setFile(f);
+            }}
+          />
+        </label>
+      )}
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 disabled:opacity-60"
+        >
+          {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+          {buttonLabel}
+        </button>
+      </div>
+    </form>
+  );
+}
