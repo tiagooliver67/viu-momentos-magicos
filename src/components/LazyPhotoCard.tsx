@@ -49,6 +49,23 @@ const LazyPhotoCard = memo(({
     if (priority) return;
     const el = ref.current;
     if (!el) return;
+
+    // Fallback 1: if element is already within viewport on mount, mark visible immediately.
+    // Fixes cases where the IntersectionObserver doesn't fire for cards rendered after
+    // a filter/search re-render (observer attached after intersection already occurred).
+    const rect = el.getBoundingClientRect();
+    const vh = window.innerHeight || document.documentElement.clientHeight;
+    const vw = window.innerWidth || document.documentElement.clientWidth;
+    const inViewport =
+      rect.bottom >= -200 &&
+      rect.right >= 0 &&
+      rect.top <= vh + 200 &&
+      rect.left <= vw;
+    if (inViewport) {
+      setIsVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -59,7 +76,15 @@ const LazyPhotoCard = memo(({
       { rootMargin: "200px" }
     );
     observer.observe(el);
-    return () => observer.disconnect();
+
+    // Fallback 2: safety net — ensure we never get stuck on a skeleton if the observer
+    // somehow misses (e.g. card rendered inside a container that briefly had 0 size).
+    const timeoutId = window.setTimeout(() => setIsVisible(true), 1500);
+
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timeoutId);
+    };
   }, [priority]);
 
   return (
