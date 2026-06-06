@@ -65,8 +65,11 @@ const BlogAdm = () => {
       const path = `${(editing.slug || "post")}-${Date.now()}.${ext}`;
       const up = await supabase.storage.from("blog-covers").upload(path, file, { upsert: true, contentType: file.type });
       if (up.error) throw up.error;
-      const { data } = supabase.storage.from("blog-covers").getPublicUrl(path);
-      setEditing({ ...editing, featured_image: data.publicUrl });
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("blog-covers")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10); // 10 anos
+      if (signErr) throw signErr;
+      setEditing({ ...editing, featured_image: signed.signedUrl });
     } catch (err: any) {
       toast({ title: "Erro no upload", description: err?.message ?? "Tente novamente.", variant: "destructive" });
     } finally {
