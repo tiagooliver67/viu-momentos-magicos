@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2, ChevronLeft, ChevronRight, Folder, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -58,6 +58,7 @@ const EventPage = () => {
   const [passwordInput, setPasswordInput] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [page, setPage] = useState(1);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
 
@@ -217,18 +218,44 @@ const EventPage = () => {
   });
 
   const photoList = useMemo(() => {
-    if (!trimmedBib) return allPhotos;
-    if (!isValidBibQuery) return allPhotos;
-    if (!bibMatchIds) return allPhotos;
-    return allPhotos.filter((p: any) => bibMatchIds.has(p.id));
-  }, [allPhotos, trimmedBib, isValidBibQuery, bibMatchIds]);
+    // Active bib search ignores folder filter (busca cruza todas as pastas)
+    if (trimmedBib && isValidBibQuery && bibMatchIds) {
+      return allPhotos.filter((p: any) => bibMatchIds.has(p.id));
+    }
+    if (trimmedBib) return allPhotos;
+    // No search: apply folder filter when one is selected
+    if (selectedFolder !== null) {
+      return allPhotos.filter((p: any) => (p.album ?? null) === selectedFolder);
+    }
+    return allPhotos;
+  }, [allPhotos, trimmedBib, isValidBibQuery, bibMatchIds, selectedFolder]);
+
+  // Folder list derived from albums in event_photos
+  const folders = useMemo(() => {
+    const counts = new Map<string, number>();
+    let rootCount = 0;
+    for (const p of allPhotos as any[]) {
+      if (p.album) counts.set(p.album, (counts.get(p.album) || 0) + 1);
+      else rootCount++;
+    }
+    const list = Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    if (rootCount > 0 && counts.size > 0) {
+      // "Geral" represents photos uploaded sem pasta
+      list.unshift({ name: "__root__", count: rootCount });
+    }
+    return list;
+  }, [allPhotos]);
+
+  const showFolderHub = !trimmedBib && selectedFolder === null && folders.length > 0;
 
   const PHOTOS_PER_PAGE = 32;
   const totalPages = Math.max(1, Math.ceil(photoList.length / PHOTOS_PER_PAGE));
   const paginatedPhotos = photoList.slice((page - 1) * PHOTOS_PER_PAGE, page * PHOTOS_PER_PAGE);
 
   // Reset to page 1 when search changes or photos reload
-  useEffect(() => { setPage(1); }, [searchBib, photoList.length]);
+  useEffect(() => { setPage(1); }, [searchBib, photoList.length, selectedFolder]);
 
   // Keep page in valid range
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
@@ -446,6 +473,53 @@ const EventPage = () => {
             </button>
           </div>
 
+          {/* Breadcrumb folder when navegando dentro de uma pasta */}
+          {selectedFolder !== null && !trimmedBib && (
+            <div className="mb-4 flex items-center gap-2 text-sm">
+              <button
+                onClick={() => setSelectedFolder(null)}
+                className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Todas as pastas
+              </button>
+              <span className="text-muted-foreground">/</span>
+              <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                <Folder className="w-4 h-4 text-primary" />
+                {selectedFolder === "__root__" ? "Geral" : selectedFolder}
+              </span>
+            </div>
+          )}
+
+          {/* Folder hub — exibido apenas quando há pastas e nenhuma busca/pasta selecionada */}
+          {showFolderHub && (
+            <div className="mb-8">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Todas as pastas</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {folders.map((f) => {
+                  const label = f.name === "__root__" ? "Geral" : f.name;
+                  return (
+                    <button
+                      key={f.name}
+                      onClick={() => setSelectedFolder(f.name)}
+                      className="glass-card p-4 flex items-center gap-3 hover:border-primary/50 hover:shadow-md transition-all text-left min-h-[64px]"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Folder className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate">{label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {f.count} {f.count === 1 ? "foto" : "fotos"}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Feedback da busca por número de peito */}
           {trimmedBib && (
             <div className="mb-4 text-sm text-muted-foreground">
@@ -467,7 +541,7 @@ const EventPage = () => {
           )}
 
           {/* Skeleton loading */}
-          {urlsLoading && photoList.length > 0 && (
+          {!showFolderHub && urlsLoading && photoList.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
               {Array.from({ length: Math.min(photoList.length, 20) }).map((_, i) => (
                 <Skeleton key={i} className="aspect-[3/4] rounded-lg" />
@@ -491,14 +565,14 @@ const EventPage = () => {
           )}
 
           {/* Photo Grid with watermarks */}
-          {!urlsLoading && !urlsError && photoList.length === 0 && (
+          {!showFolderHub && !urlsLoading && !urlsError && photoList.length === 0 && (
             <div className="text-center py-16 text-muted-foreground">
               <Camera className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p>Nenhuma foto publicada neste evento ainda.</p>
             </div>
           )}
 
-          {!urlsLoading && !urlsError && photoList.length > 0 && (
+          {!showFolderHub && !urlsLoading && !urlsError && photoList.length > 0 && (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                 {paginatedPhotos.map((photo: any, idx: number) => {
