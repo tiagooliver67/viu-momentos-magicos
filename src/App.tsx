@@ -53,6 +53,8 @@ import AdminInscricoes from "./pages/admin/AdminInscricoes";
 import AdminInscricaoDetail from "./pages/admin/AdminInscricaoDetail";
 import AdminHero from "./pages/admin/AdminHero";
 import AdminPhotos from "./pages/admin/AdminPhotos";
+import AdminHealth from "./pages/admin/AdminHealth";
+import AdminPhotoDiagnostics from "./pages/admin/AdminPhotoDiagnostics";
 import InscricoesList from "./pages/inscricoes/InscricoesList";
 import InscricaoForm from "./pages/inscricoes/InscricaoForm";
 import InscricaoDetail from "./pages/inscricoes/InscricaoDetail";
@@ -119,6 +121,8 @@ const App = () => (
                 <Route path="configuracoes" element={<AdminSettings />} />
                 <Route path="hero" element={<AdminHero />} />
                 <Route path="fotos" element={<AdminPhotos />} />
+                <Route path="saude" element={<AdminHealth />} />
+                <Route path="foto/:photoId" element={<AdminPhotoDiagnostics />} />
                 <Route path="logs" element={<AdminLogs />} />
               </Route>
               <Route path="*" element={<NotFound />} />
