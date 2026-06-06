@@ -197,8 +197,6 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
     onUploadFiles?.(failedFiles, currentAlbum);
   };
 
-  if (!open) return null;
-
   const folders = useMemo(() => {
     const set = new Set<string>();
     photos.forEach(p => { if (p.album) set.add(p.album); });
@@ -218,6 +216,8 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
     () => photos.filter(p => (p.album ?? null) === currentAlbum),
     [photos, currentAlbum]
   );
+
+  if (!open) return null;
 
   const totalPages = Math.max(1, Math.ceil(visiblePhotos.length / PHOTOS_PER_PAGE));
   const safePage = Math.min(page, totalPages);
