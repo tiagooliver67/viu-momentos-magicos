@@ -35,6 +35,10 @@ const LazyPhotoCard = memo(({
   const [currentSrc, setCurrentSrc] = useState(photoUrl);
   const ref = useRef<HTMLDivElement>(null);
 
+  // [debug-bib] TEMP — remover após diagnóstico
+  console.log("RENDER CARD", { photoId, photoUrl });
+  console.log("CARD STATE", { photoId, isVisible, isLoaded: loaded, hasError });
+
   useEffect(() => {
     setCurrentSrc(photoUrl);
     setLoaded(false);
@@ -78,7 +82,11 @@ const LazyPhotoCard = memo(({
                 loading={priority ? "eager" : "lazy"}
                 decoding="async"
                 {...(priority ? { fetchPriority: "high" as any } : { fetchPriority: "low" as any })}
-                onLoad={() => setLoaded(true)}
+                onLoad={() => {
+                  // [debug-bib] TEMP — remover após diagnóstico
+                  console.log("IMAGE LOADED", photoId);
+                  setLoaded(true);
+                }}
                 onError={(e) => {
                   // [debug-bib] TEMP — remover após diagnóstico
                   console.error("IMAGE LOAD ERROR", {
