@@ -34,6 +34,7 @@ import Favoritos from "./pages/Favoritos";
 import VirarFotografo from "./pages/VirarFotografo";
 import ParaOrganizadores from "./pages/ParaOrganizadores";
 import TermosDeUso from "./pages/TermosDeUso";
+import Ajuda from "./pages/Ajuda";
 import TermsGate from "./components/TermsGate";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
@@ -90,6 +91,7 @@ const App = () => (
               <Route path="/virar-fotografo" element={<VirarFotografo />} />
               <Route path="/para-organizadores" element={<ParaOrganizadores />} />
               <Route path="/termos-de-uso" element={<TermosDeUso />} />
+              <Route path="/ajuda" element={<Ajuda />} />
               <Route path="/inscricao/:slug" element={<InscricaoPublic />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
               {/* Financeiro route removed — unified into Carteira */}
