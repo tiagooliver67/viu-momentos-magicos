@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, memo } from "react";
 import { Heart, Share2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { log, reportError } from "@/lib/logger";
 
 interface LazyPhotoCardProps {
   photoId: string;
@@ -92,10 +93,20 @@ const LazyPhotoCard = memo(({
                 }}
                 onError={(e) => {
                   if (fallbackPhotoUrl && currentSrc !== fallbackPhotoUrl) {
+                    log("warn", "image_fallback_used", {
+                      component: "frontend",
+                      photoId,
+                      src: currentSrc,
+                    });
                     setLoaded(false);
                     setCurrentSrc(fallbackPhotoUrl);
                     return;
                   }
+                  reportError("image_load_failed", {
+                    component: "frontend",
+                    photoId,
+                    src: (e.currentTarget as HTMLImageElement).src,
+                  });
                   setLoaded(true);
                   setHasError(true);
                 }}
