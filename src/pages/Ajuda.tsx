@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Search, ArrowLeft, ChevronRight, Mail, MessageCircle, Download, CreditCard, Shield, Camera } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, ArrowLeft, ChevronRight, Mail, MessageCircle, Download, CreditCard, Shield, Camera, Paperclip, Loader2, LogIn } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-type Article = { q: string; a: string };
+type FormKind = "remove_photo" | "delete_account";
+type Article = { q: string; a: string; form?: FormKind };
 type Category = { id: string; name: string; icon: React.ComponentType<{ className?: string }>; description: string; articles: Article[] };
 
 const categories: Category[] = [
@@ -50,8 +55,16 @@ const categories: Category[] = [
     icon: Shield,
     description: "Remoção de fotos, denúncias e LGPD",
     articles: [
-      { q: "Quero remover uma foto minha do site", a: "Se você encontrou uma foto sua exposta e deseja a remoção por motivos de privacidade, clique no botão \"Denunciar Foto\" exibido ao lado da imagem ou envie o link da foto para o nosso suporte técnico para exclusão imediata." },
-      { q: "Como solicitar a exclusão dos meus dados pessoais (LGPD)?", a: "Você pode solicitar a exclusão definitiva da sua conta e de todos os seus dados armazenados enviando um e-mail para nossa equipe de privacidade." },
+      {
+        q: "Quero remover uma foto minha do site",
+        a: "Se você encontrou uma foto sua exposta e deseja a remoção por motivos de privacidade, podemos te ajudar com isso imediatamente.\n\nLogo abaixo, você encontrará um campo de mensagem obrigatório onde poderá explicar seu pedido e solicitar a exclusão.\n\nPara agilizar o processo, cole o link da foto em questão no campo de texto ou anexe o arquivo da imagem utilizando o botão de anexo.\n\nNossa equipe de moderação analisará a denúncia com prioridade máxima para realizar a remoção.",
+        form: "remove_photo",
+      },
+      {
+        q: "Quero apagar minha conta e meus dados (LGPD)",
+        a: "Se você deseja apagar sua conta e todos os seus dados pessoais da nossa plataforma, podemos te ajudar com isso.\n\nLogo abaixo, você encontrará um campo de mensagem obrigatório onde poderá confirmar e detalhar sua solicitação.\n\nPara agilizar o processo, descreva seu pedido e confirme que está ciente de que esta ação é irreversível e apagará seu histórico de compras/vendas.\n\nNossa equipe irá analisar a solicitação no painel administrativo e realizar a exclusão definitiva conforme as diretrizes de privacidade e proteção de dados (LGPD).",
+        form: "delete_account",
+      },
     ],
   },
   {
@@ -70,6 +83,8 @@ const categories: Category[] = [
 const Ajuda = () => {
   const [selected, setSelected] = useState<Category | null>(null);
   const [query, setQuery] = useState("");
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
 
   const q = query.trim().toLowerCase();
   const searching = q.length > 1;
@@ -121,7 +136,12 @@ const Ajuda = () => {
                           <div className="font-medium">{r.q}</div>
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed">{r.a}</AccordionContent>
+                      <AccordionContent className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                        {r.a}
+                        {r.form && (
+                          <PrivacyForm kind={r.form} user={user} userEmail={user?.email ?? null} userName={profile?.full_name ?? null} onLogin={() => navigate("/login")} />
+                        )}
+                      </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
@@ -149,7 +169,12 @@ const Ajuda = () => {
                 {selected.articles.map((a, i) => (
                   <AccordionItem key={i} value={`a-${i}`} className="border border-border rounded-xl px-4 bg-card">
                     <AccordionTrigger className="text-left font-medium hover:no-underline">{a.q}</AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed">{a.a}</AccordionContent>
+                    <AccordionContent className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                      {a.a}
+                      {a.form && (
+                        <PrivacyForm kind={a.form} user={user} userEmail={user?.email ?? null} userName={profile?.full_name ?? null} onLogin={() => navigate("/login")} />
+                      )}
+                    </AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>
@@ -198,3 +223,137 @@ const Ajuda = () => {
 };
 
 export default Ajuda;
+
+function PrivacyForm({
+  kind,
+  user,
+  userEmail,
+  userName,
+  onLogin,
+}: {
+  kind: FormKind;
+  user: { id: string } | null;
+  userEmail: string | null;
+  userName: string | null;
+  onLogin: () => void;
+}) {
+  const [message, setMessage] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  if (!user) {
+    return (
+      <div className="mt-4 p-4 rounded-xl border border-primary/30 bg-primary/5 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1 text-sm text-foreground">
+          Para solicitar ações de privacidade ou remoção de conteúdo, por favor, faça login ou crie uma conta no site.
+        </div>
+        <button
+          onClick={onLogin}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
+        >
+          <LogIn className="w-4 h-4" /> Entrar
+        </button>
+      </div>
+    );
+  }
+
+  if (done) {
+    return (
+      <div className="mt-4 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-sm text-foreground">
+        Solicitação enviada com sucesso! Nossa equipe analisará no painel administrativo e entrará em contato pelo seu e-mail cadastrado.
+      </div>
+    );
+  }
+
+  const subject = kind === "remove_photo" ? "Remoção de Foto" : "Exclusão de Conta (LGPD)";
+  const allowAttachment = kind === "remove_photo";
+  const placeholder =
+    kind === "remove_photo"
+      ? "Cole o link da foto ou descreva os detalhes aqui..."
+      : "Confirmo o pedido de exclusão definitiva da minha conta e estou ciente de que esta ação é irreversível...";
+  const buttonLabel = kind === "remove_photo" ? "Enviar Solicitação de Remoção" : "Solicitar Exclusão Definitiva";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (message.trim().length < 10) {
+      toast({ title: "Mensagem muito curta", description: "Descreva sua solicitação com pelo menos 10 caracteres.", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data: ticket, error } = await (supabase as any)
+        .from("support_tickets")
+        .insert({
+          user_id: user.id,
+          user_email: userEmail ?? "",
+          user_name: userName,
+          category: "Privacidade e Remoção",
+          subject,
+          message: message.trim(),
+          status: "aberto",
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      if (allowAttachment && file && ticket) {
+        const ext = file.name.split(".").pop() || "bin";
+        const path = `${user.id}/${ticket.id}/anexo.${ext}`;
+        const up = await supabase.storage.from("support-attachments").upload(path, file, { upsert: true });
+        if (!up.error) {
+          await (supabase as any).from("support_tickets").update({ attachment_url: path }).eq("id", ticket.id);
+        }
+      }
+      setDone(true);
+      setMessage("");
+      setFile(null);
+    } catch (err: any) {
+      toast({ title: "Erro ao enviar", description: err?.message ?? "Tente novamente.", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 space-y-3 border-t border-border pt-4">
+      <Textarea
+        required
+        minLength={10}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder={placeholder}
+        className="min-h-[120px] bg-background"
+      />
+      {allowAttachment && (
+        <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background text-sm cursor-pointer hover:bg-secondary transition-colors w-fit">
+          <Paperclip className="w-4 h-4" />
+          <span>{file ? file.name : "Anexar imagem (opcional)"}</span>
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/jpg"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0] ?? null;
+              if (f && f.size > 5 * 1024 * 1024) {
+                toast({ title: "Arquivo muito grande", description: "Máximo de 5MB.", variant: "destructive" });
+                return;
+              }
+              setFile(f);
+            }}
+          />
+        </label>
+      )}
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 disabled:opacity-60"
+        >
+          {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+          {buttonLabel}
+        </button>
+      </div>
+    </form>
+  );
+}
