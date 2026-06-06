@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Handshake, Menu, X, Users, ClipboardList } from "lucide-react";
+import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Handshake, Menu, X, Users, ClipboardList, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ const menuItemsBase = [
   { label: "Clientes", icon: Users, path: "/dashboard/clientes", roles: ["photographer", "organizer"] },
   { label: "Oportunidades", icon: Briefcase, path: "/dashboard/oportunidades", roles: ["photographer", "organizer"] },
   { label: "Propostas", icon: Handshake, path: "/dashboard/propostas", roles: ["photographer", "organizer"] },
+  { label: "Chamados", icon: ShieldAlert, path: "/dashboard/chamados", roles: ["photographer", "organizer"] },
   { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes", roles: ["photographer", "organizer"] },
   { label: "Ajuda", icon: HelpCircle, path: "/dashboard/ajuda", roles: ["photographer", "organizer"] },
 ];
