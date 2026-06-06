@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import { Calendar, Eye, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -21,6 +20,9 @@ const Blog = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    document.title = "Blog Viu Foto — Dicas e novidades para fotógrafos";
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute("content", "Conteúdo exclusivo para fotógrafos: como vender fotos online, marketing, equipamentos e cases reais de sucesso na Viu Foto.");
     (async () => {
       const { data } = await (supabase as any)
         .from("blog_posts")
@@ -34,11 +36,6 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <Helmet>
-        <title>Blog Viu Foto — Dicas e novidades para fotógrafos</title>
-        <meta name="description" content="Conteúdo exclusivo para fotógrafos: como vender fotos online, marketing, equipamentos e cases reais de sucesso na Viu Foto." />
-        <link rel="canonical" href="/blog" />
-      </Helmet>
       <Navbar />
       <main className="flex-1">
         <section className="bg-gradient-to-b from-primary/10 to-transparent border-b border-border">
