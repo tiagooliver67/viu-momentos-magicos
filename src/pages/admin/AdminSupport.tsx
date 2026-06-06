@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Info, Loader2, Paperclip, Mail, Shield, CheckCircle2 } from "lucide-react";
+import { Info, Loader2, Paperclip, Mail, Shield, CheckCircle2, AlertTriangle, ExternalLink, UserCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -16,10 +16,14 @@ type Ticket = {
   admin_response: string | null;
   created_at: string;
   resolved_at: string | null;
+  assigned_photographer_id: string | null;
+  photo_url: string | null;
+  escalate_after: string | null;
 };
 
 const STATUS_FILTERS = [
   { value: "todos", label: "Todos" },
+  { value: "escalados", label: "Escalados" },
   { value: "aberto", label: "Abertos" },
   { value: "em_andamento", label: "Em andamento" },
   { value: "resolvido", label: "Resolvidos" },
@@ -56,7 +60,12 @@ const AdminSupport = () => {
     setResponse(selected.admin_response ?? "");
   }, [selected]);
 
-  const visible = tickets.filter((t) => (filter === "todos" ? true : t.status === filter));
+  const isEscalated = (t: Ticket) =>
+    !!t.assigned_photographer_id && !!t.escalate_after && new Date(t.escalate_after).getTime() < Date.now() && t.status !== "resolvido";
+
+  const visible = tickets.filter((t) =>
+    filter === "todos" ? true : filter === "escalados" ? isEscalated(t) : t.status === filter,
+  );
 
   const updateStatus = async (status: string) => {
     if (!selected) return;
@@ -78,6 +87,7 @@ const AdminSupport = () => {
     aberto: tickets.filter((t) => t.status === "aberto").length,
     em_andamento: tickets.filter((t) => t.status === "em_andamento").length,
     resolvido: tickets.filter((t) => t.status === "resolvido").length,
+    escalados: tickets.filter(isEscalated).length,
   };
 
   return (
@@ -88,6 +98,7 @@ const AdminSupport = () => {
           <p className="text-sm text-muted-foreground">Tickets de privacidade, LGPD e atendimento ao usuário</p>
         </div>
         <div className="flex gap-2 text-xs">
+          <span className="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 border border-red-500/20">Escalados: {counts.escalados}</span>
           <span className="px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">Abertos: {counts.aberto}</span>
           <span className="px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20">Em andamento: {counts.em_andamento}</span>
           <span className="px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">Resolvidos: {counts.resolvido}</span>
@@ -130,13 +141,23 @@ const AdminSupport = () => {
             </thead>
             <tbody>
               {visible.map((t) => (
-                <tr key={t.id} onClick={() => setSelected(t)} className="border-t border-border hover:bg-secondary/40 cursor-pointer">
+                <tr key={t.id} onClick={() => setSelected(t)} className={`border-t border-border hover:bg-secondary/40 cursor-pointer ${isEscalated(t) ? "bg-red-500/5" : ""}`}>
                   <td className="p-3">
                     <div className="font-medium">{t.user_name || "—"}</div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3" />{t.user_email}</div>
                   </td>
                   <td className="p-3">
-                    <div className="font-medium flex items-center gap-2">
+                    <div className="font-medium flex items-center gap-2 flex-wrap">
+                      {isEscalated(t) && (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-red-500/15 text-red-600 border border-red-500/30 font-bold uppercase">
+                          <AlertTriangle className="w-3 h-3" /> URGENTE — fotógrafo não respondeu
+                        </span>
+                      )}
+                      {t.assigned_photographer_id && !isEscalated(t) && t.status !== "resolvido" && (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                          <UserCheck className="w-3 h-3" /> Com fotógrafo
+                        </span>
+                      )}
                       {t.attachment_url && <Paperclip className="w-3 h-3 text-muted-foreground" />}
                       {t.subject}
                     </div>
@@ -170,10 +191,28 @@ const AdminSupport = () => {
               <StatusBadge status={selected.status} />
             </div>
             <div className="p-5 space-y-4">
+              {selected.assigned_photographer_id && (
+                <div className={`p-3 rounded-lg border text-sm flex items-center gap-2 ${isEscalated(selected) ? "border-red-500/30 bg-red-500/5 text-red-700" : "border-blue-500/20 bg-blue-500/5 text-blue-700"}`}>
+                  {isEscalated(selected) ? <AlertTriangle className="w-4 h-4 shrink-0" /> : <UserCheck className="w-4 h-4 shrink-0" />}
+                  <span>
+                    {isEscalated(selected)
+                      ? "O fotógrafo responsável não respondeu dentro de 24h. Ação manual do Super Admin necessária."
+                      : `Chamado em poder do fotógrafo. Prazo até ${selected.escalate_after ? new Date(selected.escalate_after).toLocaleString("pt-BR") : "—"}.`}
+                  </span>
+                </div>
+              )}
               <div>
                 <div className="text-xs font-semibold text-muted-foreground mb-2">MENSAGEM DO USUÁRIO</div>
                 <div className="p-4 rounded-lg bg-background border border-border whitespace-pre-wrap text-sm">{selected.message}</div>
               </div>
+              {selected.photo_url && (
+                <div>
+                  <div className="text-xs font-semibold text-muted-foreground mb-2">FOTO REFERIDA</div>
+                  <a href={selected.photo_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-primary hover:underline break-all">
+                    <ExternalLink className="w-4 h-4 shrink-0" /> {selected.photo_url}
+                  </a>
+                </div>
+              )}
               {selected.attachment_url && (
                 <div>
                   <div className="text-xs font-semibold text-muted-foreground mb-2">ANEXO</div>
