@@ -2,7 +2,7 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
-  BarChart3, Users, Calendar, DollarSign, Shield, Headphones,
+  BarChart3, Users, Calendar, DollarSign, Shield, Headphones, BookOpen,
   TrendingUp, Settings, Bug, Search, Bell, Sun, Moon, Menu, X,
   ChevronLeft, LogOut, Camera, CreditCard, HardDrive, ClipboardList, Image as ImageIcon,
   Activity
@@ -22,6 +22,7 @@ const navItems = [
   { label: "Analytics", icon: TrendingUp, path: "/admin/analytics" },
   { label: "Configurações", icon: Settings, path: "/admin/configuracoes" },
   { label: "Hero Section", icon: ImageIcon, path: "/admin/hero" },
+  { label: "Blog", icon: BookOpen, path: "/admin/blog" },
   { label: "Saúde do Sistema", icon: Activity, path: "/admin/saude" },
   { label: "Testes & Logs", icon: Bug, path: "/admin/logs" },
 ];
