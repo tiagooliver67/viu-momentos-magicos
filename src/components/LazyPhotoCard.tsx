@@ -35,36 +35,22 @@ const LazyPhotoCard = memo(({
   const [currentSrc, setCurrentSrc] = useState(photoUrl);
   const ref = useRef<HTMLDivElement>(null);
 
-  // [debug-bib] TEMP — remover após diagnóstico
-  console.log("RENDER CARD", { photoId, photoUrl });
-  console.log("CARD STATE", { photoId, isVisible, isLoaded: loaded, hasError });
-
   useEffect(() => {
     setCurrentSrc(photoUrl);
     setLoaded(false);
     setHasError(false);
-  }, [photoUrl, fallbackPhotoUrl]);
+  }, [photoId, photoUrl, fallbackPhotoUrl]);
 
   useEffect(() => {
-    if (priority) return;
-    const el = ref.current;
-    if (!el) return;
-
-    // Fallback 1: if element is already within viewport on mount, mark visible immediately.
-    // Fixes cases where the IntersectionObserver doesn't fire for cards rendered after
-    // a filter/search re-render (observer attached after intersection already occurred).
-    const rect = el.getBoundingClientRect();
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    const vw = window.innerWidth || document.documentElement.clientWidth;
-    const inViewport =
-      rect.bottom >= -200 &&
-      rect.right >= 0 &&
-      rect.top <= vh + 200 &&
-      rect.left <= vw;
-    if (inViewport) {
+    if (priority) {
       setIsVisible(true);
       return;
     }
+
+    setIsVisible(false);
+
+    const el = ref.current;
+    if (!el) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -73,19 +59,13 @@ const LazyPhotoCard = memo(({
           observer.disconnect();
         }
       },
-      { rootMargin: "200px" }
+      { rootMargin: "300px" }
     );
+
     observer.observe(el);
 
-    // Fallback 2: safety net — ensure we never get stuck on a skeleton if the observer
-    // somehow misses (e.g. card rendered inside a container that briefly had 0 size).
-    const timeoutId = window.setTimeout(() => setIsVisible(true), 1500);
-
-    return () => {
-      observer.disconnect();
-      window.clearTimeout(timeoutId);
-    };
-  }, [priority]);
+    return () => observer.disconnect();
+  }, [photoId, priority]);
 
   return (
     <div
@@ -108,16 +88,9 @@ const LazyPhotoCard = memo(({
                 decoding="async"
                 {...(priority ? { fetchPriority: "high" as any } : { fetchPriority: "low" as any })}
                 onLoad={() => {
-                  // [debug-bib] TEMP — remover após diagnóstico
-                  console.log("IMAGE LOADED", photoId);
                   setLoaded(true);
                 }}
                 onError={(e) => {
-                  // [debug-bib] TEMP — remover após diagnóstico
-                  console.error("IMAGE LOAD ERROR", {
-                    photoId,
-                    src: (e.currentTarget as HTMLImageElement).src,
-                  });
                   if (fallbackPhotoUrl && currentSrc !== fallbackPhotoUrl) {
                     setLoaded(false);
                     setCurrentSrc(fallbackPhotoUrl);
