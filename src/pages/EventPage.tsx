@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2, ChevronLeft, ChevronRight, Folder, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -58,6 +58,7 @@ const EventPage = () => {
   const [passwordInput, setPasswordInput] = useState("");
   const [unlocked, setUnlocked] = useState(false);
   const [page, setPage] = useState(1);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
 
@@ -217,18 +218,44 @@ const EventPage = () => {
   });
 
   const photoList = useMemo(() => {
-    if (!trimmedBib) return allPhotos;
-    if (!isValidBibQuery) return allPhotos;
-    if (!bibMatchIds) return allPhotos;
-    return allPhotos.filter((p: any) => bibMatchIds.has(p.id));
-  }, [allPhotos, trimmedBib, isValidBibQuery, bibMatchIds]);
+    // Active bib search ignores folder filter (busca cruza todas as pastas)
+    if (trimmedBib && isValidBibQuery && bibMatchIds) {
+      return allPhotos.filter((p: any) => bibMatchIds.has(p.id));
+    }
+    if (trimmedBib) return allPhotos;
+    // No search: apply folder filter when one is selected
+    if (selectedFolder !== null) {
+      return allPhotos.filter((p: any) => (p.album ?? null) === selectedFolder);
+    }
+    return allPhotos;
+  }, [allPhotos, trimmedBib, isValidBibQuery, bibMatchIds, selectedFolder]);
+
+  // Folder list derived from albums in event_photos
+  const folders = useMemo(() => {
+    const counts = new Map<string, number>();
+    let rootCount = 0;
+    for (const p of allPhotos as any[]) {
+      if (p.album) counts.set(p.album, (counts.get(p.album) || 0) + 1);
+      else rootCount++;
+    }
+    const list = Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    if (rootCount > 0 && counts.size > 0) {
+      // "Geral" represents photos uploaded sem pasta
+      list.unshift({ name: "__root__", count: rootCount });
+    }
+    return list;
+  }, [allPhotos]);
+
+  const showFolderHub = !trimmedBib && selectedFolder === null && folders.length > 0;
 
   const PHOTOS_PER_PAGE = 32;
   const totalPages = Math.max(1, Math.ceil(photoList.length / PHOTOS_PER_PAGE));
   const paginatedPhotos = photoList.slice((page - 1) * PHOTOS_PER_PAGE, page * PHOTOS_PER_PAGE);
 
   // Reset to page 1 when search changes or photos reload
-  useEffect(() => { setPage(1); }, [searchBib, photoList.length]);
+  useEffect(() => { setPage(1); }, [searchBib, photoList.length, selectedFolder]);
 
   // Keep page in valid range
   useEffect(() => { if (page > totalPages) setPage(totalPages); }, [totalPages, page]);
