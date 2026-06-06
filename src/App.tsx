@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,6 +37,9 @@ import ParaOrganizadores from "./pages/ParaOrganizadores";
 import TermosDeUso from "./pages/TermosDeUso";
 import Ajuda from "./pages/Ajuda";
 import Chamados from "./pages/Chamados";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import BlogAdm from "./pages/admin/BlogAdm";
 import TermsGate from "./components/TermsGate";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
@@ -93,6 +97,9 @@ const App = () => (
               <Route path="/para-organizadores" element={<ParaOrganizadores />} />
               <Route path="/termos-de-uso" element={<TermosDeUso />} />
               <Route path="/ajuda" element={<Ajuda />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/blogadm" element={<Navigate to="/admin/blog" replace />} />
               <Route path="/inscricao/:slug" element={<InscricaoPublic />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
               {/* Financeiro route removed — unified into Carteira */}
@@ -128,6 +135,7 @@ const App = () => (
                 <Route path="saude" element={<AdminHealth />} />
                 <Route path="foto/:photoId" element={<AdminPhotoDiagnostics />} />
                 <Route path="logs" element={<AdminLogs />} />
+                <Route path="blog" element={<BlogAdm />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
