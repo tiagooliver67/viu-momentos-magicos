@@ -282,7 +282,7 @@ function PrivacyForm({
     }
     setSubmitting(true);
     try {
-      const { data: ticket, error } = await supabase
+      const { data: ticket, error } = await (supabase as any)
         .from("support_tickets")
         .insert({
           user_id: user.id,
@@ -302,7 +302,7 @@ function PrivacyForm({
         const path = `${user.id}/${ticket.id}/anexo.${ext}`;
         const up = await supabase.storage.from("support-attachments").upload(path, file, { upsert: true });
         if (!up.error) {
-          await supabase.from("support_tickets").update({ attachment_url: path }).eq("id", ticket.id);
+          await (supabase as any).from("support_tickets").update({ attachment_url: path }).eq("id", ticket.id);
         }
       }
       setDone(true);
