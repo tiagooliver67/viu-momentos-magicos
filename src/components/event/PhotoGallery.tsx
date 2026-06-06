@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star } from "lucide-react";
+import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, Folder, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
@@ -44,7 +44,7 @@ interface Props {
   onDelete: (id: string) => void;
   isDeleting: boolean;
   totalPhotos: number;
-  onUploadFiles?: (files: File[]) => void;
+  onUploadFiles?: (files: File[], album?: string | null) => void;
   onRetryFiles?: (files: File[]) => void;
   isUploading?: boolean;
   uploadProgress?: UploadFileProgress[];
@@ -66,6 +66,8 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
   const [confirmDelete, setConfirmDelete] = useState<{ ids: string[]; bulk: boolean } | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   const [thumbErrors, setThumbErrors] = useState<Record<string, boolean>>({});
+  const [currentAlbum, setCurrentAlbum] = useState<string | null>(null);
+  const [extraFolders, setExtraFolders] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const filesRef = useRef<File[]>([]);
 
@@ -178,7 +180,7 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
     setPreviews(prev => ({ ...prev, ...newPreviews }));
     filesRef.current = files;
     setFailedFiles([]);
-    onUploadFiles?.(files);
+    onUploadFiles?.(files, currentAlbum);
   };
 
   const handleRetry = () => {
@@ -192,13 +194,50 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
     setPreviews(prev => ({ ...prev, ...retryPreviews }));
     filesRef.current = failedFiles;
     setFailedFiles([]);
-    onUploadFiles?.(failedFiles);
+    onUploadFiles?.(failedFiles, currentAlbum);
   };
 
   if (!open) return null;
 
-  const totalPages = Math.ceil(photos.length / PHOTOS_PER_PAGE);
-  const paginatedPhotos = photos.slice((page - 1) * PHOTOS_PER_PAGE, page * PHOTOS_PER_PAGE);
+  const folders = useMemo(() => {
+    const set = new Set<string>();
+    photos.forEach(p => { if (p.album) set.add(p.album); });
+    extraFolders.forEach(f => set.add(f));
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [photos, extraFolders]);
+
+  const folderCounts = useMemo(() => {
+    const map = new Map<string, number>();
+    photos.forEach(p => {
+      if (p.album) map.set(p.album, (map.get(p.album) || 0) + 1);
+    });
+    return map;
+  }, [photos]);
+
+  const visiblePhotos = useMemo(
+    () => photos.filter(p => (p.album ?? null) === currentAlbum),
+    [photos, currentAlbum]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(visiblePhotos.length / PHOTOS_PER_PAGE));
+  const safePage = Math.min(page, totalPages);
+  const paginatedPhotos = visiblePhotos.slice((safePage - 1) * PHOTOS_PER_PAGE, safePage * PHOTOS_PER_PAGE);
+
+  const handleAddFolder = () => {
+    const raw = window.prompt("Nome da pasta (ex: 5km, Largada, Premiação):");
+    if (!raw) return;
+    const name = raw.trim().slice(0, 60);
+    if (!name) return;
+    if (folders.includes(name)) {
+      toast.error("Já existe uma pasta com esse nome.");
+      setCurrentAlbum(name);
+      return;
+    }
+    setExtraFolders(prev => [...prev, name]);
+    setCurrentAlbum(name);
+    setPage(1);
+    toast.success(`Pasta "${name}" criada. Os próximos uploads serão salvos nela.`);
+  };
 
   const isCoverPhoto = (photo: Photo) => {
     if (!coverUrl) return false;
@@ -288,16 +327,54 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
         {/* Breadcrumb + folder */}
         <div className="glass-card p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-bold text-foreground">Você está na pasta raiz</p>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm text-foreground hover:bg-secondary/50 transition-colors">
+            <div className="flex items-center gap-1.5 text-sm font-bold text-foreground flex-wrap">
+              <button
+                onClick={() => { setCurrentAlbum(null); setPage(1); }}
+                className={`hover:underline ${currentAlbum ? "text-muted-foreground font-medium" : ""}`}
+              >
+                Pasta raiz
+              </button>
+              {currentAlbum && (
+                <>
+                  <ChevronRightIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span className="flex items-center gap-1">
+                    <Folder className="w-3.5 h-3.5 text-primary" />
+                    {currentAlbum}
+                  </span>
+                </>
+              )}
+            </div>
+            <button
+              onClick={handleAddFolder}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-sm text-foreground hover:bg-secondary/50 transition-colors"
+            >
               <FolderPlus className="w-4 h-4" />
               Adicionar pasta
             </button>
           </div>
 
+          {/* Folder list — visible only at root */}
+          {!currentAlbum && folders.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {folders.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => { setCurrentAlbum(f); setPage(1); }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border hover:border-primary/50 hover:bg-secondary/50 transition-colors text-sm"
+                >
+                  <Folder className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-foreground">{f}</span>
+                  <span className="text-xs text-muted-foreground">({folderCounts.get(f) ?? 0})</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Filters row */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
-            <p className="text-sm font-bold text-foreground whitespace-nowrap">Fotos ({totalPhotos})</p>
+            <p className="text-sm font-bold text-foreground whitespace-nowrap">
+              Fotos ({currentAlbum ? visiblePhotos.length : totalPhotos})
+            </p>
             <div className="flex items-center gap-2 flex-1">
               <button className="p-2 rounded-lg border border-border hover:bg-secondary/50 transition-colors">
                 <ScanFace className="w-4 h-4 text-muted-foreground" />
