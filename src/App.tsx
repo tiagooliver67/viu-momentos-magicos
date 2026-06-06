@@ -35,6 +35,7 @@ import VirarFotografo from "./pages/VirarFotografo";
 import ParaOrganizadores from "./pages/ParaOrganizadores";
 import TermosDeUso from "./pages/TermosDeUso";
 import Ajuda from "./pages/Ajuda";
+import Chamados from "./pages/Chamados";
 import TermsGate from "./components/TermsGate";
 import AdminLayout from "./components/admin/AdminLayout";
 import Overview from "./pages/admin/Overview";
@@ -101,6 +102,7 @@ const App = () => (
               <Route path="/dashboard/oportunidades" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Oportunidades /></ProtectedRoute>} />
               <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
               <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
+              <Route path="/dashboard/chamados" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Chamados /></ProtectedRoute>} />
               <Route path="/dashboard/evento/:id" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><EventDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/inscricoes" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricoesList /></ProtectedRoute>} />
               <Route path="/dashboard/inscricoes/novo" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoForm /></ProtectedRoute>} />
