@@ -83,6 +83,8 @@ const categories: Category[] = [
 const Ajuda = () => {
   const [selected, setSelected] = useState<Category | null>(null);
   const [query, setQuery] = useState("");
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
 
   const q = query.trim().toLowerCase();
   const searching = q.length > 1;
@@ -134,7 +136,12 @@ const Ajuda = () => {
                           <div className="font-medium">{r.q}</div>
                         </div>
                       </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed">{r.a}</AccordionContent>
+                      <AccordionContent className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                        {r.a}
+                        {r.form && (
+                          <PrivacyForm kind={r.form} user={user} userEmail={user?.email ?? null} userName={profile?.full_name ?? null} onLogin={() => navigate("/login")} />
+                        )}
+                      </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
@@ -162,7 +169,12 @@ const Ajuda = () => {
                 {selected.articles.map((a, i) => (
                   <AccordionItem key={i} value={`a-${i}`} className="border border-border rounded-xl px-4 bg-card">
                     <AccordionTrigger className="text-left font-medium hover:no-underline">{a.q}</AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed">{a.a}</AccordionContent>
+                    <AccordionContent className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                      {a.a}
+                      {a.form && (
+                        <PrivacyForm kind={a.form} user={user} userEmail={user?.email ?? null} userName={profile?.full_name ?? null} onLogin={() => navigate("/login")} />
+                      )}
+                    </AccordionContent>
                   </AccordionItem>
                 ))}
               </Accordion>
