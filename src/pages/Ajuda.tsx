@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Search, ArrowLeft, ChevronRight, Mail, MessageCircle, Download, CreditCard, Shield, Camera } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, ArrowLeft, ChevronRight, Mail, MessageCircle, Download, CreditCard, Shield, Camera, Paperclip, Loader2, LogIn } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-type Article = { q: string; a: string };
+type FormKind = "remove_photo" | "delete_account";
+type Article = { q: string; a: string; form?: FormKind };
 type Category = { id: string; name: string; icon: React.ComponentType<{ className?: string }>; description: string; articles: Article[] };
 
 const categories: Category[] = [
@@ -50,8 +55,16 @@ const categories: Category[] = [
     icon: Shield,
     description: "Remoção de fotos, denúncias e LGPD",
     articles: [
-      { q: "Quero remover uma foto minha do site", a: "Se você encontrou uma foto sua exposta e deseja a remoção por motivos de privacidade, clique no botão \"Denunciar Foto\" exibido ao lado da imagem ou envie o link da foto para o nosso suporte técnico para exclusão imediata." },
-      { q: "Como solicitar a exclusão dos meus dados pessoais (LGPD)?", a: "Você pode solicitar a exclusão definitiva da sua conta e de todos os seus dados armazenados enviando um e-mail para nossa equipe de privacidade." },
+      {
+        q: "Quero remover uma foto minha do site",
+        a: "Se você encontrou uma foto sua exposta e deseja a remoção por motivos de privacidade, podemos te ajudar com isso imediatamente.\n\nLogo abaixo, você encontrará um campo de mensagem obrigatório onde poderá explicar seu pedido e solicitar a exclusão.\n\nPara agilizar o processo, cole o link da foto em questão no campo de texto ou anexe o arquivo da imagem utilizando o botão de anexo.\n\nNossa equipe de moderação analisará a denúncia com prioridade máxima para realizar a remoção.",
+        form: "remove_photo",
+      },
+      {
+        q: "Quero apagar minha conta e meus dados (LGPD)",
+        a: "Se você deseja apagar sua conta e todos os seus dados pessoais da nossa plataforma, podemos te ajudar com isso.\n\nLogo abaixo, você encontrará um campo de mensagem obrigatório onde poderá confirmar e detalhar sua solicitação.\n\nPara agilizar o processo, descreva seu pedido e confirme que está ciente de que esta ação é irreversível e apagará seu histórico de compras/vendas.\n\nNossa equipe irá analisar a solicitação no painel administrativo e realizar a exclusão definitiva conforme as diretrizes de privacidade e proteção de dados (LGPD).",
+        form: "delete_account",
+      },
     ],
   },
   {
