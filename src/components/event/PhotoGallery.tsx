@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, Folder, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, Folder, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
@@ -336,7 +336,7 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
               </button>
               {currentAlbum && (
                 <>
-                  <ChevronRightIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                   <span className="flex items-center gap-1">
                     <Folder className="w-3.5 h-3.5 text-primary" />
                     {currentAlbum}
