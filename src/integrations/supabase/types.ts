@@ -165,6 +165,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "cart_items_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photo_search_index"
+            referencedColumns: ["photo_id"]
+          },
+          {
             foreignKeyName: "cart_items_video_id_fkey"
             columns: ["video_id"]
             isOneToOne: false
@@ -333,6 +340,39 @@ export type Database = {
           },
         ]
       }
+      event_face_collections: {
+        Row: {
+          collection_id: string
+          created_at: string
+          event_id: string
+          faces_indexed: number
+          last_indexed_at: string | null
+          last_searched_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          collection_id: string
+          created_at?: string
+          event_id: string
+          faces_indexed?: number
+          last_indexed_at?: string | null
+          last_searched_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          collection_id?: string
+          created_at?: string
+          event_id?: string
+          faces_indexed?: number
+          last_indexed_at?: string | null
+          last_searched_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_indexing_progress: {
         Row: {
           bibs_done: number
@@ -406,6 +446,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      event_photo_faces: {
+        Row: {
+          bounding_box: Json
+          confidence: number
+          event_id: string
+          external_image_id: string | null
+          face_crop_generated_at: string | null
+          face_crop_s3_key: string | null
+          id: string
+          indexed_at: string
+          photo_id: string
+          pose: Json | null
+          quality: Json | null
+          rekognition_face_id: string
+        }
+        Insert: {
+          bounding_box: Json
+          confidence: number
+          event_id: string
+          external_image_id?: string | null
+          face_crop_generated_at?: string | null
+          face_crop_s3_key?: string | null
+          id?: string
+          indexed_at?: string
+          photo_id: string
+          pose?: Json | null
+          quality?: Json | null
+          rekognition_face_id: string
+        }
+        Update: {
+          bounding_box?: Json
+          confidence?: number
+          event_id?: string
+          external_image_id?: string | null
+          face_crop_generated_at?: string | null
+          face_crop_s3_key?: string | null
+          id?: string
+          indexed_at?: string
+          photo_id?: string
+          pose?: Json | null
+          quality?: Json | null
+          rekognition_face_id?: string
+        }
+        Relationships: []
       }
       event_photographers: {
         Row: {
@@ -649,6 +734,8 @@ export type Database = {
           created_at: string
           event_date: string
           event_time: string | null
+          face_index_mode: string
+          face_search_enabled: boolean
           id: string
           location: string
           name: string
@@ -672,6 +759,8 @@ export type Database = {
           created_at?: string
           event_date: string
           event_time?: string | null
+          face_index_mode?: string
+          face_search_enabled?: boolean
           id?: string
           location: string
           name: string
@@ -695,6 +784,8 @@ export type Database = {
           created_at?: string
           event_date?: string
           event_time?: string | null
+          face_index_mode?: string
+          face_search_enabled?: boolean
           id?: string
           location?: string
           name?: string
@@ -708,6 +799,141 @@ export type Database = {
           status?: Database["public"]["Enums"]["event_status"]
           updated_at?: string
           visibility?: boolean
+        }
+        Relationships: []
+      }
+      face_index_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          enqueued_at: string
+          error_code: string | null
+          error_message: string | null
+          event_id: string
+          finished_at: string | null
+          id: string
+          photo_id: string
+          s3_key: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          enqueued_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          event_id: string
+          finished_at?: string | null
+          id?: string
+          photo_id: string
+          s3_key?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          enqueued_at?: string
+          error_code?: string | null
+          error_message?: string | null
+          event_id?: string
+          finished_at?: string | null
+          id?: string
+          photo_id?: string
+          s3_key?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      face_search_logs: {
+        Row: {
+          avg_similarity: number | null
+          best_similarity: number | null
+          created_at: string
+          duration_ms: number | null
+          event_id: string
+          id: string
+          ip_address: string | null
+          matches_count: number
+          selfie_quality: Json | null
+          selfie_s3_key: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avg_similarity?: number | null
+          best_similarity?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          event_id: string
+          id?: string
+          ip_address?: string | null
+          matches_count?: number
+          selfie_quality?: Json | null
+          selfie_s3_key?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avg_similarity?: number | null
+          best_similarity?: number | null
+          created_at?: string
+          duration_ms?: number | null
+          event_id?: string
+          id?: string
+          ip_address?: string | null
+          matches_count?: number
+          selfie_quality?: Json | null
+          selfie_s3_key?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      face_search_matches: {
+        Row: {
+          added_to_cart_at: string | null
+          clicked_at: string | null
+          created_at: string
+          event_id: string
+          face_id: string | null
+          id: string
+          photo_id: string
+          purchased_at: string | null
+          rank: number
+          search_log_id: string
+          similarity: number
+        }
+        Insert: {
+          added_to_cart_at?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          event_id: string
+          face_id?: string | null
+          id?: string
+          photo_id: string
+          purchased_at?: string | null
+          rank: number
+          search_log_id: string
+          similarity: number
+        }
+        Update: {
+          added_to_cart_at?: string | null
+          clicked_at?: string | null
+          created_at?: string
+          event_id?: string
+          face_id?: string | null
+          id?: string
+          photo_id?: string
+          purchased_at?: string | null
+          rank?: number
+          search_log_id?: string
+          similarity?: number
         }
         Relationships: []
       }
@@ -737,6 +963,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_photos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photo_search_index"
+            referencedColumns: ["photo_id"]
           },
         ]
       }
@@ -848,6 +1081,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_photos"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photo_search_index"
+            referencedColumns: ["photo_id"]
           },
           {
             foreignKeyName: "order_items_video_id_fkey"
@@ -1752,6 +1992,26 @@ export type Database = {
       }
     }
     Views: {
+      photo_search_index: {
+        Row: {
+          bib_count: number | null
+          bib_numbers: string[] | null
+          event_id: string | null
+          face_count: number | null
+          face_ids: string[] | null
+          photo_created_at: string | null
+          photo_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photographer_sites_public: {
         Row: {
           allow_custom_links: boolean | null
@@ -1886,6 +2146,7 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: never; Returns: boolean }
+      refresh_photo_search_index: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "user" | "photographer" | "organizer" | "super_admin"
