@@ -862,6 +862,21 @@ const EventPage = () => {
       )}
 
       <Footer />
+      {id && (
+        <FaceSearchModal
+          eventId={id}
+          open={faceModalOpen}
+          onClose={() => setFaceModalOpen(false)}
+          onResults={(ids, matches) => {
+            setFaceMatchIds(new Set(ids));
+            const m = new Map<string, number>();
+            matches.forEach((x) => m.set(x.photo_id, x.similarity));
+            setFaceSimilarityById(m);
+            setSelectedFolder(null);
+            setSearchBib("");
+          }}
+        />
+      )}
     </div>
   );
 };
