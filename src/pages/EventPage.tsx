@@ -15,6 +15,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { getPhotoCode } from "@/lib/photoCode";
 import DiscountBanner from "@/components/event/DiscountBanner";
+import FaceSearchModal from "@/components/event/FaceSearchModal";
 import {
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
@@ -59,6 +60,9 @@ const EventPage = () => {
   const [unlocked, setUnlocked] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [faceModalOpen, setFaceModalOpen] = useState(false);
+  const [faceMatchIds, setFaceMatchIds] = useState<Set<string> | null>(null);
+  const [faceSimilarityById, setFaceSimilarityById] = useState<Map<string, number>>(new Map());
   const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
 
@@ -218,6 +222,12 @@ const EventPage = () => {
   });
 
   const photoList = useMemo(() => {
+    // Busca facial tem prioridade — atravessa pastas
+    if (faceMatchIds && faceMatchIds.size > 0) {
+      const ordered = Array.from(faceMatchIds);
+      const byId = new Map<string, any>(allPhotos.map((p: any) => [p.id, p]));
+      return ordered.map((pid) => byId.get(pid)).filter(Boolean);
+    }
     // Active bib search ignores folder filter (busca cruza todas as pastas)
     if (trimmedBib && isValidBibQuery && bibMatchIds) {
       return allPhotos.filter((p: any) => bibMatchIds.has(p.id));
@@ -228,7 +238,7 @@ const EventPage = () => {
       return allPhotos.filter((p: any) => (p.album ?? null) === selectedFolder);
     }
     return allPhotos;
-  }, [allPhotos, trimmedBib, isValidBibQuery, bibMatchIds, selectedFolder]);
+  }, [allPhotos, trimmedBib, isValidBibQuery, bibMatchIds, selectedFolder, faceMatchIds]);
 
   // Folder list derived from albums in event_photos
   const folders = useMemo(() => {
@@ -467,11 +477,30 @@ const EventPage = () => {
                 onChange={(e) => setSearchBib(e.target.value)}
               />
             </div>
-            <button className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground font-semibold text-sm hover:bg-accent/80 transition-all justify-center min-h-[44px]">
+            <button
+              onClick={() => setFaceModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-accent-foreground font-semibold text-sm hover:bg-accent/80 transition-all justify-center min-h-[44px]"
+            >
               <ScanFace className="w-5 h-5" />
               Reconhecimento Facial
             </button>
+            {faceMatchIds && (
+              <button
+                onClick={() => { setFaceMatchIds(null); setFaceSimilarityById(new Map()); }}
+                className="text-xs text-muted-foreground hover:text-foreground underline px-2"
+              >
+                Limpar busca facial
+              </button>
+            )}
           </div>
+
+          {faceMatchIds && (
+            <div className="mb-4 text-sm text-muted-foreground">
+              {faceMatchIds.size === 0
+                ? "Nenhuma foto encontrada com este rosto."
+                : `${faceMatchIds.size} foto(s) encontrada(s) por reconhecimento facial.`}
+            </div>
+          )}
 
           {/* Breadcrumb folder when navegando dentro de uma pasta */}
           {selectedFolder !== null && !trimmedBib && (
