@@ -2122,6 +2122,21 @@ export type Database = {
       }
     }
     Functions: {
+      claim_face_index_jobs: {
+        Args: { _batch_size?: number; _event_id: string }
+        Returns: {
+          job_id: string
+          photo_id: string
+          s3_key: string
+        }[]
+      }
+      ensure_face_collection: {
+        Args: { _event_id: string }
+        Returns: {
+          collection_id: string
+          created: boolean
+        }[]
+      }
       get_registration_availability: {
         Args: { _event_id: string }
         Returns: {
@@ -2146,6 +2161,19 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: never; Returns: boolean }
+      mark_face_index_done: {
+        Args: { _faces_count: number; _job_id: string }
+        Returns: undefined
+      }
+      mark_face_index_error: {
+        Args: {
+          _error_code: string
+          _error_message: string
+          _job_id: string
+          _permanent?: boolean
+        }
+        Returns: undefined
+      }
       refresh_photo_search_index: { Args: never; Returns: undefined }
     }
     Enums: {
