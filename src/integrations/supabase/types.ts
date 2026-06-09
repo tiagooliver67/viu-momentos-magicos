@@ -2130,6 +2130,12 @@ export type Database = {
           s3_key: string
         }[]
       }
+      enqueue_event_backfill: {
+        Args: { _event_id: string; _force?: boolean }
+        Returns: {
+          enqueued: number
+        }[]
+      }
       ensure_face_collection: {
         Args: { _event_id: string }
         Returns: {
