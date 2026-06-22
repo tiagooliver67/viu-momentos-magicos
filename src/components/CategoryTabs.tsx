@@ -23,7 +23,7 @@ const CategoryTabs = ({ onSelect }: CategoryTabsProps) => {
           onClick={() => { setActive(cat.id); onSelect?.(cat.id); }}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
             active === cat.id
-              ? "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(255,77,0,0.3)]"
+              ? "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(103,61,230,0.3)]"
               : "bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80"
           }`}
         >

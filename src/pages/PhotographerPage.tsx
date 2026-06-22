@@ -79,7 +79,7 @@ const PhotographerPage = () => {
     );
   }
 
-  const primaryColor = site.primary_color || "#FF4D00";
+  const primaryColor = site.primary_color || "#673DE6";
 
   const socialLinks = [
     { url: site.instagram, icon: Instagram, label: "Instagram" },

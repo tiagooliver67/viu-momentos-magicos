@@ -95,10 +95,10 @@ const Blog = () => {
                       )}
                     </div>
                     <div className="p-6 md:p-10 flex flex-col justify-center">
-                      <span className="inline-flex w-fit px-2.5 py-1 rounded-full bg-[#FF4D00]/10 text-[#FF4D00] text-xs font-semibold tracking-wide uppercase mb-4">
+                      <span className="inline-flex w-fit px-2.5 py-1 rounded-full bg-[#673DE6]/10 text-[#673DE6] text-xs font-semibold tracking-wide uppercase mb-4">
                         {featured.category ?? "Geral"}
                       </span>
-                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-neutral-900 mb-3 group-hover:text-[#FF4D00] transition-colors">
+                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-neutral-900 mb-3 group-hover:text-[#673DE6] transition-colors">
                         {featured.title}
                       </h2>
                       {featured.meta_description && (
@@ -127,10 +127,10 @@ const Blog = () => {
                         <div className="w-full h-full flex items-center justify-center text-neutral-300 font-black text-4xl">VIU</div>
                       )}
                     </div>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[#FF4D00] mb-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-[#673DE6] mb-2">
                       {p.category ?? "Geral"}
                     </span>
-                    <h2 className="font-bold text-lg leading-snug mb-2 text-neutral-900 group-hover:text-[#FF4D00] transition-colors line-clamp-2">
+                    <h2 className="font-bold text-lg leading-snug mb-2 text-neutral-900 group-hover:text-[#673DE6] transition-colors line-clamp-2">
                       {p.title}
                     </h2>
                     {p.meta_description && <p className="text-sm text-neutral-600 line-clamp-2 mb-3">{p.meta_description}</p>}
