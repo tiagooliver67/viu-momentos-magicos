@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { motion } from "framer-motion";
 import { Search, ImageIcon, CloudDownload, ArrowRight } from "lucide-react";
 
@@ -45,9 +46,8 @@ const HowItWorks = () => {
           {steps.map((s, idx) => {
             const Icon = s.icon;
             return (
-              <>
+              <Fragment key={s.n}>
                 <motion.div
-                  key={s.n}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -66,11 +66,11 @@ const HowItWorks = () => {
                   <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
                 </motion.div>
                 {idx < steps.length - 1 && (
-                  <div key={`arrow-${idx}`} className="hidden md:flex items-center justify-center text-primary">
+                  <div className="hidden md:flex items-center justify-center text-primary">
                     <ArrowRight className="w-6 h-6" />
                   </div>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </div>
