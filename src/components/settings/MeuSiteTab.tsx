@@ -22,7 +22,7 @@ const siteSubTabs = [
 ];
 
 const presetColors = [
-  "#000000", "#FFFFFF", "#FF4D00", "#FFD700", "#00C853", "#2196F3", "#9C27B0", "#E91E63",
+  "#000000", "#FFFFFF", "#673DE6", "#FFD700", "#00C853", "#2196F3", "#9C27B0", "#E91E63",
 ];
 
 const MeuSiteTab = () => {
@@ -316,7 +316,7 @@ const MeuSiteTab = () => {
                       key={c}
                       onClick={() => set("primary_color", c)}
                       className="w-10 h-10 rounded-full border-2 transition-all"
-                      style={{ backgroundColor: c, borderColor: val("primary_color") === c ? "#FF4D00" : "transparent" }}
+                      style={{ backgroundColor: c, borderColor: val("primary_color") === c ? "#673DE6" : "transparent" }}
                     />
                   ))}
                 </div>
@@ -325,16 +325,16 @@ const MeuSiteTab = () => {
                 <div>
                   <label className="text-sm font-semibold mb-2 block">Cor primária</label>
                   <div className="flex items-center gap-3">
-                    <div className="w-16 h-10 rounded-lg border border-border" style={{ backgroundColor: val("primary_color") || "#FF4D00" }} />
+                    <div className="w-16 h-10 rounded-lg border border-border" style={{ backgroundColor: val("primary_color") || "#673DE6" }} />
                     <input
                       type="color"
-                      value={val("primary_color") || "#FF4D00"}
+                      value={val("primary_color") || "#673DE6"}
                       onChange={e => set("primary_color", e.target.value)}
                       className="w-full h-8"
                     />
                   </div>
                   <input
-                    value={val("primary_color") || "#FF4D00"}
+                    value={val("primary_color") || "#673DE6"}
                     onChange={e => set("primary_color", e.target.value)}
                     className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
                   />

@@ -25,7 +25,7 @@ const BlogLayout = ({ children, activeCategory = "Todos", onCategoryChange, sear
           <div className="h-16 flex items-center justify-between gap-4">
             <Link to="/blog" className="flex items-center gap-2">
               <span className="text-xl md:text-2xl font-black tracking-tight">
-                <span className="text-[#FF4D00]">VIU</span>
+                <span className="text-[#673DE6]">VIU</span>
                 <span className="text-neutral-900">FOTO</span>
                 <span className="text-neutral-400 font-normal text-base md:text-lg ml-1">/ blog</span>
               </span>

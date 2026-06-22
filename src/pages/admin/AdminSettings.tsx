@@ -24,7 +24,7 @@ const AdminSettings = () => {
             <label className="text-xs text-muted-foreground mb-1 block">Cor primária</label>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary border border-border" />
-              <input defaultValue="#FF4D00" className="bg-secondary/50 rounded-lg px-3 py-2 text-sm outline-none border border-border w-28" />
+              <input defaultValue="#673DE6" className="bg-secondary/50 rounded-lg px-3 py-2 text-sm outline-none border border-border w-28" />
             </div>
           </div>
           <div>

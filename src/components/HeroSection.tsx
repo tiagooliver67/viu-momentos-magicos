@@ -21,7 +21,7 @@ const DEFAULT_SETTINGS: HeroSettings = {
   title: "Sua superação imortalizada",
   highlight: "em alta definição.",
   title_color: "#FFFFFF",
-  highlight_color: "#FF4D00",
+  highlight_color: "#673DE6",
   transition_type: "fade",
   transition_duration_ms: 1000,
   interval_seconds: 6,

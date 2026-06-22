@@ -74,7 +74,7 @@ const BlogPost = () => {
           ) : (
             <article>
               {post.category && (
-                <span className="inline-flex w-fit px-2.5 py-1 rounded-full bg-[#FF4D00]/10 text-[#FF4D00] text-xs font-semibold tracking-wide uppercase mb-4">
+                <span className="inline-flex w-fit px-2.5 py-1 rounded-full bg-[#673DE6]/10 text-[#673DE6] text-xs font-semibold tracking-wide uppercase mb-4">
                   {post.category}
                 </span>
               )}
@@ -95,7 +95,7 @@ const BlogPost = () => {
               <div className="mt-12 p-6 md:p-8 rounded-2xl bg-neutral-900 text-white text-center">
                 <h3 className="font-bold text-xl md:text-2xl mb-2">Pronto para vender suas fotos online?</h3>
                 <p className="text-sm text-neutral-300 mb-5">Crie sua conta de fotógrafo na Viu Foto e comece a faturar com seus eventos.</p>
-                <Link to="/cadastro/fotografo" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FF4D00] text-white font-medium hover:opacity-90">
+                <Link to="/cadastro/fotografo" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#673DE6] text-white font-medium hover:opacity-90">
                   Cadastrar-se como fotógrafo
                 </Link>
               </div>
