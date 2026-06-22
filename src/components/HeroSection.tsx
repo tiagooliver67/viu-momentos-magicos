@@ -1,4 +1,4 @@
-import { Search, Camera, ScanFace } from "lucide-react";
+import { Search, Camera, ScanFace, Users } from "lucide-react";
 import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -137,6 +137,23 @@ const HeroSection = () => {
 
       {/* Gradient bottom */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/61 to-black/90" />
+
+      {/* Floating social proof badge (desktop) */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={mounted ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
+        className="hidden lg:flex absolute right-8 xl:right-16 bottom-24 z-10 items-center gap-3 rounded-2xl px-5 py-4 backdrop-blur-md border border-white/15"
+        style={{ background: "hsla(256, 76%, 57%, 0.35)" }}
+      >
+        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+          <Users className="w-5 h-5 text-white" />
+        </div>
+        <div className="text-white leading-tight">
+          <div className="font-black text-base">+2 milhões</div>
+          <div className="text-xs text-white/80">de fotos entregues<br/>em todo o Brasil</div>
+        </div>
+      </motion.div>
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center">

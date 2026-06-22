@@ -1,6 +1,9 @@
 import ClientNavbar from "@/components/ClientNavbar";
 import HeroSection from "@/components/HeroSection";
-import FeatureCards from "@/components/landing/FeatureCards";
+import BenefitsStrip from "@/components/landing/BenefitsStrip";
+import TechShowcase from "@/components/landing/TechShowcase";
+import HowItWorks from "@/components/landing/HowItWorks";
+import StartNowCTA from "@/components/landing/StartNowCTA";
 import SportCategoryFilter from "@/components/SportCategoryFilter";
 import FeaturedAlbums from "@/components/FeaturedAlbums";
 import PartnerCTA from "@/components/landing/PartnerCTA";
@@ -11,13 +14,16 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <ClientNavbar />
       <HeroSection />
-      <FeatureCards />
+      <BenefitsStrip />
+      <TechShowcase />
+      <HowItWorks />
 
       <div className="container mx-auto px-4 relative z-10">
         <SportCategoryFilter />
         <FeaturedAlbums />
       </div>
 
+      <StartNowCTA />
       <PartnerCTA />
       <Footer />
     </div>
