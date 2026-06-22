@@ -86,7 +86,7 @@ const HeroSection = () => {
   const slidesToRender = slides.length > 0 ? slides : [heroRunners];
 
   return (
-    <section className="relative bg-background overflow-hidden pt-20 sm:pt-24 pb-28 sm:pb-40">
+    <section className="relative bg-background overflow-visible pt-20 sm:pt-24 pb-40 sm:pb-56">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-12 items-center">
           {/* Left: content */}
