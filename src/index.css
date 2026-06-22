@@ -6,85 +6,110 @@
 @layer base {
   :root {
     /* ==================== TEMA CLEAN (padrão) ==================== */
-    --background: 0 0% 97%;
-    --foreground: 0 0% 12%;
+    /* Main Background #F8F8FC */
+    --background: 240 21% 98%;
+    /* Text Primary #111827 */
+    --foreground: 220 39% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
+    --card-foreground: 220 39% 11%;
 
-    --primary: 18 100% 50%;
+    /* Primary #673DE6 */
+    --primary: 256 76% 57%;
     --primary-foreground: 0 0% 100%;
+    /* Primary Dark #4B2CD3 */
+    --primary-dark: 251 66% 50%;
+    /* Secondary BG / Lilás Claro #EDE7FF */
+    --primary-soft: 255 100% 95%;
 
-    --secondary: 0 0% 93%;
-    --secondary-foreground: 0 0% 12%;
+    /* Secondary Background #EDE7FF */
+    --secondary: 255 100% 95%;
+    --secondary-foreground: 256 76% 30%;
 
-    --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 240 21% 96%;
+    /* Text Secondary #6B7280 */
+    --muted-foreground: 220 9% 46%;
 
-    --accent: 0 0% 94%;
-    --accent-foreground: 0 0% 12%;
+    --accent: 255 100% 95%;
+    --accent-foreground: 256 76% 40%;
 
+    /* Error #EF4444 */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 18 100% 50%;
-    --radius: 0.75rem;
+    /* Success #22C55E */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning #F59E0B */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 240 10% 92%;
+    --input: 240 10% 92%;
+    --ring: 256 76% 57%;
+    --radius: 0.875rem;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
+    --popover-foreground: 220 39% 11%;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 40%;
-    --sidebar-primary: 18 100% 50%;
+    --sidebar-foreground: 220 9% 46%;
+    --sidebar-primary: 256 76% 57%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 0 0% 12%;
-    --sidebar-border: 0 0% 92%;
-    --sidebar-ring: 18 100% 50%;
+    --sidebar-accent: 255 100% 97%;
+    --sidebar-accent-foreground: 256 76% 40%;
+    --sidebar-border: 240 10% 94%;
+    --sidebar-ring: 256 76% 57%;
 
     --glass-bg: rgba(255, 255, 255, 1);
-    --glass-border: rgba(0, 0, 0, 0.06);
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --glass-border: rgba(17, 24, 39, 0.06);
+    --shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 4px 12px rgba(17, 24, 39, 0.04);
   }
 
   /* ==================== TEMA ESCURO ==================== */
   .dark-theme {
-    --background: 0 0% 4%;
+    --background: 240 15% 6%;
     --foreground: 0 0% 95%;
-    --card: 0 0% 7%;
+    --card: 240 12% 9%;
     --card-foreground: 0 0% 95%;
 
-    --primary: 18 100% 50%;
+    --primary: 256 76% 62%;
     --primary-foreground: 0 0% 100%;
+    --primary-dark: 251 66% 50%;
+    --primary-soft: 256 40% 18%;
 
-    --secondary: 0 0% 12%;
+    --secondary: 240 10% 14%;
     --secondary-foreground: 0 0% 95%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 240 10% 14%;
+    --muted-foreground: 240 5% 60%;
 
-    --accent: 0 0% 12%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 256 40% 18%;
+    --accent-foreground: 255 100% 90%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 18 100% 50%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --popover: 0 0% 7%;
+    --border: 240 10% 18%;
+    --input: 240 10% 18%;
+    --ring: 256 76% 62%;
+
+    --popover: 240 12% 9%;
     --popover-foreground: 0 0% 95%;
 
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 55%;
-    --sidebar-primary: 18 100% 50%;
+    --sidebar-background: 240 15% 7%;
+    --sidebar-foreground: 240 5% 60%;
+    --sidebar-primary: 256 76% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent: 240 10% 12%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 12%;
-    --sidebar-ring: 18 100% 50%;
+    --sidebar-border: 240 10% 15%;
+    --sidebar-ring: 256 76% 62%;
 
     --glass-bg: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.12);
@@ -131,8 +156,8 @@
 
   .card-hover-premium:hover {
     transform: scale(1.03) translateY(-4px);
-    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15),
-                0 8px 16px -8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 40px -12px rgba(103, 61, 230, 0.18),
+                0 8px 16px -8px rgba(103, 61, 230, 0.12);
   }
 
   .dark-theme .card-hover-premium:hover {
@@ -166,7 +191,7 @@
 
   .btn-premium:hover {
     transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 8px 24px rgba(255, 77, 0, 0.3);
+    box-shadow: 0 8px 24px rgba(103, 61, 230, 0.35);
   }
 
   .btn-premium:active {
@@ -194,10 +219,10 @@
   .hero-gradient-animated {
     background: linear-gradient(
       135deg,
-      rgba(255, 77, 0, 0.15) 0%,
-      transparent 40%,
+      rgba(103, 61, 230, 0.12) 0%,
+      rgba(237, 231, 255, 0.4) 40%,
       transparent 60%,
-      rgba(255, 77, 0, 0.1) 100%
+      rgba(103, 61, 230, 0.08) 100%
     );
     background-size: 200% 200%;
     animation: gradient-shift 8s ease-in-out infinite;
@@ -237,7 +262,7 @@
 
   /* ==================== GLOW ==================== */
   .glow-text {
-    text-shadow: 0 0 16px rgba(255, 77, 0, 0.25);
+    text-shadow: 0 0 16px rgba(103, 61, 230, 0.28);
   }
 
   /* ==================== BOTÃO ==================== */
@@ -247,7 +272,7 @@
 
   .btn-buscar:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(255, 77, 0, 0.25);
+    box-shadow: 0 6px 18px rgba(103, 61, 230, 0.28);
   }
 
   .btn-buscar:active {
@@ -337,7 +362,7 @@
   pointer-events: none;
   z-index: 10;
   font-size: 28px;
-  filter: drop-shadow(0 8px 12px rgba(255, 77, 0, 0.25));
+  filter: drop-shadow(0 8px 12px rgba(103, 61, 230, 0.28));
 }
 
 .floating-icon-2 {
@@ -350,9 +375,9 @@
 
 .live-counter {
   animation: float-slow 7s ease-in-out infinite;
-  background: rgba(255, 77, 0, 0.1);
+  background: rgba(103, 61, 230, 0.08);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 77, 0, 0.2);
+  border: 1px solid rgba(103, 61, 230, 0.2);
 }
 
 /* ==================== MOBILE ==================== */
