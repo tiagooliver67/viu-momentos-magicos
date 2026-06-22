@@ -32,7 +32,7 @@ const items: Benefit[] = [
 
 const BenefitsStrip = () => {
   return (
-    <section className="relative -mt-10 sm:-mt-16 z-20">
+    <section className="relative -mt-24 sm:-mt-32 z-20">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
