@@ -2,7 +2,7 @@ import { Search, Camera, ScanFace, Users } from "lucide-react";
 import { useState, useEffect, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroRunners from "@/assets/hero-runners.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { cdnUrl } from "@/lib/cdnConfig";
 
@@ -20,7 +20,7 @@ interface HeroSettings {
 const DEFAULT_SETTINGS: HeroSettings = {
   title: "Sua superação imortalizada",
   highlight: "em alta definição.",
-  title_color: "#FFFFFF",
+  title_color: "#111827",
   highlight_color: "#673DE6",
   transition_type: "fade",
   transition_duration_ms: 1000,
@@ -83,182 +83,169 @@ const HeroSection = () => {
   };
 
   const transitionMs = settings.transition_duration_ms;
-  const slidesToRender = slides.length > 0 ? slides : [heroBg];
+  const slidesToRender = slides.length > 0 ? slides : [heroRunners];
 
   return (
-    <section className="relative min-h-[70vh] sm:min-h-[85vh] flex items-center justify-center overflow-hidden pt-14 sm:pt-0">
-      {/* Background slider */}
-      <div className="absolute inset-0 overflow-hidden">
-        {slidesToRender.map((src, i) => {
-          const isActive = i === currentSlide % slidesToRender.length;
-          let extraStyle: React.CSSProperties = {
-            transitionDuration: `${transitionMs}ms`,
-          };
-          let className =
-            "absolute inset-0 w-full h-full object-cover brightness-[0.6] contrast-[1.1] transition-all ease-out";
-
-          if (settings.transition_type === "slide") {
-            extraStyle.transform = isActive
-              ? "translateX(0)"
-              : i < currentSlide
-              ? "translateX(-100%)"
-              : "translateX(100%)";
-            className += " opacity-100";
-          } else if (settings.transition_type === "kenburns") {
-            extraStyle.opacity = isActive ? 1 : 0;
-            extraStyle.transform = isActive ? "scale(1.1)" : "scale(1)";
-            extraStyle.transitionDuration = `${Math.max(transitionMs, settings.interval_seconds * 1000)}ms`;
-          } else {
-            // fade
-            extraStyle.opacity = isActive ? 1 : 0;
-          }
-
-          return (
-            <img
-              key={src + i}
-              src={src}
-              alt=""
-              loading={i === 0 ? "eager" : "lazy"}
-              fetchPriority={i === 0 ? "high" : "low"}
-              className={className}
-              style={extraStyle}
-              width={1920}
-              height={1080}
-            />
-          );
-        })}
-      </div>
-
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/61" />
-
-      {/* Animated gradient overlay */}
-      <div className="absolute inset-0 hero-gradient-animated opacity-40" />
-
-      {/* Gradient bottom */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/61 to-black/90" />
-
-      {/* Floating social proof badge (desktop) */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={mounted ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.7 }}
-        className="hidden lg:flex absolute right-8 xl:right-16 bottom-24 z-10 items-center gap-3 rounded-2xl px-5 py-4 backdrop-blur-md border border-white/15"
-        style={{ background: "hsla(256, 76%, 57%, 0.35)" }}
-      >
-        <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
-          <Users className="w-5 h-5 text-white" />
-        </div>
-        <div className="text-white leading-tight">
-          <div className="font-black text-base">+2 milhões</div>
-          <div className="text-xs text-white/80">de fotos entregues<br/>em todo o Brasil</div>
-        </div>
-      </motion.div>
-
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 text-center">
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={mounted ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs sm:text-sm font-bold uppercase tracking-[0.18em] mb-6"
-        >
-          <Camera className="w-4 h-4" />
-          A revolução da fotografia esportiva
-        </motion.div>
-
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 24 }}
-          animate={mounted ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-5"
-          style={{ color: settings.title_color }}
-        >
-          {settings.title} <br className="hidden sm:block" />
-          <span style={{ color: settings.highlight_color }}>{settings.highlight}</span>
-        </motion.h1>
-
-        {/* Sub */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={mounted ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-          className="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10"
-        >
-          Encontre suas fotos de eventos esportivos em segundos com nossa
-          inteligência de busca facial e OCR de número de peito.
-        </motion.p>
-
-        {/* Search */}
-        <motion.form
-          onSubmit={handleSearch}
-          initial={{ opacity: 0, y: 20, scale: 0.98 }}
-          animate={mounted ? { opacity: 1, y: 0, scale: 1 } : {}}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.45 }}
-          className="max-w-2xl mx-auto"
-        >
-          <div className="glass-card p-1.5 sm:p-2 flex items-center gap-1 sm:gap-2 overflow-hidden">
-            <div className="flex items-center gap-0.5 sm:gap-1 pl-1 sm:pl-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setSearchMode("text")}
-                aria-label="Buscar por texto"
-                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
-                  searchMode === "text"
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/10"
-                }`}
-              >
-                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSearchMode("face")}
-                aria-label="Buscar por reconhecimento facial"
-                className={`p-1.5 sm:p-2 rounded-lg transition-all duration-200 ${
-                  searchMode === "face"
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/10"
-                }`}
-              >
-                <ScanFace className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
-
-            <input
-              type="text"
-              placeholder={
-                searchMode === "text"
-                  ? "Digite o nome do evento..."
-                  : "Envie sua selfie..."
-              }
-              className="flex-1 min-w-0 bg-transparent text-white placeholder:text-gray-400 outline-none text-xs sm:text-sm md:text-base py-2.5 sm:py-3 px-1 sm:px-2"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-
-            <button
-              type="submit"
-              className="btn-premium px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs sm:text-sm min-h-[40px] sm:min-h-[44px] shrink-0"
+    <section className="relative bg-background overflow-hidden pt-20 sm:pt-24 pb-28 sm:pb-40">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-12 items-center">
+          {/* Left: content */}
+          <div className="relative z-10 max-w-xl">
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={mounted ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/25 bg-primary/5 text-primary text-[11px] sm:text-xs font-bold uppercase tracking-[0.18em] mb-6"
             >
-              Buscar
-            </button>
+              <Camera className="w-3.5 h-3.5" />
+              A revolução da fotografia esportiva
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 22 }}
+              animate={mounted ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.02] tracking-tight mb-5"
+              style={{ color: settings.title_color }}
+            >
+              {settings.title}{" "}
+              <span style={{ color: settings.highlight_color }}>
+                {settings.highlight}
+              </span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 18 }}
+              animate={mounted ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              className="text-base sm:text-lg text-muted-foreground max-w-md mb-8"
+            >
+              Encontre suas fotos de eventos esportivos em segundos com nossa
+              inteligência de busca facial e OCR de número de peito.
+            </motion.p>
+
+            <motion.form
+              onSubmit={handleSearch}
+              initial={{ opacity: 0, y: 18 }}
+              animate={mounted ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+              className="max-w-xl"
+            >
+              <div className="bg-card border border-border rounded-2xl shadow-[0_20px_50px_-20px_hsl(220_39%_11%/0.18)] p-1.5 sm:p-2 flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-0.5 sm:gap-1 pl-1 sm:pl-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSearchMode("text")}
+                    aria-label="Buscar por texto"
+                    className={`p-2 rounded-lg transition-all duration-200 ${
+                      searchMode === "text"
+                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    }`}
+                  >
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSearchMode("face")}
+                    aria-label="Buscar por reconhecimento facial"
+                    className={`p-2 rounded-lg transition-all duration-200 ${
+                      searchMode === "face"
+                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    }`}
+                  >
+                    <ScanFace className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  placeholder={
+                    searchMode === "text"
+                      ? "Digite o nome do evento..."
+                      : "Envie sua selfie..."
+                  }
+                  className="flex-1 min-w-0 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-sm sm:text-base py-2.5 sm:py-3 px-2"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm min-h-[44px] shrink-0 hover:bg-primary/90 transition-colors shadow-[0_8px_20px_-6px_hsl(var(--primary)/0.45)]"
+                >
+                  Buscar
+                </button>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-3 ml-1">
+                Não sabe o nome do evento?{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/buscar")}
+                  className="text-primary font-semibold hover:underline"
+                >
+                  Clique aqui
+                </button>
+              </p>
+            </motion.form>
           </div>
 
-          <p className="text-xs text-gray-400 mt-3">
-            Não sabe o nome do evento?{" "}
-            <button
-              type="button"
-              onClick={() => navigate("/buscar")}
-              className="text-primary hover:underline"
+          {/* Right: image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={mounted ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            className="relative h-[340px] sm:h-[440px] lg:h-[560px] rounded-3xl overflow-hidden lg:rounded-none lg:rounded-l-[2rem]"
+          >
+            {slidesToRender.map((src, i) => {
+              const isActive = i === currentSlide % slidesToRender.length;
+              const extraStyle: React.CSSProperties = {
+                transitionDuration: `${transitionMs}ms`,
+                opacity: isActive ? 1 : 0,
+              };
+              return (
+                <img
+                  key={src + i}
+                  src={src}
+                  alt="Atletas em corrida"
+                  loading={i === 0 ? "eager" : "lazy"}
+                  fetchPriority={i === 0 ? "high" : "low"}
+                  className="absolute inset-0 w-full h-full object-cover transition-opacity ease-out"
+                  style={extraStyle}
+                  width={1920}
+                  height={1080}
+                />
+              );
+            })}
+            {/* Soft fade from background on the left edge */}
+            <div
+              className="absolute inset-y-0 left-0 w-1/3 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)/0.6) 40%, transparent 100%)",
+              }}
+            />
+            {/* Floating social proof badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={mounted ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
+              className="absolute bottom-5 right-5 sm:bottom-8 sm:right-8 flex items-center gap-3 rounded-2xl px-4 py-3 backdrop-blur-md border border-white/20"
+              style={{ background: "hsla(256, 76%, 57%, 0.55)" }}
             >
-              Clique aqui
-            </button>
-          </p>
-        </motion.form>
+              <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div className="text-white leading-tight">
+                <div className="font-black text-sm sm:text-base">+2 milhões</div>
+                <div className="text-[11px] sm:text-xs text-white/85">
+                  de fotos entregues
+                  <br />
+                  em todo o Brasil
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
