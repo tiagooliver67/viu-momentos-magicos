@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,6 @@ export default function Parceiros() {
   const { user } = useAuth();
   const { level, rules, isLoading } = usePhotographerLevel();
   const [referralCode, setReferralCode] = useState<string | null>(null);
-  const [genLoading, setGenLoading] = useState(false);
 
   const eligible = level && LEVEL_ORDER[level.current_level] >= 3;
 
