@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import {
-  Globe, User, Share2, Monitor, Image, Palette, Link2, Shield as WatermarkIcon, ImageIcon,
-  Save, Upload, Plus, Trash2, Eye, Check, X
+  Globe, User, Share2, Image, Palette, Link2, Shield as WatermarkIcon,
+  Save, Plus, Trash2, Check
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePhotographerSite, useCustomLinks } from "@/hooks/usePhotographerSite";
@@ -13,13 +13,20 @@ const siteSubTabs = [
   { id: "geral", label: "Meu site", icon: Globe },
   { id: "sobre", label: "Sobre", icon: User },
   { id: "redes", label: "Redes sociais", icon: Share2 },
-  { id: "modelos", label: "Modelos", icon: Monitor },
   { id: "imagem", label: "Imagem de perfil", icon: Image },
   { id: "cores", label: "Cores", icon: Palette },
   { id: "links", label: "Links editáveis", icon: Link2 },
   { id: "marcadagua", label: "Marca d'água", icon: WatermarkIcon },
-  { id: "portfolio", label: "Portfólio", icon: ImageIcon },
 ];
+
+const tabCompletionKey: Record<string, string> = {
+  geral: "slug",
+  sobre: "bio",
+  redes: "instagram",
+  imagem: "avatar_url",
+  cores: "primary_color",
+  marcadagua: "watermark_url",
+};
 
 const presetColors = [
   "#000000", "#FFFFFF", "#673DE6", "#FFD700", "#00C853", "#2196F3", "#9C27B0", "#E91E63",
@@ -129,7 +136,7 @@ const MeuSiteTab = () => {
               >
                 <tab.icon className="w-4 h-4 flex-shrink-0" />
                 {tab.label}
-                {(site as any)?.[tab.id === "geral" ? "slug" : "bio"] !== undefined && (
+                {tabCompletionKey[tab.id] && (site as any)?.[tabCompletionKey[tab.id]] && (
                   <Check className="w-4 h-4 text-lime ml-auto hidden lg:block" />
                 )}
               </button>
@@ -174,34 +181,19 @@ const MeuSiteTab = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Telefone de atendimento*</label>
-                  <input
-                    value={val("contact_phone")}
-                    onChange={e => set("contact_phone", e.target.value)}
-                    className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">CNPJ</label>
-                  <input
-                    value={val("cnpj")}
-                    onChange={e => set("cnpj", e.target.value)}
-                    className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors"
-                  />
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                O telefone de contato é gerenciado pelo WhatsApp em <strong>Redes sociais</strong>.
+              </p>
               <div>
                 <h4 className="font-semibold mt-4 mb-2">SEO</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Título da página</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Título da página (aba do navegador)</label>
                     <input value={val("seo_title")} onChange={e => set("seo_title", e.target.value)}
                       className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Palavras-chave</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Palavras-chave (separadas por vírgula)</label>
                     <input value={val("seo_keywords")} onChange={e => set("seo_keywords", e.target.value)}
                       className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
                   </div>
@@ -250,49 +242,21 @@ const MeuSiteTab = () => {
             </div>
           )}
 
-          {/* Modelos */}
-          {activeSubTab === "modelos" && (
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="text-lg font-bold">Modelos</h3>
-              <div className="flex gap-3 flex-wrap">
-                {["Padrão", "Compacto", "Banner", "Foto Destaque"].map(tpl => (
-                  <button
-                    key={tpl}
-                    onClick={() => set("template", tpl.toLowerCase().replace(" ", "_"))}
-                    className={`px-6 py-3 rounded-xl text-sm font-bold transition-all ${
-                      val("template") === tpl.toLowerCase().replace(" ", "_")
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary/50 border border-border hover:border-primary text-foreground"
-                    }`}
-                  >
-                    {tpl}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-4 p-4 rounded-xl bg-secondary/30 border border-border">
-                <h4 className="font-semibold mb-2">Visualização</h4>
-                <div className="aspect-video bg-card rounded-lg border border-border flex items-center justify-center text-muted-foreground text-sm">
-                  Preview do template selecionado
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Imagem de perfil */}
           {activeSubTab === "imagem" && (
             <div className="glass-card p-6 space-y-6">
-              <h3 className="text-lg font-bold">Imagens</h3>
+              <h3 className="text-lg font-bold">Foto de perfil</h3>
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h4 className="font-semibold">Logo</h4>
-                    <p className="text-xs text-muted-foreground">Essa imagem será exibida como a principal da sua loja.</p>
+                    <h4 className="font-semibold">Foto de perfil</h4>
+                    <p className="text-xs text-muted-foreground">Aparece no topo da sua página pública e em cards de evento.</p>
                   </div>
                   <button
                     onClick={() => avatarRef.current?.click()}
                     className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90"
                   >
-                    Enviar logo
+                    Enviar foto
                   </button>
                   <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </div>
@@ -321,41 +285,23 @@ const MeuSiteTab = () => {
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm font-semibold mb-2 block">Cor primária</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-10 rounded-lg border border-border" style={{ backgroundColor: val("primary_color") || "#673DE6" }} />
-                    <input
-                      type="color"
-                      value={val("primary_color") || "#673DE6"}
-                      onChange={e => set("primary_color", e.target.value)}
-                      className="w-full h-8"
-                    />
-                  </div>
+              <div>
+                <label className="text-sm font-semibold mb-2 block">Cor primária</label>
+                <p className="text-xs text-muted-foreground mb-3">Aplicada no cabeçalho da sua página pública.</p>
+                <div className="flex items-center gap-3 max-w-sm">
+                  <div className="w-16 h-10 rounded-lg border border-border" style={{ backgroundColor: val("primary_color") || "#673DE6" }} />
                   <input
+                    type="color"
                     value={val("primary_color") || "#673DE6"}
                     onChange={e => set("primary_color", e.target.value)}
-                    className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
+                    className="w-full h-8"
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-semibold mb-2 block">Cor secundária</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-10 rounded-lg border border-border" style={{ backgroundColor: val("secondary_color") || "#00F0FF" }} />
-                    <input
-                      type="color"
-                      value={val("secondary_color") || "#00F0FF"}
-                      onChange={e => set("secondary_color", e.target.value)}
-                      className="w-full h-8"
-                    />
-                  </div>
-                  <input
-                    value={val("secondary_color") || "#00F0FF"}
-                    onChange={e => set("secondary_color", e.target.value)}
-                    className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
-                  />
-                </div>
+                <input
+                  value={val("primary_color") || "#673DE6"}
+                  onChange={e => set("primary_color", e.target.value)}
+                  className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
+                />
               </div>
             </div>
           )}
@@ -516,18 +462,6 @@ const MeuSiteTab = () => {
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Portfólio */}
-          {activeSubTab === "portfolio" && (
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="text-lg font-bold">Portfólio</h3>
-              <p className="text-sm text-muted-foreground">Selecione fotos para exibir no seu portfólio público. As fotos dos seus eventos publicados aparecerão automaticamente.</p>
-              <div className="p-8 rounded-xl border-2 border-dashed border-border text-center text-muted-foreground">
-                <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                <p>As fotos dos seus eventos ativos serão exibidas automaticamente na sua página pública.</p>
-              </div>
             </div>
           )}
 

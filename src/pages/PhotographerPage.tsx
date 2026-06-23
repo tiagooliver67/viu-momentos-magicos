@@ -1,8 +1,9 @@
 import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 import { usePhotographerSiteBySlug } from "@/hooks/usePhotographerSite";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, MapPin, Camera, Instagram, Phone, Mail, ExternalLink, Facebook, Youtube } from "lucide-react";
+import { Calendar, MapPin, Camera, Instagram, Phone, Mail, ExternalLink, Facebook, Youtube, Linkedin, Twitter, Music2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
@@ -10,6 +11,22 @@ import Footer from "@/components/Footer";
 const PhotographerPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: site, isLoading } = usePhotographerSiteBySlug(slug);
+
+  // Apply SEO title and meta keywords from the photographer's site settings
+  useEffect(() => {
+    if (!site) return;
+    const title = site.seo_title || `${site.display_name || "Fotógrafo"} | ViuFoto`;
+    document.title = title;
+    if (site.seo_keywords) {
+      let tag = document.querySelector('meta[name="keywords"]') as HTMLMetaElement | null;
+      if (!tag) {
+        tag = document.createElement("meta");
+        tag.name = "keywords";
+        document.head.appendChild(tag);
+      }
+      tag.content = site.seo_keywords;
+    }
+  }, [site]);
 
   const { data: events } = useQuery({
     queryKey: ["photographer-events", site?.user_id],
@@ -85,6 +102,9 @@ const PhotographerPage = () => {
     { url: site.instagram, icon: Instagram, label: "Instagram" },
     { url: site.facebook, icon: Facebook, label: "Facebook" },
     { url: site.youtube, icon: Youtube, label: "YouTube" },
+    { url: site.tiktok, icon: Music2, label: "TikTok" },
+    { url: site.linkedin, icon: Linkedin, label: "LinkedIn" },
+    { url: site.twitter, icon: Twitter, label: "X (Twitter)" },
     { url: site.whatsapp ? `https://wa.me/${site.whatsapp.replace(/\D/g, "")}` : null, icon: Phone, label: "WhatsApp" },
     { url: site.contact_email ? `mailto:${site.contact_email}` : null, icon: Mail, label: "Email" },
   ].filter(s => s.url);
