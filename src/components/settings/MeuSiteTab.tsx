@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import {
-  Globe, User, Share2, Monitor, Image, Palette, Link2, Shield as WatermarkIcon, ImageIcon,
-  Save, Upload, Plus, Trash2, Eye, Check, X
+  Globe, User, Share2, Image, Palette, Link2, Shield as WatermarkIcon,
+  Save, Plus, Trash2, Check
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePhotographerSite, useCustomLinks } from "@/hooks/usePhotographerSite";
@@ -13,13 +13,20 @@ const siteSubTabs = [
   { id: "geral", label: "Meu site", icon: Globe },
   { id: "sobre", label: "Sobre", icon: User },
   { id: "redes", label: "Redes sociais", icon: Share2 },
-  { id: "modelos", label: "Modelos", icon: Monitor },
   { id: "imagem", label: "Imagem de perfil", icon: Image },
   { id: "cores", label: "Cores", icon: Palette },
   { id: "links", label: "Links editáveis", icon: Link2 },
   { id: "marcadagua", label: "Marca d'água", icon: WatermarkIcon },
-  { id: "portfolio", label: "Portfólio", icon: ImageIcon },
 ];
+
+const tabCompletionKey: Record<string, string> = {
+  geral: "slug",
+  sobre: "bio",
+  redes: "instagram",
+  imagem: "avatar_url",
+  cores: "primary_color",
+  marcadagua: "watermark_url",
+};
 
 const presetColors = [
   "#000000", "#FFFFFF", "#673DE6", "#FFD700", "#00C853", "#2196F3", "#9C27B0", "#E91E63",
@@ -129,7 +136,7 @@ const MeuSiteTab = () => {
               >
                 <tab.icon className="w-4 h-4 flex-shrink-0" />
                 {tab.label}
-                {(site as any)?.[tab.id === "geral" ? "slug" : "bio"] !== undefined && (
+                {tabCompletionKey[tab.id] && (site as any)?.[tabCompletionKey[tab.id]] && (
                   <Check className="w-4 h-4 text-lime ml-auto hidden lg:block" />
                 )}
               </button>
