@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          criteria: Json
+          description: string | null
+          icon: string | null
+          id: string
+          sort_order: number
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          icon?: string | null
+          id?: string
+          sort_order?: number
+          title: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          criteria?: Json
+          description?: string | null
+          icon?: string | null
+          id?: string
+          sort_order?: number
+          title?: string
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string
@@ -1039,6 +1075,54 @@ export type Database = {
         }
         Relationships: []
       }
+      level_rules: {
+        Row: {
+          benefits: Json
+          commission_pct: number
+          level: Database["public"]["Enums"]["photographer_level"]
+          manual_only: boolean
+          match_mode: string
+          message: string | null
+          min_events: number
+          min_revenue: number
+          min_sales: number
+          requires_document: boolean
+          requires_profile_complete: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          benefits?: Json
+          commission_pct?: number
+          level: Database["public"]["Enums"]["photographer_level"]
+          manual_only?: boolean
+          match_mode?: string
+          message?: string | null
+          min_events?: number
+          min_revenue?: number
+          min_sales?: number
+          requires_document?: boolean
+          requires_profile_complete?: boolean
+          sort_order: number
+          updated_at?: string
+        }
+        Update: {
+          benefits?: Json
+          commission_pct?: number
+          level?: Database["public"]["Enums"]["photographer_level"]
+          manual_only?: boolean
+          match_mode?: string
+          message?: string | null
+          min_events?: number
+          min_revenue?: number
+          min_sales?: number
+          requires_document?: boolean
+          requires_profile_complete?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -1184,6 +1268,71 @@ export type Database = {
         }
         Relationships: []
       }
+      photographer_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photographer_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photographer_levels: {
+        Row: {
+          current_level: Database["public"]["Enums"]["photographer_level"]
+          events_count: number
+          history: Json
+          is_ambassador: boolean
+          referrals_count: number
+          revenue_total: number
+          sales_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_level?: Database["public"]["Enums"]["photographer_level"]
+          events_count?: number
+          history?: Json
+          is_ambassador?: boolean
+          referrals_count?: number
+          revenue_total?: number
+          sales_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_level?: Database["public"]["Enums"]["photographer_level"]
+          events_count?: number
+          history?: Json
+          is_ambassador?: boolean
+          referrals_count?: number
+          revenue_total?: number
+          sales_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       photographer_sites: {
         Row: {
           allow_custom_links: boolean | null
@@ -1200,6 +1349,7 @@ export type Database = {
           instagram: string | null
           linkedin: string | null
           primary_color: string | null
+          referral_code: string | null
           secondary_color: string | null
           seo_keywords: string | null
           seo_title: string | null
@@ -1231,6 +1381,7 @@ export type Database = {
           instagram?: string | null
           linkedin?: string | null
           primary_color?: string | null
+          referral_code?: string | null
           secondary_color?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
@@ -1262,6 +1413,7 @@ export type Database = {
           instagram?: string | null
           linkedin?: string | null
           primary_color?: string | null
+          referral_code?: string | null
           secondary_color?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
@@ -1490,6 +1642,66 @@ export type Database = {
           status?: Database["public"]["Enums"]["proposal_status"]
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      referral_earnings: {
+        Row: {
+          amount: number
+          commission_pct: number
+          created_at: string
+          id: string
+          order_id: string | null
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          amount?: number
+          commission_pct?: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          amount?: number
+          commission_pct?: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          activated_at: string | null
+          code: string
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          status: string
+        }
+        Insert: {
+          activated_at?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          status?: string
+        }
+        Update: {
+          activated_at?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -2143,6 +2355,7 @@ export type Database = {
           created: boolean
         }[]
       }
+      ensure_referral_code: { Args: { _user_id: string }; Returns: string }
       get_registration_availability: {
         Args: { _event_id: string }
         Returns: {
@@ -2180,7 +2393,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      recalc_photographer_level: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["photographer_level"]
+      }
       refresh_photo_search_index: { Args: never; Returns: undefined }
+      set_ambassador: {
+        Args: { _enabled: boolean; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "user" | "photographer" | "organizer" | "super_admin"
@@ -2189,6 +2410,12 @@ export type Database = {
       event_status: "ativo" | "em_breve" | "inativo"
       order_status: "aguardando_pagamento" | "pago" | "enviado" | "cancelado"
       payment_method: "pix" | "cartao"
+      photographer_level:
+        | "bronze"
+        | "prata"
+        | "ouro"
+        | "diamante"
+        | "embaixador"
       proposal_status:
         | "rascunho"
         | "enviada"
@@ -2336,6 +2563,7 @@ export const Constants = {
       event_status: ["ativo", "em_breve", "inativo"],
       order_status: ["aguardando_pagamento", "pago", "enviado", "cancelado"],
       payment_method: ["pix", "cartao"],
+      photographer_level: ["bronze", "prata", "ouro", "diamante", "embaixador"],
       proposal_status: [
         "rascunho",
         "enviada",
