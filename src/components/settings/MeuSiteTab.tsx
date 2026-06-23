@@ -285,41 +285,23 @@ const MeuSiteTab = () => {
                   ))}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm font-semibold mb-2 block">Cor primária</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-10 rounded-lg border border-border" style={{ backgroundColor: val("primary_color") || "#673DE6" }} />
-                    <input
-                      type="color"
-                      value={val("primary_color") || "#673DE6"}
-                      onChange={e => set("primary_color", e.target.value)}
-                      className="w-full h-8"
-                    />
-                  </div>
+              <div>
+                <label className="text-sm font-semibold mb-2 block">Cor primária</label>
+                <p className="text-xs text-muted-foreground mb-3">Aplicada no cabeçalho da sua página pública.</p>
+                <div className="flex items-center gap-3 max-w-sm">
+                  <div className="w-16 h-10 rounded-lg border border-border" style={{ backgroundColor: val("primary_color") || "#673DE6" }} />
                   <input
+                    type="color"
                     value={val("primary_color") || "#673DE6"}
                     onChange={e => set("primary_color", e.target.value)}
-                    className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
+                    className="w-full h-8"
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-semibold mb-2 block">Cor secundária</label>
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-10 rounded-lg border border-border" style={{ backgroundColor: val("secondary_color") || "#00F0FF" }} />
-                    <input
-                      type="color"
-                      value={val("secondary_color") || "#00F0FF"}
-                      onChange={e => set("secondary_color", e.target.value)}
-                      className="w-full h-8"
-                    />
-                  </div>
-                  <input
-                    value={val("secondary_color") || "#00F0FF"}
-                    onChange={e => set("secondary_color", e.target.value)}
-                    className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
-                  />
-                </div>
+                <input
+                  value={val("primary_color") || "#673DE6"}
+                  onChange={e => set("primary_color", e.target.value)}
+                  className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
+                />
               </div>
             </div>
           )}
