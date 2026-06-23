@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFavorites } from "@/hooks/useFavorites";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +41,13 @@ const ClientNavbar = () => {
   const isCleanTheme = theme === "clean";
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "Usuário";
+  const initials = (profile?.full_name || user?.email || "U")
+    .split(/\s+/)
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
   const isPhotographerOrOrganizer = hasRole("photographer") || hasRole("organizer");
 
   const handleSignOut = async () => {
@@ -128,9 +136,12 @@ const ClientNavbar = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary hover:bg-secondary/80 transition-all">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary" />
-                  </div>
+                  <Avatar className="w-8 h-8">
+                    {profile?.avatar_url && <AvatarImage src={profile.avatar_url} alt={displayName} />}
+                    <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+                      {initials || <User className="w-4 h-4" />}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="text-sm font-medium text-foreground max-w-[120px] truncate">{displayName}</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
