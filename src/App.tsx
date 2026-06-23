@@ -65,6 +65,10 @@ import InscricoesList from "./pages/inscricoes/InscricoesList";
 import InscricaoForm from "./pages/inscricoes/InscricaoForm";
 import InscricaoDetail from "./pages/inscricoes/InscricaoDetail";
 import InscricaoPublic from "./pages/inscricoes/InscricaoPublic";
+import Parceiros from "./pages/Parceiros";
+import ReferralCapture from "./pages/ReferralCapture";
+import MeuNivel from "./pages/MeuNivel";
+import AdminLevels from "./pages/admin/AdminLevels";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +105,7 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/blogadm" element={<Navigate to="/admin/blog" replace />} />
               <Route path="/inscricao/:slug" element={<InscricaoPublic />} />
+              <Route path="/r/:code" element={<ReferralCapture />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
               {/* Financeiro route removed — unified into Carteira */}
               <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
@@ -109,6 +114,8 @@ const App = () => (
               <Route path="/dashboard/oportunidades" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Oportunidades /></ProtectedRoute>} />
               <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
               <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
+              <Route path="/dashboard/parceiros" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Parceiros /></ProtectedRoute>} />
+              <Route path="/dashboard/nivel" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><MeuNivel /></ProtectedRoute>} />
               <Route path="/dashboard/chamados" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Chamados /></ProtectedRoute>} />
               <Route path="/dashboard/evento/:id" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><EventDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/inscricoes" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricoesList /></ProtectedRoute>} />
@@ -136,6 +143,7 @@ const App = () => (
                 <Route path="foto/:photoId" element={<AdminPhotoDiagnostics />} />
                 <Route path="logs" element={<AdminLogs />} />
                 <Route path="blog" element={<BlogAdm />} />
+                <Route path="niveis" element={<AdminLevels />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

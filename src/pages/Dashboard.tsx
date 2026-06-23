@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState, useRef } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
+import LevelProgressCard from "@/components/levels/LevelProgressCard";
 
 /* ── animated counter ── */
 function AnimatedNumber({ value, prefix = "", duration = 1200 }: { value: number; prefix?: string; duration?: number }) {
@@ -272,6 +273,9 @@ const Dashboard = () => {
             </Link>
           </div>
         </div>
+
+        {/* ── NÍVEL & PROGRESSO ── */}
+        <LevelProgressCard />
 
         {/* ── CHART + LOJA ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
