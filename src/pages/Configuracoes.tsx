@@ -129,7 +129,7 @@ const TabConta = () => {
     setUploadingAvatar(true);
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const path = `avatars/${user.id}-${Date.now()}.${ext}`;
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("photographer-assets")
         .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
