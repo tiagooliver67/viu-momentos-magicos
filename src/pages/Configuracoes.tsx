@@ -62,7 +62,7 @@ const SelectField = ({ label, value, options }: { label: string; value: string; 
 
 // ─── Tab: Minha Conta ───
 const TabConta = () => {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -71,6 +71,8 @@ const TabConta = () => {
   const [birthDate, setBirthDate] = useState("");
   const [email, setEmail] = useState("");
   const [hasWallet, setHasWallet] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -78,7 +80,7 @@ const TabConta = () => {
     const loadProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, phone, cpf_cnpj, asaas_wallet_id")
+        .select("full_name, phone, cpf_cnpj, asaas_wallet_id, avatar_url")
         .eq("user_id", user.id)
         .single();
       if (data) {
@@ -86,6 +88,7 @@ const TabConta = () => {
         setPhone(data.phone || "");
         setCpf(data.cpf_cnpj || "");
         setHasWallet(!!data.asaas_wallet_id);
+        setAvatarUrl(data.avatar_url || null);
       }
       // Try to get birth date from user metadata
       const meta = user.user_metadata;
@@ -112,6 +115,61 @@ const TabConta = () => {
     }
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione uma imagem (JPG, PNG ou WebP).");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande. Máximo de 5MB.");
+      return;
+    }
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `avatars/${user.id}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("photographer-assets")
+        .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("photographer-assets").getPublicUrl(path);
+      const publicUrl = pub.publicUrl;
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("user_id", user.id);
+      if (updErr) throw updErr;
+      setAvatarUrl(publicUrl);
+      await refreshProfile();
+      toast.success("Foto de perfil atualizada!");
+    } catch (err: any) {
+      toast.error(err.message || "Não foi possível enviar a foto.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user) return;
+    setUploadingAvatar(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: null })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      setAvatarUrl(null);
+      await refreshProfile();
+      toast.success("Foto removida.");
+    } catch (err: any) {
+      toast.error(err.message || "Não foi possível remover a foto.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -125,6 +183,37 @@ const TabConta = () => {
       <div>
         <h2 className="text-xl font-bold">Minha conta</h2>
         <p className="text-sm text-muted-foreground">Gerencie seus dados pessoais e de acesso.</p>
+      </div>
+
+      {/* Foto de perfil */}
+      <div className="glass-card p-6">
+        <h3 className="font-semibold mb-4 flex items-center gap-2"><User className="w-4 h-4 text-primary" /> Foto de perfil</h3>
+        <div className="flex items-center gap-5">
+          <div className="w-20 h-20 rounded-full overflow-hidden bg-secondary border border-border flex items-center justify-center flex-shrink-0">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Foto de perfil" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-8 h-8 text-muted-foreground" />
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <label className={`px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold text-sm cursor-pointer hover:bg-primary/90 transition-all flex items-center gap-2 ${uploadingAvatar ? "opacity-50 pointer-events-none" : ""}`}>
+              {uploadingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              {avatarUrl ? "Trocar foto" : "Enviar foto"}
+              <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+            </label>
+            {avatarUrl && (
+              <button
+                onClick={handleRemoveAvatar}
+                disabled={uploadingAvatar}
+                className="px-4 py-2 rounded-xl border border-border text-sm font-medium hover:bg-secondary/50 transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" /> Remover
+              </button>
+            )}
+            <p className="w-full text-xs text-muted-foreground mt-1">JPG, PNG ou WebP até 5MB. Aparecerá no menu superior e no seu perfil público.</p>
+          </div>
+        </div>
       </div>
 
       {/* Dados básicos */}
