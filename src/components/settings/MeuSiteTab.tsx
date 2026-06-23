@@ -465,18 +465,6 @@ const MeuSiteTab = () => {
             </div>
           )}
 
-          {/* Portfólio */}
-          {activeSubTab === "portfolio" && (
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="text-lg font-bold">Portfólio</h3>
-              <p className="text-sm text-muted-foreground">Selecione fotos para exibir no seu portfólio público. As fotos dos seus eventos publicados aparecerão automaticamente.</p>
-              <div className="p-8 rounded-xl border-2 border-dashed border-border text-center text-muted-foreground">
-                <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                <p>As fotos dos seus eventos ativos serão exibidas automaticamente na sua página pública.</p>
-              </div>
-            </div>
-          )}
-
           {/* Save button */}
           {Object.keys(form).length > 0 && (
             <button
