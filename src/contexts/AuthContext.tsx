@@ -48,6 +48,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     // Track last sign in
     supabase.from("profiles").update({ last_sign_in_at: new Date().toISOString() }).eq("user_id", userId).then(() => {});
+
+    // Captura código de indicação salvo no /r/:code (se houver) e cria o vínculo de referral
+    try {
+      const code = localStorage.getItem("viufoto_referral_code");
+      const isPhotog = (rolesRes.data || []).some((r: any) => r.role === "photographer");
+      if (code && isPhotog) {
+        const { data: site } = await supabase
+          .from("photographer_sites")
+          .select("user_id")
+          .eq("referral_code", code)
+          .maybeSingle();
+        if (site?.user_id && site.user_id !== userId) {
+          await supabase.from("referrals" as any).insert({ referrer_id: site.user_id, referred_id: userId, code });
+        }
+        localStorage.removeItem("viufoto_referral_code");
+      }
+    } catch { /* noop */ }
   };
 
   const refreshProfile = async () => {

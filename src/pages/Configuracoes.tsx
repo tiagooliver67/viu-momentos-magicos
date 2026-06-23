@@ -4,7 +4,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   User, Globe, Image, Wallet, Star, CreditCard, Ticket, MessageSquare, Smartphone,
   Save, Eye, EyeOff, Plus, Trash2, QrCode, Share2, Shield, LogOut, Copy, Check,
-  Upload, ChevronRight, Lock, Bell, Mail, Phone, Loader2
+  Upload, ChevronRight, Lock, Bell, Mail, Phone, Loader2, Trophy
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,7 @@ const settingsTabs = [
   { id: "site", label: "Meu site", icon: Globe },
   { id: "portfolio", label: "Meu portfólio", icon: Image },
   { id: "carteira", label: "Carteira", icon: Wallet },
+  { id: "nivel", label: "Nível & Conquistas", icon: Trophy },
   { id: "exclusividade", label: "Exclusividade", icon: Star },
   { id: "smartcard", label: "SmartCard", icon: CreditCard },
   { id: "cupons", label: "Cupons", icon: Ticket },
@@ -271,6 +272,8 @@ const TabConta = () => {
 import MeuSiteTab from "@/components/settings/MeuSiteTab";
 const TabSite = MeuSiteTab;
 import TabCarteira from "@/components/settings/TabCarteira";
+import MeuNivel from "@/pages/MeuNivel";
+const TabNivel = MeuNivel;
 
 // ─── Tab: Portfólio ───
 const TabPortfolio = () => {
@@ -588,6 +591,7 @@ const tabComponents: Record<string, React.FC> = {
   site: TabSite,
   portfolio: TabPortfolio,
   carteira: TabCarteira,
+  nivel: TabNivel,
   exclusividade: TabExclusividade,
   smartcard: TabSmartCard,
   cupons: TabCupons,

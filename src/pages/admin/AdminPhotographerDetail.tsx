@@ -3,6 +3,9 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Calendar, Camera, DollarSign, HardDrive, ScanFace, Activity, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import LevelBadge from "@/components/levels/LevelBadge";
+import { LEVEL_ICONS, type LevelKey } from "@/lib/levels";
+import { toast } from "sonner";
 
 interface Profile {
   user_id: string;
@@ -39,6 +42,8 @@ const AdminPhotographerDetail = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [events, setEvents] = useState<EventRow[]>([]);
+  const [photogLevel, setPhotogLevel] = useState<{ current_level: LevelKey; is_ambassador: boolean } | null>(null);
+  const [ambSaving, setAmbSaving] = useState(false);
   const [totals, setTotals] = useState({
     eventsCount: 0,
     photosCount: 0,
@@ -59,6 +64,13 @@ const AdminPhotographerDetail = () => {
       ]);
 
       setProfile(prof as Profile);
+
+      const { data: lvl } = await supabase
+        .from("photographer_levels" as any)
+        .select("current_level, is_ambassador")
+        .eq("user_id", id)
+        .maybeSingle();
+      setPhotogLevel((lvl as any) ?? { current_level: "bronze", is_ambassador: false });
 
       const eventList = evs || [];
       const eventIds = eventList.map(e => e.id);
@@ -94,6 +106,30 @@ const AdminPhotographerDetail = () => {
     };
     fetch();
   }, [id]);
+
+  const toggleAmbassador = async () => {
+    if (!id) return;
+    setAmbSaving(true);
+    const enabled = !photogLevel?.is_ambassador;
+    const { error } = await supabase.rpc("set_ambassador" as any, { _user_id: id, _enabled: enabled });
+    setAmbSaving(false);
+    if (error) return toast.error(error.message);
+    setPhotogLevel((p) => p ? { ...p, is_ambassador: enabled, current_level: enabled ? "embaixador" : p.current_level } : p);
+    toast.success(enabled ? "Embaixador ativado" : "Embaixador removido");
+  };
+
+  const recalcLevel = async () => {
+    if (!id) return;
+    const { error } = await supabase.rpc("recalc_photographer_level" as any, { _user_id: id });
+    if (error) return toast.error(error.message);
+    toast.success("Nível recalculado");
+    const { data: lvl } = await supabase
+      .from("photographer_levels" as any)
+      .select("current_level, is_ambassador")
+      .eq("user_id", id)
+      .maybeSingle();
+    setPhotogLevel((lvl as any) ?? null);
+  };
 
   if (loading) {
     return (
@@ -140,6 +176,7 @@ const AdminPhotographerDetail = () => {
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${totals.planType === "Profissional" ? "bg-primary/15 text-primary" : "bg-secondary text-muted-foreground"}`}>
                 {totals.planType}
               </span>
+              {photogLevel && <LevelBadge level={photogLevel.current_level} size="sm" />}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 text-xs text-muted-foreground">
               <div><span className="block text-foreground font-medium">Cadastro</span>{fmtDate(profile.created_at)}</div>
@@ -147,6 +184,19 @@ const AdminPhotographerDetail = () => {
               <div><span className="block text-foreground font-medium">User ID</span><span className="font-mono">{profile.user_id.slice(0, 8)}…</span></div>
             </div>
           </div>
+        </div>
+        {/* Embaixador / nível */}
+        <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center gap-3">
+          <span className="text-sm">
+            Nível: <strong>{LEVEL_ICONS[photogLevel?.current_level ?? "bronze"]} {photogLevel?.current_level ?? "bronze"}</strong>
+          </span>
+          <button onClick={recalcLevel} className="text-xs px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/70">
+            Recalcular nível
+          </button>
+          <label className="flex items-center gap-2 text-sm ml-auto">
+            <input type="checkbox" checked={!!photogLevel?.is_ambassador} onChange={toggleAmbassador} disabled={ambSaving} />
+            👑 Embaixador (manual)
+          </label>
         </div>
       </div>
 

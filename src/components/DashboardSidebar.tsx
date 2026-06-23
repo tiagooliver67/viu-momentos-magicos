@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Handshake, Menu, X, Users, ClipboardList, ShieldAlert } from "lucide-react";
+import { Calendar, Settings, HelpCircle, PlusCircle, Briefcase, Handshake, Menu, X, Users, ClipboardList, ShieldAlert, Trophy, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ const menuItemsBase = [
   { label: "Clientes", icon: Users, path: "/dashboard/clientes", roles: ["photographer", "organizer"] },
   { label: "Oportunidades", icon: Briefcase, path: "/dashboard/oportunidades", roles: ["photographer", "organizer"] },
   { label: "Propostas", icon: Handshake, path: "/dashboard/propostas", roles: ["photographer", "organizer"] },
+  { label: "Nível & Conquistas", icon: Trophy, path: "/dashboard/nivel", roles: ["photographer", "organizer"] },
   { label: "Chamados", icon: ShieldAlert, path: "/dashboard/chamados", roles: ["photographer", "organizer"] },
   { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes", roles: ["photographer", "organizer"] },
   { label: "Ajuda", icon: HelpCircle, path: "/dashboard/ajuda", roles: ["photographer", "organizer"] },
@@ -20,7 +21,27 @@ const DashboardSidebar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, hasRole } = useAuth();
-  const menuItems = menuItemsBase.filter((m) => m.roles.some((r) => hasRole(r as any)));
+  const baseItems = menuItemsBase.filter((m) => m.roles.some((r) => hasRole(r as any)));
+
+  // Programa de Parceiros só para Ouro+
+  const { data: lvl } = useQuery({
+    queryKey: ["sidebar-level", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("photographer_levels" as any)
+        .select("current_level")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return (data as any)?.current_level as string | undefined;
+    },
+    staleTime: 60_000,
+  });
+  const ORDER: Record<string, number> = { bronze: 1, prata: 2, ouro: 3, diamante: 4, embaixador: 5 };
+  const showParceiros = lvl && (ORDER[lvl] ?? 0) >= 3;
+  const menuItems = showParceiros
+    ? [...baseItems.slice(0, 5), { label: "Parceiros", icon: Share2, path: "/dashboard/parceiros", roles: ["photographer", "organizer"] }, ...baseItems.slice(5)]
+    : baseItems;
 
   /* ── real sidebar stats ── */
   const { data: sidebarStats } = useQuery({
