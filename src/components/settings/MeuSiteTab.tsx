@@ -242,49 +242,21 @@ const MeuSiteTab = () => {
             </div>
           )}
 
-          {/* Modelos */}
-          {activeSubTab === "modelos" && (
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="text-lg font-bold">Modelos</h3>
-              <div className="flex gap-3 flex-wrap">
-                {["Padrão", "Compacto", "Banner", "Foto Destaque"].map(tpl => (
-                  <button
-                    key={tpl}
-                    onClick={() => set("template", tpl.toLowerCase().replace(" ", "_"))}
-                    className={`px-6 py-3 rounded-xl text-sm font-bold transition-all ${
-                      val("template") === tpl.toLowerCase().replace(" ", "_")
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary/50 border border-border hover:border-primary text-foreground"
-                    }`}
-                  >
-                    {tpl}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-4 p-4 rounded-xl bg-secondary/30 border border-border">
-                <h4 className="font-semibold mb-2">Visualização</h4>
-                <div className="aspect-video bg-card rounded-lg border border-border flex items-center justify-center text-muted-foreground text-sm">
-                  Preview do template selecionado
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Imagem de perfil */}
           {activeSubTab === "imagem" && (
             <div className="glass-card p-6 space-y-6">
-              <h3 className="text-lg font-bold">Imagens</h3>
+              <h3 className="text-lg font-bold">Foto de perfil</h3>
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h4 className="font-semibold">Logo</h4>
-                    <p className="text-xs text-muted-foreground">Essa imagem será exibida como a principal da sua loja.</p>
+                    <h4 className="font-semibold">Foto de perfil</h4>
+                    <p className="text-xs text-muted-foreground">Aparece no topo da sua página pública e em cards de evento.</p>
                   </div>
                   <button
                     onClick={() => avatarRef.current?.click()}
                     className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90"
                   >
-                    Enviar logo
+                    Enviar foto
                   </button>
                   <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </div>
