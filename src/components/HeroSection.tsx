@@ -86,8 +86,61 @@ const HeroSection = () => {
   const slidesToRender = slides.length > 0 ? slides : [heroRunners];
 
   return (
-    <section className="relative bg-background overflow-visible pt-20 sm:pt-24 pb-40 sm:pb-56">
-      <div className="container mx-auto px-4">
+    <section className="relative bg-background overflow-visible">
+      {/* Right-side image fills the entire hero on desktop */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={mounted ? { opacity: 1, scale: 1 } : {}}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+        className="hidden lg:block absolute top-0 right-0 bottom-0 w-[58%] z-0"
+      >
+        {slidesToRender.map((src, i) => {
+          const isActive = i === currentSlide % slidesToRender.length;
+          return (
+            <img
+              key={src + i}
+              src={src}
+              alt="Atletas em corrida"
+              loading={i === 0 ? "eager" : "lazy"}
+              fetchPriority={i === 0 ? "high" : "low"}
+              className="absolute inset-0 w-full h-full object-cover transition-opacity ease-out"
+              style={{ transitionDuration: `${transitionMs}ms`, opacity: isActive ? 1 : 0 }}
+              width={1920}
+              height={1080}
+            />
+          );
+        })}
+        {/* Soft fade from background on the left edge to blend with text */}
+        <div
+          className="absolute inset-y-0 left-0 w-1/3 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)/0.55) 45%, transparent 100%)",
+          }}
+        />
+        {/* Floating social proof badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={mounted ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
+          className="absolute bottom-32 right-8 flex items-center gap-3 rounded-2xl px-4 py-3 backdrop-blur-md border border-white/20"
+          style={{ background: "hsla(256, 76%, 57%, 0.55)" }}
+        >
+          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <div className="text-white leading-tight">
+            <div className="font-black text-sm sm:text-base">+2 milhões</div>
+            <div className="text-[11px] sm:text-xs text-white/85">
+              de fotos entregues
+              <br />
+              em todo o Brasil
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+
+      <div className="container mx-auto px-4 pt-20 sm:pt-24 pb-32 sm:pb-44 relative">
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-12 items-center">
           {/* Left: content */}
           <div className="relative z-10 max-w-xl">
@@ -189,55 +242,41 @@ const HeroSection = () => {
             </motion.form>
           </div>
 
-          {/* Right: image */}
+          {/* Right: mobile/tablet image (desktop uses absolute fill above) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={mounted ? { opacity: 1, scale: 1 } : {}}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="relative h-[340px] sm:h-[440px] lg:h-[560px] rounded-3xl overflow-hidden lg:rounded-none lg:rounded-l-[2rem]"
+            className="relative h-[340px] sm:h-[440px] rounded-3xl overflow-hidden lg:hidden"
           >
             {slidesToRender.map((src, i) => {
               const isActive = i === currentSlide % slidesToRender.length;
-              const extraStyle: React.CSSProperties = {
-                transitionDuration: `${transitionMs}ms`,
-                opacity: isActive ? 1 : 0,
-              };
               return (
                 <img
                   key={src + i}
                   src={src}
                   alt="Atletas em corrida"
-                  loading={i === 0 ? "eager" : "lazy"}
-                  fetchPriority={i === 0 ? "high" : "low"}
+                  loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover transition-opacity ease-out"
-                  style={extraStyle}
+                  style={{ transitionDuration: `${transitionMs}ms`, opacity: isActive ? 1 : 0 }}
                   width={1920}
                   height={1080}
                 />
               );
             })}
-            {/* Soft fade from background on the left edge */}
-            <div
-              className="absolute inset-y-0 left-0 w-1/3 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)/0.6) 40%, transparent 100%)",
-              }}
-            />
-            {/* Floating social proof badge */}
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={mounted ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
-              className="absolute bottom-5 right-5 sm:bottom-8 sm:right-8 flex items-center gap-3 rounded-2xl px-4 py-3 backdrop-blur-md border border-white/20"
+              className="absolute bottom-5 right-5 flex items-center gap-3 rounded-2xl px-4 py-3 backdrop-blur-md border border-white/20"
               style={{ background: "hsla(256, 76%, 57%, 0.55)" }}
             >
               <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div className="text-white leading-tight">
-                <div className="font-black text-sm sm:text-base">+2 milhões</div>
-                <div className="text-[11px] sm:text-xs text-white/85">
+                <div className="font-black text-sm">+2 milhões</div>
+                <div className="text-[11px] text-white/85">
                   de fotos entregues
                   <br />
                   em todo o Brasil
