@@ -181,34 +181,19 @@ const MeuSiteTab = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Telefone de atendimento*</label>
-                  <input
-                    value={val("contact_phone")}
-                    onChange={e => set("contact_phone", e.target.value)}
-                    className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">CNPJ</label>
-                  <input
-                    value={val("cnpj")}
-                    onChange={e => set("cnpj", e.target.value)}
-                    className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors"
-                  />
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                O telefone de contato é gerenciado pelo WhatsApp em <strong>Redes sociais</strong>.
+              </p>
               <div>
                 <h4 className="font-semibold mt-4 mb-2">SEO</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Título da página</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Título da página (aba do navegador)</label>
                     <input value={val("seo_title")} onChange={e => set("seo_title", e.target.value)}
                       className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Palavras-chave</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Palavras-chave (separadas por vírgula)</label>
                     <input value={val("seo_keywords")} onChange={e => set("seo_keywords", e.target.value)}
                       className="w-full bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border focus:border-primary transition-colors" />
                   </div>
