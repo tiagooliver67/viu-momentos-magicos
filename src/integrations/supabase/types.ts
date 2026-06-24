@@ -2393,10 +2393,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      recalc_photographer_level: {
-        Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["photographer_level"]
-      }
+      recalc_photographer_level: { Args: { _user_id: string }; Returns: string }
       refresh_photo_search_index: { Args: never; Returns: undefined }
       set_ambassador: {
         Args: { _enabled: boolean; _user_id: string }
