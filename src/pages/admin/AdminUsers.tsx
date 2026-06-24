@@ -6,6 +6,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
@@ -19,6 +20,7 @@ interface UserProfile {
   full_name: string | null;
   phone: string | null;
   interest: string | null;
+  avatar_url: string | null;
   created_at: string;
   blocked: boolean;
   last_sign_in_at: string | null;
@@ -77,7 +79,7 @@ const AdminUsers = () => {
 
   const fetchUsers = async () => {
     const [{ data: profiles }, { data: roles }, { data: orders }, { data: events }] = await Promise.all([
-      supabase.from("profiles").select("id, user_id, full_name, phone, interest, created_at, blocked, last_sign_in_at, asaas_wallet_id"),
+      supabase.from("profiles").select("id, user_id, full_name, phone, interest, avatar_url, created_at, blocked, last_sign_in_at, asaas_wallet_id"),
       supabase.from("user_roles").select("user_id, role"),
       supabase.from("orders").select("event_id, amount, created_at, status, events!inner(organizer_id)").eq("status", "pago"),
       supabase.from("events").select("id, organizer_id, plan_type"),
@@ -325,9 +327,12 @@ const AdminUsers = () => {
                   className="w-full flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${user.blocked ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-primary"}`}>
-                      {(user.full_name || "?").split(" ").map(n => n[0]).join("").slice(0, 2)}
-                    </div>
+                    <Avatar className="w-9 h-9">
+                      <AvatarImage src={user.avatar_url ?? undefined} alt={user.full_name || "Usuário"} />
+                      <AvatarFallback className={`text-xs font-bold ${user.blocked ? "bg-destructive/20 text-destructive" : "bg-primary/20 text-primary"}`}>
+                        {(user.full_name || "?").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="text-left">
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm">{user.full_name || "Sem nome"}</p>
