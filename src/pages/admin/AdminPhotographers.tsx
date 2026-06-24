@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Loader2, DollarSign, Camera, CheckCircle, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PhotographerData {
   user_id: string;
   full_name: string;
+  avatar_url: string | null;
   plan_type: string;
   asaas_configured: boolean;
   total_events: number;
@@ -23,7 +25,7 @@ const AdminPhotographers = () => {
     const fetch = async () => {
       const [{ data: roles }, { data: profiles }, { data: events }, { data: orders }, { data: photos }, { data: sites }] = await Promise.all([
         supabase.from("user_roles").select("user_id").eq("role", "photographer"),
-        supabase.from("profiles").select("user_id, full_name, asaas_wallet_id"),
+        supabase.from("profiles").select("user_id, full_name, avatar_url, asaas_wallet_id"),
         supabase.from("events").select("id, organizer_id, plan_type"),
         supabase.from("orders").select("event_id, amount, status").eq("status", "pago"),
         supabase.from("event_photos").select("id, event_id"),
@@ -41,6 +43,7 @@ const AdminPhotographers = () => {
           return {
             user_id: r.user_id,
             full_name: profile?.full_name || "Sem nome",
+            avatar_url: profile?.avatar_url ?? null,
             plan_type: hasPro ? "Profissional" : "Início",
             asaas_configured: !!profile?.asaas_wallet_id,
             total_events: userEvents.length,
@@ -119,9 +122,12 @@ const AdminPhotographers = () => {
                 >
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
-                        {p.full_name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                      </div>
+                      <Avatar className="w-9 h-9">
+                        {p.avatar_url && <AvatarImage src={p.avatar_url} alt={p.full_name} />}
+                        <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
+                          {p.full_name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="font-medium">{p.full_name}</span>
                     </div>
                   </td>
