@@ -95,8 +95,8 @@ function useCounts() {
       try {
         const [ev, ph, fo] = await Promise.all([
           supabase.from("events").select("*", { count: "exact", head: true }),
-          supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "photographer"),
-          supabase.from("photos").select("*", { count: "exact", head: true }),
+          supabase.from("user_roles").select("*", { count: "exact", head: true }).eq("role", "photographer"),
+          supabase.from("event_photos").select("*", { count: "exact", head: true }),
         ]);
         if (!alive) return;
         const events = ev.count ?? 0;
