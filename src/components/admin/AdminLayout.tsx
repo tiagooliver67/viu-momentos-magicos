@@ -1,6 +1,8 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   BarChart3, Users, Calendar, DollarSign, Shield, Headphones, BookOpen,
   TrendingUp, Settings, Bug, Search, Bell, Sun, Moon, Menu, X,
@@ -33,6 +35,16 @@ const AdminLayout = () => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, profile } = useAuth();
+  const displayName = profile?.full_name || user?.email || "Super Admin";
+  const email = user?.email ?? "";
+  const initials = (profile?.full_name || user?.email || "SA")
+    .split(" ")
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <div className="min-h-screen flex bg-background text-foreground transition-colors duration-300">
@@ -76,9 +88,15 @@ const AdminLayout = () => {
 
         {!collapsed && (
           <div className="p-3 border-t border-border">
-            <div className="glass-card p-3 text-xs text-muted-foreground">
-              <p className="font-semibold text-foreground text-sm">Super Admin</p>
-              <p>admin@viufoto.com</p>
+            <div className="glass-card p-3 text-xs text-muted-foreground flex items-center gap-2.5">
+              <Avatar className="w-9 h-9 shrink-0">
+                <AvatarImage src={profile?.avatar_url ?? undefined} alt={displayName} />
+                <AvatarFallback className="bg-primary/15 text-primary text-xs font-bold">{initials}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground text-sm truncate">{displayName}</p>
+                <p className="truncate">{email}</p>
+              </div>
             </div>
           </div>
         )}
@@ -153,9 +171,10 @@ const AdminLayout = () => {
               <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-card" />
             </button>
 
-            <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary text-xs font-bold">
-              SA
-            </div>
+            <Avatar className="w-8 h-8 border border-primary/30">
+              <AvatarImage src={profile?.avatar_url ?? undefined} alt={displayName} />
+              <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">{initials}</AvatarFallback>
+            </Avatar>
           </div>
         </header>
 
