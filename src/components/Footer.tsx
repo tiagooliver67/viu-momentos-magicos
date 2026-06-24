@@ -8,7 +8,7 @@ const Footer = () => (
         <div>
           <h4 className="font-bold text-foreground mb-4">Institucional</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/" className="hover:text-primary transition-colors">O que é o VIUFOTO</Link></li>
+            <li><Link to="/sobre" className="hover:text-primary transition-colors">O que é o VIUFOTO</Link></li>
             <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
             <li><Link to="/" className="hover:text-primary transition-colors">Pacotes/Preços</Link></li>
           </ul>
