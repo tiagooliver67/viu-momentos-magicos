@@ -69,6 +69,7 @@ import Parceiros from "./pages/Parceiros";
 import ReferralCapture from "./pages/ReferralCapture";
 import MeuNivel from "./pages/MeuNivel";
 import AdminLevels from "./pages/admin/AdminLevels";
+import Sobre from "./pages/Sobre";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,7 @@ const App = () => (
               <Route path="/viu-pass" element={<VIUPass />} />
               <Route path="/virar-fotografo" element={<VirarFotografo />} />
               <Route path="/para-organizadores" element={<ParaOrganizadores />} />
+              <Route path="/sobre" element={<Sobre />} />
               <Route path="/termos-de-uso" element={<TermosDeUso />} />
               <Route path="/ajuda" element={<Ajuda />} />
               <Route path="/blog" element={<Blog />} />
