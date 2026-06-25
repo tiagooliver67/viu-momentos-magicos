@@ -14,7 +14,7 @@ const menuItemsBase = [
   { label: "Nível & Conquistas", icon: Trophy, path: "/dashboard/nivel", roles: ["photographer", "organizer"] },
   { label: "Chamados", icon: ShieldAlert, path: "/dashboard/chamados", roles: ["photographer", "organizer"] },
   { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes", roles: ["photographer", "organizer"] },
-  { label: "Ajuda", icon: HelpCircle, path: "/dashboard/ajuda", roles: ["photographer", "organizer"] },
+  { label: "Ajuda", icon: HelpCircle, path: "/ajuda", roles: ["photographer", "organizer"] },
 ];
 
 const DashboardSidebar = () => {
