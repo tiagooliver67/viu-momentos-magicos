@@ -11,6 +11,11 @@ import { useEffect, useState, useRef } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import LevelProgressCard from "@/components/levels/LevelProgressCard";
+import QuickUploadModal from "@/components/dashboard/QuickUploadModal";
+import {
+  Pagination, PaginationContent, PaginationItem, PaginationLink,
+  PaginationPrevious, PaginationNext, PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 /* ── animated counter ── */
 function AnimatedNumber({ value, prefix = "", duration = 1200 }: { value: number; prefix?: string; duration?: number }) {
@@ -34,6 +39,11 @@ function AnimatedNumber({ value, prefix = "", duration = 1200 }: { value: number
 const Dashboard = () => {
   const { user, profile } = useAuth();
   const firstName = profile?.full_name?.split(" ")[0] || "Fotógrafo";
+
+  const [uploadType, setUploadType] = useState<"photos" | "videos" | null>(null);
+  const [eventsPage, setEventsPage] = useState(1);
+  const EVENTS_PAGE_SIZE = 9;
+  const eventsRef = useRef<HTMLDivElement>(null);
 
   /* ── events ── */
   const { data: events = [], isLoading: eventsLoading } = useQuery({
@@ -248,7 +258,7 @@ const Dashboard = () => {
         {/* ── QUICK ACTIONS ── */}
         <div className="rounded-xl border border-border bg-card p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4">🎯 Comece por aqui</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Link
               to="/dashboard/criar-evento"
               className="flex items-center gap-3 p-4 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
@@ -257,18 +267,27 @@ const Dashboard = () => {
               Criar novo evento
               <ArrowRight className="w-4 h-4 ml-auto" />
             </Link>
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background text-foreground font-medium text-sm hover:bg-muted transition-all"
+            <button
+              type="button"
+              onClick={() => setUploadType("photos")}
+              className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background text-foreground font-medium text-sm hover:bg-muted transition-all text-left"
             >
               <Upload className="w-5 h-5 text-primary" />
               Enviar fotos
-            </Link>
+            </button>
+            <button
+              type="button"
+              onClick={() => setUploadType("videos")}
+              className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background text-foreground font-medium text-sm hover:bg-muted transition-all text-left"
+            >
+              <Video className="w-5 h-5 text-primary" />
+              Enviar vídeos
+            </button>
             <Link
-              to="/dashboard/configuracoes?tab=carteira"
+              to="/dashboard/financeiro"
               className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background text-foreground font-medium text-sm hover:bg-muted transition-all"
             >
-              <Eye className="w-5 h-5 text-primary" />
+              <DollarSign className="w-5 h-5 text-primary" />
               Ver vendas
             </Link>
           </div>
@@ -325,10 +344,12 @@ const Dashboard = () => {
         </div>
 
         {/* ── EVENTS GRID ── */}
-        <div>
+        <div ref={eventsRef}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-foreground">Meus Eventos</h2>
-            <span className="text-xs text-muted-foreground">{events.length} evento(s)</span>
+            <span className="text-xs text-muted-foreground">
+              {events.length} evento(s){events.length > EVENTS_PAGE_SIZE ? ` · página ${eventsPage} de ${Math.ceil(events.length / EVENTS_PAGE_SIZE)}` : ""}
+            </span>
           </div>
 
           {isLoading ? (
@@ -350,8 +371,9 @@ const Dashboard = () => {
               </Link>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {events.map((event) => (
+              {events.slice((eventsPage - 1) * EVENTS_PAGE_SIZE, eventsPage * EVENTS_PAGE_SIZE).map((event) => (
                 <Link
                   key={event.id}
                   to={`/dashboard/evento/${event.id}`}
@@ -387,6 +409,39 @@ const Dashboard = () => {
                 </Link>
               ))}
             </div>
+            {events.length > EVENTS_PAGE_SIZE && (() => {
+              const totalPages = Math.ceil(events.length / EVENTS_PAGE_SIZE);
+              const go = (p: number) => {
+                if (p < 1 || p > totalPages) return;
+                setEventsPage(p);
+                setTimeout(() => eventsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+              };
+              const pages: (number | "ellipsis")[] = [];
+              for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || Math.abs(i - eventsPage) <= 1) pages.push(i);
+                else if (pages[pages.length - 1] !== "ellipsis") pages.push("ellipsis");
+              }
+              return (
+                <Pagination className="mt-6">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); go(eventsPage - 1); }} />
+                    </PaginationItem>
+                    {pages.map((p, i) => (
+                      <PaginationItem key={i}>
+                        {p === "ellipsis" ? <PaginationEllipsis /> : (
+                          <PaginationLink href="#" isActive={p === eventsPage} onClick={(e) => { e.preventDefault(); go(p); }}>{p}</PaginationLink>
+                        )}
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); go(eventsPage + 1); }} />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              );
+            })()}
+            </>
           )}
         </div>
 
@@ -406,6 +461,11 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+      <QuickUploadModal
+        open={uploadType !== null}
+        type={uploadType ?? "photos"}
+        onClose={() => setUploadType(null)}
+      />
     </div>
   );
 };
