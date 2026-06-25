@@ -68,7 +68,7 @@ const EventDashboard = () => {
   const s3UploadVideos = useS3Upload({ eventId: id || "", type: "videos" });
   const ordersQuery = useEventOrders(id);
   const { coupons, createCoupon, toggleCoupon } = useEventCoupons(id);
-  const { grids, savePriceGrid } = useEventPriceGrid(id);
+  const { grids, savePriceGrid, deletePriceGrid } = useEventPriceGrid(id);
   const { packages, savePackage } = useDiscountPackages(id);
 
   // Modal states
@@ -420,7 +420,22 @@ const EventDashboard = () => {
         {/* ======= MODALS ======= */}
         <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => { s3UploadPhotos.mutate(files); setShowUploadPhotos(false); }} isUploading={s3UploadPhotos.isPending} type="photos" />
         <UploadModal open={showUploadVideos} onClose={() => setShowUploadVideos(false)} onUpload={(files) => { s3UploadVideos.mutate(files); setShowUploadVideos(false); }} isUploading={s3UploadVideos.isPending} type="videos" />
-        <PriceGridModal open={showPriceGrid} onClose={() => setShowPriceGrid(false)} onSave={(g) => { savePriceGrid.mutate(g); setShowPriceGrid(false); }} initial={grid ? { ...grid, photo_high_price: Number(grid.photo_high_price), photo_low_price: Number(grid.photo_low_price), video_price: Number(grid.video_price) } : undefined} isSaving={savePriceGrid.isPending} />
+        <PriceGridModal
+          open={showPriceGrid}
+          onClose={() => setShowPriceGrid(false)}
+          onSave={(g) => { savePriceGrid.mutate(g); setShowPriceGrid(false); }}
+          onDelete={(gid) => deletePriceGrid.mutate(gid)}
+          isSaving={savePriceGrid.isPending}
+          grids={(grids || []).map((g: any) => ({
+            id: g.id,
+            name: g.name,
+            photo_high_price: Number(g.photo_high_price),
+            photo_low_price: Number(g.photo_low_price),
+            video_price: Number(g.video_price),
+          }))}
+          photographerShare={Number((event as any).commission_photographer_share ?? 10)}
+          clientShare={Number((event as any).commission_client_share ?? 0)}
+        />
         <DiscountModal
           open={showDiscount}
           onClose={() => setShowDiscount(false)}
