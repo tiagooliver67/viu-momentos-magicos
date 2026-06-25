@@ -63,9 +63,9 @@ export default function LevelProgressCard() {
             <p className="text-xs text-muted-foreground mt-2">
               Faltam:{" "}
               {[
-                missing.events ? `${missing.events} eventos` : null,
-                missing.sales ? `${missing.sales} vendas` : null,
-                missing.revenue ? formatBRL(missing.revenue) + " faturados" : null,
+                missing.eligible_events ? `${missing.eligible_events} eventos elegíveis` : null,
+                missing.attended ? `${missing.attended} participações atendidas` : null,
+                missing.eligible_revenue ? formatBRL(missing.eligible_revenue) + " em faturamento elegível" : null,
               ]
                 .filter(Boolean)
                 .join(missing.mode === "or" ? " ou " : " e ")}

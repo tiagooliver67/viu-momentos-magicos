@@ -10,6 +10,9 @@ export interface PhotographerLevelData {
   sales_count: number;
   revenue_total: number;
   referrals_count: number;
+  eligible_events_count: number;
+  attended_participations_count: number;
+  eligible_revenue_total: number;
   history: { level: LevelKey; at: string }[];
 }
 
@@ -46,6 +49,9 @@ export function usePhotographerLevel(userId?: string) {
           sales_count: 0,
           revenue_total: 0,
           referrals_count: 0,
+          eligible_events_count: 0,
+          attended_participations_count: 0,
+          eligible_revenue_total: 0,
           history: [],
         }
       );

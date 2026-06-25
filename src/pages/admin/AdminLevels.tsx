@@ -10,6 +10,9 @@ interface Rule {
   min_events: number;
   min_sales: number;
   min_revenue: number;
+  min_eligible_events: number;
+  min_attended_participations: number;
+  min_eligible_revenue: number;
   requires_profile_complete: boolean;
   requires_document: boolean;
   manual_only: boolean;
@@ -30,19 +33,30 @@ interface Ach {
   sort_order: number;
 }
 
+interface EligibilityRule {
+  id: string;
+  key: string;
+  value: any;
+  description: string | null;
+  active: boolean;
+}
+
 export default function AdminLevels() {
   const [rules, setRules] = useState<Rule[]>([]);
   const [achs, setAchs] = useState<Ach[]>([]);
+  const [eligs, setEligs] = useState<EligibilityRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
-    const [{ data: r }, { data: a }] = await Promise.all([
+    const [{ data: r }, { data: a }, { data: e }] = await Promise.all([
       supabase.from("level_rules" as any).select("*").order("sort_order"),
       supabase.from("achievements" as any).select("*").order("sort_order"),
+      supabase.from("eligibility_rules" as any).select("*").order("key"),
     ]);
     setRules((r as any) ?? []);
     setAchs((a as any) ?? []);
+    setEligs((e as any) ?? []);
     setLoading(false);
   };
 
@@ -58,6 +72,9 @@ export default function AdminLevels() {
         min_events: rule.min_events,
         min_sales: rule.min_sales,
         min_revenue: rule.min_revenue,
+        min_eligible_events: rule.min_eligible_events,
+        min_attended_participations: rule.min_attended_participations,
+        min_eligible_revenue: rule.min_eligible_revenue,
         commission_pct: rule.commission_pct,
         match_mode: rule.match_mode,
         requires_profile_complete: rule.requires_profile_complete,
@@ -80,6 +97,17 @@ export default function AdminLevels() {
     setSaving(false);
     if (error) toast.error(error.message);
     else toast.success("Conquista salva");
+  };
+
+  const saveElig = async (e: EligibilityRule) => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("eligibility_rules" as any)
+      .update({ value: e.value, description: e.description, active: e.active })
+      .eq("id", e.id);
+    setSaving(false);
+    if (error) toast.error(error.message);
+    else toast.success("Regra salva");
   };
 
   const recalcAll = async () => {
@@ -134,22 +162,22 @@ export default function AdminLevels() {
             {!rule.manual_only && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Field
-                  label="Mín. eventos"
+                  label="Mín. eventos elegíveis"
                   type="number"
-                  value={rule.min_events}
-                  onChange={(v) => setRules((r) => r.map((x, i) => (i === idx ? { ...x, min_events: Number(v) } : x)))}
+                  value={rule.min_eligible_events ?? 0}
+                  onChange={(v) => setRules((r) => r.map((x, i) => (i === idx ? { ...x, min_eligible_events: Number(v) } : x)))}
                 />
                 <Field
-                  label="Mín. vendas"
+                  label="Mín. participações atendidas"
                   type="number"
-                  value={rule.min_sales}
-                  onChange={(v) => setRules((r) => r.map((x, i) => (i === idx ? { ...x, min_sales: Number(v) } : x)))}
+                  value={rule.min_attended_participations ?? 0}
+                  onChange={(v) => setRules((r) => r.map((x, i) => (i === idx ? { ...x, min_attended_participations: Number(v) } : x)))}
                 />
                 <Field
-                  label="Mín. faturamento (R$)"
+                  label="Mín. faturamento elegível (R$)"
                   type="number"
-                  value={rule.min_revenue}
-                  onChange={(v) => setRules((r) => r.map((x, i) => (i === idx ? { ...x, min_revenue: Number(v) } : x)))}
+                  value={rule.min_eligible_revenue ?? 0}
+                  onChange={(v) => setRules((r) => r.map((x, i) => (i === idx ? { ...x, min_eligible_revenue: Number(v) } : x)))}
                 />
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Modo</label>
@@ -284,6 +312,54 @@ export default function AdminLevels() {
             />
             <button
               onClick={() => saveAch(a)}
+              disabled={saving}
+              className="mt-3 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" /> Salvar
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Regras de Elegibilidade */}
+      <div className="space-y-3">
+        <h2 className="font-semibold">Regras de Elegibilidade de Evento</h2>
+        <p className="text-xs text-muted-foreground">
+          Definem quando um evento conta como "elegível" para a Jornada do fotógrafo.
+        </p>
+        {eligs.map((e, idx) => (
+          <div key={e.id} className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <code className="text-xs px-2 py-1 rounded bg-secondary">{e.key}</code>
+              <label className="ml-auto flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={e.active}
+                  onChange={(ev) => setEligs((arr) => arr.map((x, i) => (i === idx ? { ...x, active: ev.target.checked } : x)))}
+                />
+                Ativa
+              </label>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Field
+                label="Valor"
+                type="text"
+                value={typeof e.value === "string" ? e.value : JSON.stringify(e.value)}
+                onChange={(v) => {
+                  let parsed: any = v;
+                  try { parsed = JSON.parse(v); } catch { /* keep string */ }
+                  setEligs((arr) => arr.map((x, i) => (i === idx ? { ...x, value: parsed } : x)));
+                }}
+              />
+              <Field
+                label="Descrição"
+                type="text"
+                value={e.description ?? ""}
+                onChange={(v) => setEligs((arr) => arr.map((x, i) => (i === idx ? { ...x, description: v } : x)))}
+              />
+            </div>
+            <button
+              onClick={() => saveElig(e)}
               disabled={saving}
               className="mt-3 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center gap-2"
             >

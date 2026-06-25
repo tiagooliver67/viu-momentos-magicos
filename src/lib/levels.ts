@@ -6,6 +6,9 @@ export interface LevelRule {
   min_events: number;
   min_sales: number;
   min_revenue: number;
+  min_eligible_events: number;
+  min_attended_participations: number;
+  min_eligible_revenue: number;
   requires_profile_complete: boolean;
   requires_document: boolean;
   manual_only: boolean;
@@ -20,6 +23,9 @@ export interface LevelStats {
   sales_count: number;
   revenue_total: number;
   referrals_count: number;
+  eligible_events_count?: number;
+  attended_participations_count?: number;
+  eligible_revenue_total?: number;
 }
 
 export const LEVEL_LABELS: Record<LevelKey, string> = {
@@ -56,28 +62,33 @@ export function getNextRule(rules: LevelRule[], current: LevelKey): LevelRule | 
 export function calculateProgress(stats: LevelStats, next: LevelRule | null): number {
   if (!next) return 100;
   const parts: number[] = [];
-  if (next.min_events > 0) parts.push(Math.min(1, stats.events_count / next.min_events));
-  if (next.min_sales > 0) parts.push(Math.min(1, stats.sales_count / next.min_sales));
-  if (next.min_revenue > 0) parts.push(Math.min(1, Number(stats.revenue_total) / next.min_revenue));
+  const eligEvents = next.min_eligible_events || next.min_events;
+  const attended = next.min_attended_participations || 0;
+  const eligRev = next.min_eligible_revenue || next.min_revenue;
+  if (eligEvents > 0) parts.push(Math.min(1, (stats.eligible_events_count ?? 0) / eligEvents));
+  if (attended > 0) parts.push(Math.min(1, (stats.attended_participations_count ?? 0) / attended));
+  if (eligRev > 0) parts.push(Math.min(1, Number(stats.eligible_revenue_total ?? 0) / eligRev));
   if (parts.length === 0) return 0;
-  // OR = melhor critério; AND = pior critério (gargalo)
   const value = next.match_mode === "or" ? Math.max(...parts) : Math.min(...parts);
   return Math.round(value * 100);
 }
 
 export interface Missing {
-  events?: number;
-  sales?: number;
-  revenue?: number;
+  eligible_events?: number;
+  attended?: number;
+  eligible_revenue?: number;
   mode: "and" | "or";
 }
 
 export function formatMissing(stats: LevelStats, next: LevelRule | null): Missing | null {
   if (!next) return null;
   const m: Missing = { mode: next.match_mode };
-  if (next.min_events > 0) m.events = Math.max(0, next.min_events - stats.events_count);
-  if (next.min_sales > 0) m.sales = Math.max(0, next.min_sales - stats.sales_count);
-  if (next.min_revenue > 0) m.revenue = Math.max(0, next.min_revenue - Number(stats.revenue_total));
+  const eligEvents = next.min_eligible_events || next.min_events;
+  const attended = next.min_attended_participations || 0;
+  const eligRev = next.min_eligible_revenue || next.min_revenue;
+  if (eligEvents > 0) m.eligible_events = Math.max(0, eligEvents - (stats.eligible_events_count ?? 0));
+  if (attended > 0) m.attended = Math.max(0, attended - (stats.attended_participations_count ?? 0));
+  if (eligRev > 0) m.eligible_revenue = Math.max(0, eligRev - Number(stats.eligible_revenue_total ?? 0));
   return m;
 }
 
