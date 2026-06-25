@@ -45,16 +45,16 @@ export default function MeuNivel() {
 
             <div className="grid grid-cols-3 gap-3 text-center my-4">
               <div className="rounded-xl bg-muted/40 border border-border/50 p-3">
-                <p className="text-xl font-bold text-foreground">{level.events_count}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Eventos</p>
+                <p className="text-xl font-bold text-foreground">{level.eligible_events_count ?? 0}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Eventos elegíveis</p>
               </div>
               <div className="rounded-xl bg-muted/40 border border-border/50 p-3">
-                <p className="text-xl font-bold text-foreground">{level.sales_count}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Vendas</p>
+                <p className="text-xl font-bold text-foreground">{level.attended_participations_count ?? 0}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Participações atendidas</p>
               </div>
               <div className="rounded-xl bg-muted/40 border border-border/50 p-3">
-                <p className="text-base md:text-xl font-bold text-foreground">{formatBRL(Number(level.revenue_total))}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Faturado</p>
+                <p className="text-base md:text-xl font-bold text-foreground">{formatBRL(Number(level.eligible_revenue_total ?? 0))}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Faturamento elegível</p>
               </div>
             </div>
 
@@ -151,9 +151,9 @@ export default function MeuNivel() {
                     Critérios ({r.match_mode === "or" ? "qualquer um" : "todos"}):
                   </p>
                   <ul className="text-xs mt-1 space-y-0.5 text-foreground/80">
-                    {r.min_events > 0 && <li>• {r.min_events} eventos</li>}
-                    {r.min_sales > 0 && <li>• {r.min_sales} vendas</li>}
-                    {r.min_revenue > 0 && <li>• {formatBRL(r.min_revenue)} faturados</li>}
+                    {(r.min_eligible_events || r.min_events) > 0 && <li>• {r.min_eligible_events || r.min_events} eventos elegíveis</li>}
+                    {(r.min_attended_participations ?? 0) > 0 && <li>• {r.min_attended_participations} participações atendidas</li>}
+                    {(r.min_eligible_revenue || r.min_revenue) > 0 && <li>• {formatBRL(r.min_eligible_revenue || r.min_revenue)} faturamento elegível</li>}
                     {r.requires_profile_complete && <li>• Perfil completo</li>}
                     {r.requires_document && <li>• Documento validado</li>}
                   </ul>
