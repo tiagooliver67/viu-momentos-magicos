@@ -29,6 +29,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import FotoPage from "./pages/FotoPage";
 import PhotographerPage from "./pages/PhotographerPage";
+import PhotographerPortfolioPage from "./pages/PhotographerPortfolioPage";
 import MeusPedidos from "./pages/MeusPedidos";
 import BuscarEventos from "./pages/BuscarEventos";
 import Favoritos from "./pages/Favoritos";
@@ -95,6 +96,7 @@ const App = () => (
               <Route path="/evento/:id" element={<EventPage />} />
               <Route path="/foto/:photoId" element={<FotoPage />} />
               <Route path="/fotografo/:slug" element={<PhotographerPage />} />
+              <Route path="/fotografo/:slug/portfolio" element={<PhotographerPortfolioPage />} />
               <Route path="/meus-pedidos" element={<MeusPedidos />} />
               <Route path="/favoritos" element={<Favoritos />} />
               <Route path="/buscar" element={<BuscarEventos />} />
