@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { usePhotographerSiteBySlug } from "@/hooks/usePhotographerSite";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, MapPin, Camera, Instagram, Phone, Mail, ExternalLink, Facebook, Youtube, Linkedin, Twitter, Music2 } from "lucide-react";
+import { Calendar, MapPin, Camera, Instagram, Phone, Mail, ExternalLink, Facebook, Youtube, Linkedin, Twitter, Music2, Images } from "lucide-react";
 import { Link } from "react-router-dom";
 import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
@@ -157,9 +157,17 @@ const PhotographerPage = () => {
 
         {/* "Vitrine" indicator */}
         <div className="relative bg-background border-t border-border">
-          <div className="container mx-auto px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-            <Camera className="w-4 h-4 text-primary" />
-            <span>Você está vendo o portfólio de <strong className="text-foreground">{site.display_name || "Fotógrafo"}</strong></span>
+          <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Camera className="w-4 h-4 text-primary" />
+              <span>Você está vendo os <strong className="text-foreground">últimos trabalhos</strong> de <strong className="text-foreground">{site.display_name || "Fotógrafo"}</strong></span>
+            </div>
+            <Link
+              to={`/fotografo/${slug}/portfolio`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm"
+            >
+              <Images className="w-4 h-4" /> Ver portfólio completo
+            </Link>
           </div>
         </div>
       </header>
