@@ -344,10 +344,12 @@ const Dashboard = () => {
         </div>
 
         {/* ── EVENTS GRID ── */}
-        <div>
+        <div ref={eventsRef}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-foreground">Meus Eventos</h2>
-            <span className="text-xs text-muted-foreground">{events.length} evento(s)</span>
+            <span className="text-xs text-muted-foreground">
+              {events.length} evento(s){events.length > EVENTS_PAGE_SIZE ? ` · página ${eventsPage} de ${Math.ceil(events.length / EVENTS_PAGE_SIZE)}` : ""}
+            </span>
           </div>
 
           {isLoading ? (
@@ -369,8 +371,9 @@ const Dashboard = () => {
               </Link>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {events.map((event) => (
+              {events.slice((eventsPage - 1) * EVENTS_PAGE_SIZE, eventsPage * EVENTS_PAGE_SIZE).map((event) => (
                 <Link
                   key={event.id}
                   to={`/dashboard/evento/${event.id}`}
@@ -406,6 +409,39 @@ const Dashboard = () => {
                 </Link>
               ))}
             </div>
+            {events.length > EVENTS_PAGE_SIZE && (() => {
+              const totalPages = Math.ceil(events.length / EVENTS_PAGE_SIZE);
+              const go = (p: number) => {
+                if (p < 1 || p > totalPages) return;
+                setEventsPage(p);
+                setTimeout(() => eventsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+              };
+              const pages: (number | "ellipsis")[] = [];
+              for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || Math.abs(i - eventsPage) <= 1) pages.push(i);
+                else if (pages[pages.length - 1] !== "ellipsis") pages.push("ellipsis");
+              }
+              return (
+                <Pagination className="mt-6">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); go(eventsPage - 1); }} />
+                    </PaginationItem>
+                    {pages.map((p, i) => (
+                      <PaginationItem key={i}>
+                        {p === "ellipsis" ? <PaginationEllipsis /> : (
+                          <PaginationLink href="#" isActive={p === eventsPage} onClick={(e) => { e.preventDefault(); go(p); }}>{p}</PaginationLink>
+                        )}
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext href="#" onClick={(e) => { e.preventDefault(); go(eventsPage + 1); }} />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              );
+            })()}
+            </>
           )}
         </div>
 
