@@ -461,6 +461,11 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+      <QuickUploadModal
+        open={uploadType !== null}
+        type={uploadType ?? "photos"}
+        onClose={() => setUploadType(null)}
+      />
     </div>
   );
 };
