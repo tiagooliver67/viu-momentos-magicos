@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
 
       // Resolve the actual S3 path based on the purchased resolution.
       // - high  -> /original/  (no watermark, full resolution)
-      // - low   -> /medium/    (1200px, light watermark — "Foto Social")
+      // - low   -> /medium/    (1200px — "Foto Social", CLEAN file, no watermark)
       // The Lambda pipeline writes processed variants under
       //   {dir}/medium/{filename}.jpg  and keeps the original at the original path.
       const resolvePhotoPath = (originalPath: string, resolution: "high" | "low") => {
