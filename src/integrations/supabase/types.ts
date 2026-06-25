@@ -1322,6 +1322,126 @@ export type Database = {
           },
         ]
       }
+      partner_activity_log: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          active: boolean
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      partner_applications: {
+        Row: {
+          accepted_terms_at: string | null
+          created_at: string
+          id: string
+          pix_key: string | null
+          pix_key_type: string | null
+          requested_at: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_terms_at?: string | null
+          created_at?: string
+          id?: string
+          pix_key?: string | null
+          pix_key_type?: string | null
+          requested_at?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_terms_at?: string | null
+          created_at?: string
+          id?: string
+          pix_key?: string | null
+          pix_key_type?: string | null
+          requested_at?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      partner_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          paid_at: string | null
+          pix_key: string
+          pix_key_type: string | null
+          processed_at: string | null
+          requested_at: string
+          reviewed_by: string | null
+          status: string
+          tx_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          pix_key: string
+          pix_key_type?: string | null
+          processed_at?: string | null
+          requested_at?: string
+          reviewed_by?: string | null
+          status?: string
+          tx_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          pix_key?: string
+          pix_key_type?: string | null
+          processed_at?: string | null
+          requested_at?: string
+          reviewed_by?: string | null
+          status?: string
+          tx_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       photo_bib_numbers: {
         Row: {
           bbox: Json
@@ -1815,32 +1935,58 @@ export type Database = {
       referral_earnings: {
         Row: {
           amount: number
+          commission_amount: number | null
           commission_pct: number
           created_at: string
+          hold_until: string | null
           id: string
           order_id: string | null
+          paid_at: string | null
+          payout_id: string | null
           referred_id: string
           referrer_id: string
+          released_at: string | null
+          status: string
         }
         Insert: {
           amount?: number
+          commission_amount?: number | null
           commission_pct?: number
           created_at?: string
+          hold_until?: string | null
           id?: string
           order_id?: string | null
+          paid_at?: string | null
+          payout_id?: string | null
           referred_id: string
           referrer_id: string
+          released_at?: string | null
+          status?: string
         }
         Update: {
           amount?: number
+          commission_amount?: number | null
           commission_pct?: number
           created_at?: string
+          hold_until?: string | null
           id?: string
           order_id?: string | null
+          paid_at?: string | null
+          payout_id?: string | null
           referred_id?: string
           referrer_id?: string
+          released_at?: string | null
+          status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "referral_earnings_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "partner_payouts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       referrals: {
         Row: {
@@ -2548,6 +2694,8 @@ export type Database = {
       is_event_eligible: { Args: { _event_id: string }; Returns: boolean }
       is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
       is_event_photographer: { Args: { _event_id: string }; Returns: boolean }
+      is_partner_active: { Args: { _user_id: string }; Returns: boolean }
+      is_partner_approved: { Args: { _user_id: string }; Returns: boolean }
       is_proposal_party: { Args: { _proposal_id: string }; Returns: boolean }
       is_registration_event_organizer: {
         Args: { _event_id: string }
@@ -2569,6 +2717,7 @@ export type Database = {
       }
       recalc_photographer_level: { Args: { _user_id: string }; Returns: string }
       refresh_photo_search_index: { Args: never; Returns: undefined }
+      release_due_referral_earnings: { Args: never; Returns: number }
       set_ambassador: {
         Args: { _enabled: boolean; _user_id: string }
         Returns: undefined
