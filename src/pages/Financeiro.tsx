@@ -11,6 +11,7 @@ import DesempenhoChart from "@/components/financeiro/DesempenhoChart";
 import AtalhosRapidos from "@/components/financeiro/AtalhosRapidos";
 import EstimativaGanhos from "@/components/financeiro/EstimativaGanhos";
 import FaturamentoTable from "@/components/financeiro/FaturamentoTable";
+import PedidosTab from "@/components/financeiro/PedidosTab";
 
 type SubTab = "Caixa" | "Pedidos" | "Fiscal";
 
@@ -214,7 +215,11 @@ const Financeiro = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Financeiro</h1>
-              <p className="text-sm text-muted-foreground mt-1">Acompanhe seu saldo, vendas e saques em um só lugar.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {activeTab === "Pedidos" ? "Acompanhe e reenvie pedidos aos seus clientes." :
+                 activeTab === "Fiscal" ? "Notas fiscais e relatórios contábeis." :
+                 "Acompanhe seu saldo, vendas e saques em um só lugar."}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -232,6 +237,7 @@ const Financeiro = () => {
             </div>
           </div>
 
+          {activeTab === "Caixa" && (<>
           {/* Alerta de conta */}
           {!contaConfigurada && (
             <div className="rounded-2xl border border-amber-300/60 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800/40 p-4 sm:p-5 flex items-start gap-3">
@@ -282,6 +288,15 @@ const Financeiro = () => {
 
           {/* Faturamento por evento */}
           <FaturamentoTable rows={billingRows} total={billingTotal} />
+          </>)}
+
+          {activeTab === "Pedidos" && <PedidosTab />}
+
+          {activeTab === "Fiscal" && (
+            <div className="glass-card p-10 text-center text-muted-foreground">
+              <p className="text-sm">Relatórios fiscais e exportação de notas em breve.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>
