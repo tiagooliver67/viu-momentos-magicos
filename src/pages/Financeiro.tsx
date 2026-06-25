@@ -179,7 +179,7 @@ const Financeiro = () => {
       const { data } = await supabase
         .from("referral_earnings")
         .select("amount")
-        .eq("user_id", user.id)
+        .eq("referrer_id", user.id)
         .gte("created_at", start);
       return (data || []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
     },
