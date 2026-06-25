@@ -220,7 +220,147 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify({ error: "Ação inválida. Use: lookup, download" }), {
+    // Action: photographer_resend — fotógrafo/organizador baixa links de um pedido pago
+    // para reenviar ao cliente (caso ele não tenha recebido o email).
+    if (action === "photographer_resend") {
+      const authHeader = req.headers.get("Authorization");
+      if (!order_id || !authHeader) {
+        return new Response(JSON.stringify({ error: "order_id e autenticação são obrigatórios" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const userClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      const { data: { user }, error: authErr } = await userClient.auth.getUser();
+      if (authErr || !user) {
+        return new Response(JSON.stringify({ error: "Não autenticado" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: order, error: orderErr } = await supabaseAdmin
+        .from("orders")
+        .select("id, status, client_email, client_name, event_id, amount")
+        .eq("id", order_id)
+        .maybeSingle();
+      if (orderErr || !order) {
+        return new Response(JSON.stringify({ error: "Pedido não encontrado" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Autorização: organizador do evento, fotógrafo do evento, ou super_admin
+      const [{ data: ev }, { data: ph }, { data: roleRow }] = await Promise.all([
+        supabaseAdmin.from("events").select("organizer_id, name").eq("id", order.event_id).maybeSingle(),
+        supabaseAdmin.from("event_photographers").select("photographer_id").eq("event_id", order.event_id).eq("photographer_id", user.id).maybeSingle(),
+        supabaseAdmin.from("user_roles").select("role").eq("user_id", user.id).eq("role", "super_admin").maybeSingle(),
+      ]);
+      const isOwner = ev?.organizer_id === user.id;
+      const isPhotog = !!ph;
+      const isAdmin = !!roleRow;
+      if (!isOwner && !isPhotog && !isAdmin) {
+        return new Response(JSON.stringify({ error: "Acesso negado" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (order.status !== "pago" && order.status !== "enviado") {
+        return new Response(JSON.stringify({ error: "Pedido ainda não foi pago" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: items } = await supabaseAdmin
+        .from("order_items")
+        .select("id, photo_id, video_id, resolution")
+        .eq("order_id", order_id);
+
+      const photoResolution = new Map<string, "high" | "low">();
+      (items || []).forEach(i => {
+        if (i.photo_id) photoResolution.set(i.photo_id, (i.resolution === "low" ? "low" : "high"));
+      });
+      const photoIds = Array.from(photoResolution.keys());
+      const videoIds = (items || []).filter(i => i.video_id).map(i => i.video_id!);
+
+      let photos: { id: string; file_url: string; file_name: string | null }[] = [];
+      let videos: { id: string; file_url: string; file_name: string | null }[] = [];
+      if (photoIds.length > 0) {
+        const { data } = await supabaseAdmin.from("event_photos").select("id, file_url, file_name").in("id", photoIds);
+        photos = data || [];
+      }
+      if (videoIds.length > 0) {
+        const { data } = await supabaseAdmin.from("event_videos").select("id, file_url, file_name").in("id", videoIds);
+        videos = data || [];
+      }
+
+      const resolvePhotoPath = (originalPath: string, resolution: "high" | "low") => {
+        if (resolution === "high") return originalPath;
+        const lastSlash = originalPath.lastIndexOf("/");
+        if (lastSlash === -1) return originalPath;
+        const dir = originalPath.substring(0, lastSlash);
+        const filename = originalPath.substring(lastSlash + 1).replace(/\.[^.]+$/, ".jpg");
+        return `${dir}/medium/${filename}`;
+      };
+
+      const allFiles = [
+        ...photos.map(p => ({
+          id: p.id,
+          path: resolvePhotoPath(p.file_url, photoResolution.get(p.id) ?? "high"),
+          name: p.file_name,
+          type: "photo" as const,
+          resolution: photoResolution.get(p.id) ?? "high",
+        })),
+        ...videos.map(v => ({ id: v.id, path: v.file_url, name: v.file_name, type: "video" as const, resolution: "high" as const })),
+      ];
+
+      const signedFiles: any[] = [];
+      for (const file of allFiles) {
+        if (file.path.startsWith("http")) {
+          signedFiles.push({ ...file, url: file.path });
+          continue;
+        }
+        try {
+          const signRes = await fetch(
+            `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=read`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                "X-Connection-Api-Key": AWS_S3_API_KEY,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ object_path: file.path }),
+            }
+          );
+          if (signRes.ok) {
+            const { url } = await signRes.json();
+            signedFiles.push({ ...file, url });
+          } else {
+            signedFiles.push({ ...file, url: null });
+          }
+        } catch {
+          signedFiles.push({ ...file, url: null });
+        }
+      }
+
+      // Marca pedido como enviado
+      if (order.status === "pago") {
+        await supabaseAdmin.from("orders").update({ status: "enviado" }).eq("id", order_id);
+      }
+
+      return new Response(JSON.stringify({
+        files: signedFiles,
+        order: { id: order.id, client_name: order.client_name, client_email: order.client_email, event_name: ev?.name ?? null },
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Ação inválida. Use: lookup, download, photographer_resend" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err: any) {
