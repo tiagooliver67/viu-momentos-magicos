@@ -3,8 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import SaldoCard from "@/components/financeiro/SaldoCard";
-import DesempenhoCard from "@/components/financeiro/DesempenhoCard";
+import { useNavigate } from "react-router-dom";
+import { AlertTriangle, ArrowRight, HelpCircle } from "lucide-react";
+import KpiStrip from "@/components/financeiro/KpiStrip";
+import MetaMensalCard from "@/components/financeiro/MetaMensalCard";
+import DesempenhoChart from "@/components/financeiro/DesempenhoChart";
 import AtalhosRapidos from "@/components/financeiro/AtalhosRapidos";
 import EstimativaGanhos from "@/components/financeiro/EstimativaGanhos";
 import FaturamentoTable from "@/components/financeiro/FaturamentoTable";
@@ -14,6 +17,7 @@ type SubTab = "Caixa" | "Pedidos" | "Fiscal";
 const Financeiro = () => {
   const [activeTab, setActiveTab] = useState<SubTab>("Caixa");
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Fetch user's events
   const { data: events = [] } = useQuery({
@@ -164,22 +168,39 @@ const Financeiro = () => {
 
   const saldoDisponivel = walletData?.balance ?? 0;
   const saldoReceber = walletData?.pending ?? 0;
+  const contaConfigurada = !!walletData?.wallet_id || !!walletData?.configured || saldoDisponivel > 0 || saldoReceber > 0;
+
+  // Comissões reais do mês
+  const { data: comissoesMes = 0 } = useQuery({
+    queryKey: ["my-commissions-month", user?.id, thisMonth, thisYear],
+    queryFn: async () => {
+      if (!user?.id) return 0;
+      const start = new Date(thisYear, thisMonth, 1).toISOString();
+      const { data } = await supabase
+        .from("referral_earnings")
+        .select("amount")
+        .eq("referrer_id", user.id)
+        .gte("created_at", start);
+      return (data || []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
+    },
+    enabled: !!user?.id,
+  });
 
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
       <main className="flex-1 overflow-auto">
         {/* Sub nav */}
-        <div className="bg-primary mt-14 lg:mt-0">
-          <div className="flex items-center justify-center gap-2 sm:gap-6 py-3 px-4">
+        <div className="mt-14 lg:mt-0 border-b border-border bg-card">
+          <div className="flex items-center gap-2 py-2 px-4 sm:px-8 max-w-7xl mx-auto">
             {(["Caixa", "Pedidos", "Fiscal"] as SubTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all min-h-[44px] ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[40px] ${
                   activeTab === tab
-                    ? "bg-primary-foreground/20 text-primary-foreground"
-                    : "text-primary-foreground/70 hover:text-primary-foreground"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 {tab}
@@ -190,24 +211,63 @@ const Financeiro = () => {
 
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Financeiro</h1>
-            <button className="px-4 py-2.5 rounded-xl border border-border text-xs sm:text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors">
-              Dúvidas? <span className="font-bold text-foreground">Clique aqui</span>
-            </button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Financeiro</h1>
+              <p className="text-sm text-muted-foreground mt-1">Acompanhe seu saldo, vendas e saques em um só lugar.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate("/ajuda")}
+                className="px-3 py-2 rounded-xl border border-border text-xs sm:text-sm font-medium text-muted-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
+              >
+                <HelpCircle className="w-4 h-4" /> Dúvidas
+              </button>
+              <button
+                onClick={() => navigate("/dashboard/configuracoes?tab=carteira")}
+                className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm hover:shadow-md"
+              >
+                Efetuar saque <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Top cards: Saldo + Desempenho */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <SaldoCard saldoReceber={saldoReceber} saldoDisponivel={saldoDisponivel} />
-            <DesempenhoCard
-              totalPedidos={totalPedidos}
-              fotosVendidas={fotosVendidas}
-              videosVendidos={videosVendidos}
-              faturamento={faturamento}
-              crescimentoPct={crescimentoPct}
-              melhorEvento={melhorEvento}
-            />
+          {/* Alerta de conta */}
+          {!contaConfigurada && (
+            <div className="rounded-2xl border border-amber-300/60 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800/40 p-4 sm:p-5 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-4.5 h-4.5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground text-sm">Conta de recebimento não configurada</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Você precisa cadastrar uma conta bancária para receber seus pagamentos via Pix ou TED.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/dashboard/configuracoes?tab=carteira")}
+                className="px-3 py-2 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 transition-colors flex-shrink-0"
+              >
+                Configurar
+              </button>
+            </div>
+          )}
+
+          {/* KPI Strip (4 cards) */}
+          <KpiStrip
+            saldoDisponivel={saldoDisponivel}
+            vendasMes={faturamento}
+            vendasCrescimentoPct={crescimentoPct}
+            comissoesMes={Number(comissoesMes) || 0}
+            aReceber={saldoReceber}
+          />
+
+          {/* Desempenho + Meta */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="lg:col-span-2">
+              <DesempenhoChart orders={orders} />
+            </div>
+            <MetaMensalCard faturamento={faturamento} />
           </div>
 
           {/* Estimativa de ganhos */}

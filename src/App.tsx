@@ -10,7 +10,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import EventPage from "./pages/EventPage";
 import Dashboard from "./pages/Dashboard";
-// Financeiro page removed — unified into Carteira tab in Configuracoes
+import Financeiro from "./pages/Financeiro";
 import CriarEvento from "./pages/CriarEvento";
 import VIUPass from "./pages/VIUPass";
 import Pedidos from "./pages/Pedidos";
@@ -110,7 +110,7 @@ const App = () => (
               <Route path="/inscricao/:slug" element={<InscricaoPublic />} />
               <Route path="/r/:code" element={<ReferralCapture />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
-              {/* Financeiro route removed — unified into Carteira */}
+              <Route path="/dashboard/financeiro" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Financeiro /></ProtectedRoute>} />
               <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
               <Route path="/dashboard/pedidos" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Pedidos /></ProtectedRoute>} />
               <Route path="/dashboard/clientes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Clientes /></ProtectedRoute>} />
