@@ -68,6 +68,7 @@ import InscricaoPublic from "./pages/inscricoes/InscricaoPublic";
 import Parceiros from "./pages/Parceiros";
 import ReferralCapture from "./pages/ReferralCapture";
 import MeuNivel from "./pages/MeuNivel";
+import DashboardSidebar from "./components/DashboardSidebar";
 import AdminLevels from "./pages/admin/AdminLevels";
 import Sobre from "./pages/Sobre";
 
