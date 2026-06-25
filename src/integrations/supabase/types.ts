@@ -293,6 +293,36 @@ export type Database = {
           },
         ]
       }
+      eligibility_rules: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       event_applications: {
         Row: {
           created_at: string
@@ -441,6 +471,54 @@ export type Database = {
           total_photos?: number
         }
         Relationships: []
+      }
+      event_participations: {
+        Row: {
+          attended_at: string
+          client_key: string
+          client_user_id: string | null
+          created_at: string
+          event_id: string
+          first_order_id: string | null
+          id: string
+          photographer_id: string
+        }
+        Insert: {
+          attended_at?: string
+          client_key: string
+          client_user_id?: string | null
+          created_at?: string
+          event_id: string
+          first_order_id?: string | null
+          id?: string
+          photographer_id: string
+        }
+        Update: {
+          attended_at?: string
+          client_key?: string
+          client_user_id?: string | null
+          created_at?: string
+          event_id?: string
+          first_order_id?: string | null
+          id?: string
+          photographer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_participations_first_order_id_fkey"
+            columns: ["first_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_partners: {
         Row: {
@@ -1083,6 +1161,9 @@ export type Database = {
           manual_only: boolean
           match_mode: string
           message: string | null
+          min_attended_participations: number
+          min_eligible_events: number
+          min_eligible_revenue: number
           min_events: number
           min_revenue: number
           min_sales: number
@@ -1098,6 +1179,9 @@ export type Database = {
           manual_only?: boolean
           match_mode?: string
           message?: string | null
+          min_attended_participations?: number
+          min_eligible_events?: number
+          min_eligible_revenue?: number
           min_events?: number
           min_revenue?: number
           min_sales?: number
@@ -1113,6 +1197,9 @@ export type Database = {
           manual_only?: boolean
           match_mode?: string
           message?: string | null
+          min_attended_participations?: number
+          min_eligible_events?: number
+          min_eligible_revenue?: number
           min_events?: number
           min_revenue?: number
           min_sales?: number
@@ -1299,7 +1386,10 @@ export type Database = {
       }
       photographer_levels: {
         Row: {
+          attended_participations_count: number
           current_level: Database["public"]["Enums"]["photographer_level"]
+          eligible_events_count: number
+          eligible_revenue_total: number
           events_count: number
           history: Json
           is_ambassador: boolean
@@ -1310,7 +1400,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attended_participations_count?: number
           current_level?: Database["public"]["Enums"]["photographer_level"]
+          eligible_events_count?: number
+          eligible_revenue_total?: number
           events_count?: number
           history?: Json
           is_ambassador?: boolean
@@ -1321,7 +1414,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attended_participations_count?: number
           current_level?: Database["public"]["Enums"]["photographer_level"]
+          eligible_events_count?: number
+          eligible_revenue_total?: number
           events_count?: number
           history?: Json
           is_ambassador?: boolean
@@ -2449,6 +2545,7 @@ export type Database = {
         Returns: boolean
       }
       increment_blog_views: { Args: { _slug: string }; Returns: undefined }
+      is_event_eligible: { Args: { _event_id: string }; Returns: boolean }
       is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
       is_event_photographer: { Args: { _event_id: string }; Returns: boolean }
       is_proposal_party: { Args: { _proposal_id: string }; Returns: boolean }
