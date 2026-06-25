@@ -4,7 +4,7 @@ import {
   Save, Plus, Trash2, Check
 } from "lucide-react";
 import { toast } from "sonner";
-import { usePhotographerSite, useCustomLinks } from "@/hooks/usePhotographerSite";
+import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import { supabase } from "@/integrations/supabase/client";
 import { cdnUrl } from "@/lib/cdnConfig";
 import { getSignedReadUrl } from "@/hooks/useS3Upload";
@@ -17,7 +17,6 @@ const siteSubTabs = [
   { id: "redes", label: "Redes sociais", icon: Share2 },
   { id: "imagem", label: "Imagem de perfil", icon: Image },
   { id: "cores", label: "Cores", icon: Palette },
-  { id: "links", label: "Links editáveis", icon: Link2 },
   { id: "marcadagua", label: "Marca d'água", icon: WatermarkIcon },
 ];
 
@@ -37,9 +36,7 @@ const presetColors = [
 const MeuSiteTab = () => {
   const [activeSubTab, setActiveSubTab] = useState("geral");
   const { site, isLoading, upsertSite, uploadAsset } = usePhotographerSite();
-  const { links, addLink, removeLink } = useCustomLinks();
   const [form, setForm] = useState<Record<string, any>>({});
-  const [newLink, setNewLink] = useState({ label: "", url: "" });
   const avatarRef = useRef<HTMLInputElement>(null);
   const watermarkRef = useRef<HTMLInputElement>(null);
 
