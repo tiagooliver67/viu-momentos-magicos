@@ -844,6 +844,8 @@ export type Database = {
           bib_search_enabled: boolean
           category: string
           collab_note: string | null
+          commission_client_share: number
+          commission_photographer_share: number
           cover_url: string | null
           created_at: string
           event_date: string
@@ -869,6 +871,8 @@ export type Database = {
           bib_search_enabled?: boolean
           category?: string
           collab_note?: string | null
+          commission_client_share?: number
+          commission_photographer_share?: number
           cover_url?: string | null
           created_at?: string
           event_date: string
@@ -894,6 +898,8 @@ export type Database = {
           bib_search_enabled?: boolean
           category?: string
           collab_note?: string | null
+          commission_client_share?: number
+          commission_photographer_share?: number
           cover_url?: string | null
           created_at?: string
           event_date?: string
