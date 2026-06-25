@@ -190,7 +190,19 @@ export function useEventPriceGrid(eventId: string | undefined) {
     onError: (e) => toast.error("Erro: " + e.message),
   });
 
-  return { grids: gridQuery.data || [], isLoading: gridQuery.isLoading, savePriceGrid };
+  const deletePriceGrid = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("price_grids").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["price-grid", eventId] });
+      toast.success("Grade removida");
+    },
+    onError: (e) => toast.error("Erro ao remover: " + e.message),
+  });
+
+  return { grids: gridQuery.data || [], isLoading: gridQuery.isLoading, savePriceGrid, deletePriceGrid };
 }
 
 export function useDiscountPackages(eventId: string | undefined) {
