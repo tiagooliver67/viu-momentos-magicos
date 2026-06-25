@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
   // 2) Gather facts
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, city, state, created_at")
+    .select("full_name, created_at")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -65,10 +65,10 @@ Deno.serve(async (req) => {
     .eq("user_id", userId)
     .maybeSingle();
 
-  // Events organized by user, to count and infer categories
+  // Events organized by user, to count and infer categories/cities
   const { data: events } = await supabase
     .from("events")
-    .select("id, category")
+    .select("id, category, location")
     .eq("organizer_id", userId);
 
   const eventIds = (events ?? []).map((e: any) => e.id);
@@ -93,6 +93,17 @@ Deno.serve(async (req) => {
     .slice(0, 3)
     .map(([c]) => c);
 
+  // Top city (from events.location, take last segment after comma if present)
+  const cityFreq = new Map<string, number>();
+  for (const e of (events ?? []) as any[]) {
+    const loc = (e.location || "").toString().trim();
+    if (!loc) continue;
+    const city = loc.split(/[-,]/).pop()!.trim();
+    if (!city) continue;
+    cityFreq.set(city, (cityFreq.get(city) ?? 0) + 1);
+  }
+  const topCity = [...cityFreq.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
   // Achievements (unlocked)
   const { data: achievements } = await supabase
     .from("photographer_achievements")
@@ -110,8 +121,7 @@ Deno.serve(async (req) => {
   const facts = {
     display_name: site.display_name || profile?.full_name || "Fotógrafo",
     user_bio: site.bio || null,
-    city: profile?.city || null,
-    state: profile?.state || null,
+    city: topCity,
     level: level?.current_level || "bronze",
     events_count: level?.events_count ?? (events?.length ?? 0),
     sales_count: level?.sales_count ?? 0,
