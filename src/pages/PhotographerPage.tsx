@@ -1,18 +1,27 @@
 import { useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePhotographerSiteBySlug } from "@/hooks/usePhotographerSite";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, MapPin, Camera, Instagram, Phone, Mail, ExternalLink, Facebook, Youtube, Linkedin, Twitter, Music2, Images } from "lucide-react";
 import { Link } from "react-router-dom";
 import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
+import PhotographerLevelSection from "@/components/photographer/PhotographerLevelSection";
+import PhotographerAiBio from "@/components/photographer/PhotographerAiBio";
+import {
+  Pagination, PaginationContent, PaginationItem, PaginationLink,
+  PaginationNext, PaginationPrevious, PaginationEllipsis,
+} from "@/components/ui/pagination";
+
+const EVENTS_PAGE_SIZE = 9;
 
 const PhotographerPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: site, isLoading } = usePhotographerSiteBySlug(slug);
+  const [page, setPage] = useState(1);
 
-  // Apply SEO title and meta keywords from the photographer's site settings
+  // Apply SEO title, keywords and description from the photographer's site settings
   useEffect(() => {
     if (!site) return;
     const title = site.seo_title || `${site.display_name || "Fotógrafo"} | ViuFoto`;
@@ -26,22 +35,39 @@ const PhotographerPage = () => {
       }
       tag.content = site.seo_keywords;
     }
+    const desc = (site.ai_bio || site.bio || "").trim().slice(0, 160);
+    if (desc) {
+      let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+      if (!metaDesc) {
+        metaDesc = document.createElement("meta");
+        metaDesc.name = "description";
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.content = desc;
+    }
   }, [site]);
 
-  const { data: events } = useQuery({
-    queryKey: ["photographer-events", site?.user_id],
+  const { data: eventsResult } = useQuery({
+    queryKey: ["photographer-events", site?.user_id, page],
     queryFn: async () => {
-      if (!site?.user_id) return [];
-      const { data } = await supabase
+      if (!site?.user_id) return { rows: [], total: 0 };
+      const from = (page - 1) * EVENTS_PAGE_SIZE;
+      const to = from + EVENTS_PAGE_SIZE - 1;
+      const { data, count } = await supabase
         .from("events")
-        .select("*")
+        .select("*", { count: "exact" })
         .eq("organizer_id", site.user_id)
         .eq("visibility", true)
-        .order("event_date", { ascending: false });
-      return data || [];
+        .order("event_date", { ascending: false })
+        .range(from, to);
+      return { rows: data || [], total: count ?? 0 };
     },
     enabled: !!site?.user_id,
+    placeholderData: keepPreviousData,
   });
+  const events = eventsResult?.rows ?? [];
+  const totalEvents = eventsResult?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalEvents / EVENTS_PAGE_SIZE));
 
   const { data: customLinks } = useQuery({
     queryKey: ["public-links", site?.user_id],
@@ -61,15 +87,20 @@ const PhotographerPage = () => {
     queryKey: ["photographer-photo-count", site?.user_id],
     queryFn: async () => {
       if (!site?.user_id) return 0;
-      const eventIds = events?.map((e: any) => e.id) || [];
-      if (eventIds.length === 0) return 0;
+      // count of photos across all events organized by this user
+      const { data: evs } = await supabase
+        .from("events")
+        .select("id")
+        .eq("organizer_id", site.user_id);
+      const ids = (evs || []).map((e: any) => e.id);
+      if (ids.length === 0) return 0;
       const { count } = await supabase
         .from("event_photos")
         .select("*", { count: "exact", head: true })
-        .in("event_id", eventIds);
+        .in("event_id", ids);
       return count || 0;
     },
-    enabled: !!events && events.length > 0,
+    enabled: !!site?.user_id,
   });
 
   if (isLoading) {
@@ -133,7 +164,7 @@ const PhotographerPage = () => {
             {/* Stats */}
             <div className="flex gap-6 mt-5 text-white/90 text-sm">
               <div className="text-center">
-                <p className="text-xl font-bold">{events?.length || 0}</p>
+                <p className="text-xl font-bold">{totalEvents}</p>
                 <p className="text-white/60 text-xs">Eventos</p>
               </div>
               <div className="text-center">
@@ -189,8 +220,11 @@ const PhotographerPage = () => {
         </div>
       )}
 
+      {/* Nível & Conquistas */}
+      <PhotographerLevelSection userId={site.user_id} />
+
       {/* Events */}
-      <div className="container mx-auto px-4 py-8 flex-1">
+      <div id="eventos" className="container mx-auto px-4 py-8 flex-1">
         <h2 className="text-xl font-bold mb-6 text-foreground">Eventos</h2>
         {(!events || events.length === 0) ? (
           <div className="text-center py-16">
@@ -198,7 +232,8 @@ const PhotographerPage = () => {
             <p className="text-muted-foreground">Nenhum evento publicado ainda.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {events.map((event: any) => (
               <Link
                 key={event.id}
@@ -229,8 +264,66 @@ const PhotographerPage = () => {
               </Link>
             ))}
           </div>
+          {totalPages > 1 && (
+            <Pagination className="mt-8">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#eventos"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (page > 1) {
+                        setPage(page - 1);
+                        document.getElementById("eventos")?.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                    className={page === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                  .map((p, idx, arr) => (
+                    <span key={p} className="contents">
+                      {idx > 0 && arr[idx - 1] !== p - 1 && (
+                        <PaginationItem><PaginationEllipsis /></PaginationItem>
+                      )}
+                      <PaginationItem>
+                        <PaginationLink
+                          href="#eventos"
+                          isActive={p === page}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setPage(p);
+                            document.getElementById("eventos")?.scrollIntoView({ behavior: "smooth" });
+                          }}
+                        >
+                          {p}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </span>
+                  ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#eventos"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (page < totalPages) {
+                        setPage(page + 1);
+                        document.getElementById("eventos")?.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                    className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+          </>
         )}
       </div>
+
+      {/* AI Bio */}
+      <PhotographerAiBio userId={site.user_id} initialBio={(site as any).ai_bio} />
 
       <Footer />
     </div>
