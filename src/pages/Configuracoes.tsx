@@ -14,9 +14,7 @@ const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
   { id: "site", label: "Meu site", icon: Globe },
   { id: "carteira", label: "Carteira", icon: Wallet },
-  { id: "exclusividade", label: "Exclusividade", icon: Star },
   { id: "cupons", label: "Cupons", icon: Ticket },
-  { id: "comunicacao", label: "Comunicação", icon: MessageSquare },
   { id: "dispositivos", label: "Dispositivos", icon: Smartphone },
 ];
 
@@ -585,9 +583,7 @@ const tabComponents: Record<string, React.FC> = {
   conta: TabConta,
   site: TabSite,
   carteira: TabCarteira,
-  exclusividade: TabExclusividade,
   cupons: TabCupons,
-  comunicacao: TabComunicacao,
   dispositivos: TabDispositivos,
 };
 
