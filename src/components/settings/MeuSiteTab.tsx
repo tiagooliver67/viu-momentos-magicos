@@ -312,51 +312,6 @@ const MeuSiteTab = () => {
             </div>
           )}
 
-          {/* Links editáveis */}
-          {activeSubTab === "links" && (
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="text-lg font-bold">Links editáveis</h3>
-              <p className="text-sm text-muted-foreground">Você pode adicionar links editáveis no seu menu.</p>
-              {links.map((link: any) => (
-                <div key={link.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/50">
-                  <Link2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{link.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{link.url}</p>
-                  </div>
-                  <button onClick={() => removeLink.mutate(link.id)} className="p-1.5 hover:bg-destructive/20 rounded-lg text-muted-foreground hover:text-destructive">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  value={newLink.label}
-                  onChange={e => setNewLink(p => ({ ...p, label: e.target.value }))}
-                  placeholder="Nome do link"
-                  className="flex-1 bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border"
-                />
-                <input
-                  value={newLink.url}
-                  onChange={e => setNewLink(p => ({ ...p, url: e.target.value }))}
-                  placeholder="https://..."
-                  className="flex-1 bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border"
-                />
-                <button
-                  onClick={() => {
-                    if (newLink.label && newLink.url) {
-                      addLink.mutate(newLink);
-                      setNewLink({ label: "", url: "" });
-                    }
-                  }}
-                  className="px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" /> Adicionar
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Marca d'água */}
           {activeSubTab === "marcadagua" && (
             <div className="glass-card p-6 space-y-6">
