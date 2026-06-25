@@ -1,8 +1,24 @@
-import { useState, useMemo } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { Search, Filter, Calendar, ChevronDown, Eye, X } from "lucide-react";
+import PedidosTab from "@/components/financeiro/PedidosTab";
 
-const allOrders = [
+const Pedidos = () => {
+  return (
+    <div className="flex min-h-screen bg-background">
+      <DashboardSidebar />
+      <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto">
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1">Pedidos</h1>
+        <p className="text-sm text-muted-foreground mb-6">
+          Gerencie e reenvie pedidos aos seus clientes.
+        </p>
+        <PedidosTab />
+      </main>
+    </div>
+  );
+};
+
+export default Pedidos;
+
+const _legacy = [
   { id: "0022379712", customer: "Patricio Silva Souza", email: "patricio@email.com", cpf: "123.456.789-00", date: "24/03/2026", status: "Pedido Enviado", payment: "Pix", value: "R$ 30,00", valueNum: 30, origin: "Instagram", event: "VERÃO RUN IRECÊ 22.03.2026", photos: 3 },
   { id: "0022379329", customer: "Patricio Silva Souza", email: "patricio@email.com", cpf: "123.456.789-00", date: "24/03/2026", status: "Pedido Enviado", payment: "Pix", value: "R$ 30,00", valueNum: 30, origin: "Instagram", event: "VERÃO RUN IRECÊ 22.03.2026", photos: 2 },
   { id: "0022378456", customer: "Gustavo Reis Silva", email: "gustavo@email.com", cpf: "987.654.321-00", date: "24/03/2026", status: "Aguardando Pagamento", payment: "Pix", value: "R$ 15,00", valueNum: 15, origin: "Instagram", event: "Copa Caraíbas De Futsal", photos: 1 },
