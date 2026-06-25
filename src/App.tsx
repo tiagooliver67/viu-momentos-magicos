@@ -72,6 +72,7 @@ import MeuNivel from "./pages/MeuNivel";
 import DashboardSidebar from "./components/DashboardSidebar";
 import AdminLevels from "./pages/admin/AdminLevels";
 import AdminParceiros from "./pages/admin/AdminParceiros";
+import AdminAntifraude from "./pages/admin/AdminAntifraude";
 import Sobre from "./pages/Sobre";
 
 const queryClient = new QueryClient();
@@ -160,6 +161,7 @@ const App = () => (
                 <Route path="blog" element={<BlogAdm />} />
                 <Route path="niveis" element={<AdminLevels />} />
                 <Route path="parceiros" element={<AdminParceiros />} />
+                <Route path="antifraude" element={<AdminAntifraude />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
