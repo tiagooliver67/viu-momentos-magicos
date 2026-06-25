@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { X, Info } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { X, Info, Plus, Trash2, Copy, ShieldCheck, Sparkles } from "lucide-react";
+import { computeBreakdown, describeStrategy, formatBRL } from "@/lib/commissionMath";
 
 interface PriceGrid {
   id?: string;
@@ -13,77 +14,273 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSave: (grid: PriceGrid) => void;
-  initial?: PriceGrid;
+  onDelete?: (id: string) => void;
   isSaving: boolean;
+  grids?: PriceGrid[];
+  photographerShare?: number;
+  clientShare?: number;
 }
 
-export default function PriceGridModal({ open, onClose, onSave, initial, isSaving }: Props) {
-  const [grid, setGrid] = useState<PriceGrid>({ name: "Padrão", photo_high_price: 12, photo_low_price: 8, video_price: 10 });
+const EMPTY: PriceGrid = { name: "", photo_high_price: 14, photo_low_price: 10, video_price: 15.99 };
+
+export default function PriceGridModal({
+  open,
+  onClose,
+  onSave,
+  onDelete,
+  isSaving,
+  grids = [],
+  photographerShare = 10,
+  clientShare = 0,
+}: Props) {
+  const [grid, setGrid] = useState<PriceGrid>(EMPTY);
 
   useEffect(() => {
-    if (initial) setGrid(initial);
-  }, [initial]);
+    if (!open) return;
+    if (grids.length > 0) setGrid({ ...grids[0] });
+    else setGrid({ ...EMPTY, name: "Padrão" });
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const strategy = useMemo(
+    () => describeStrategy(photographerShare, clientShare),
+    [photographerShare, clientShare],
+  );
 
   if (!open) return null;
 
+  const selectGrid = (g: PriceGrid) => setGrid({ ...g });
+  const newPreset = () =>
+    setGrid({ ...EMPTY, name: `Preset ${grids.length + 1}` });
+  const duplicate = () =>
+    setGrid({ ...grid, id: undefined, name: `${grid.name} (cópia)` });
+
+  const canSave =
+    grid.name.trim().length > 0 &&
+    grid.photo_high_price >= 0 &&
+    grid.photo_low_price >= 0 &&
+    grid.video_price >= 0;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="glass-card p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-primary text-lg">CADASTRO DE PREÇOS</h3>
-          <button onClick={onClose}><X className="w-5 h-5 text-muted-foreground" /></button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-card rounded-2xl shadow-xl max-w-2xl w-full max-h-[92vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <div>
+            <h3 className="font-bold text-foreground text-lg">Cadastro de preços</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Crie presets reutilizáveis para diferentes tipos de evento.
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary">
+            <X className="w-5 h-5 text-muted-foreground" />
+          </button>
         </div>
-        <p className="text-xs text-muted-foreground mb-4">Defina abaixo quais produtos você quer disponibilizar e adicione o valor correspondente:</p>
 
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs text-muted-foreground">Nome da grade</label>
-            <input value={grid.name} onChange={e => setGrid({ ...grid, name: e.target.value })} className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
-          </div>
-
-          <div>
-            <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-              Foto Original (Alta resolução)
-              <span title="Arquivo limpo, em resolução máxima e SEM marca d'água. Entregue diretamente da pasta /original/ no S3 após o pagamento.">
-                <Info className="w-3 h-3 text-muted-foreground/70" />
+        {/* Presets list */}
+        {grids.length > 0 && (
+          <div className="px-6 pt-4 pb-3 border-b border-border bg-secondary/30">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground">
+                Presets salvos
               </span>
-            </label>
-            <p className="text-[10px] text-muted-foreground/70 mt-0.5">Arquivo completo, sem marca d'água — ideal para impressão.</p>
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-xs text-muted-foreground">R$</span>
-              <input type="number" step="0.01" value={grid.photo_high_price} onChange={e => setGrid({ ...grid, photo_high_price: +e.target.value })} className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
+              <button
+                onClick={newPreset}
+                className="text-primary flex items-center gap-1 text-xs font-semibold hover:underline"
+              >
+                <Plus className="w-3.5 h-3.5" /> Nova grade
+              </button>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {grids.map((g) => {
+                const active = g.id === grid.id;
+                return (
+                  <button
+                    key={g.id}
+                    onClick={() => selectGrid(g)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                      active
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background text-foreground border-border hover:border-primary/40"
+                    }`}
+                  >
+                    {g.name || "Sem nome"}
+                  </button>
+                );
+              })}
             </div>
           </div>
+        )}
 
-          <div>
-            <label className="text-xs text-muted-foreground flex items-center gap-1.5">
-              Foto Social (1200px / Média)
-              <span title="Versão otimizada para redes sociais (1200px) com marca d'água leve. Entregue da pasta /medium/ no S3.">
-                <Info className="w-3 h-3 text-muted-foreground/70" />
-              </span>
-            </label>
-            <p className="text-[10px] text-muted-foreground/70 mt-0.5">Versão para Instagram/WhatsApp — 1200px com marca d'água sutil.</p>
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-xs text-muted-foreground">R$</span>
-              <input type="number" step="0.01" value={grid.photo_low_price} onChange={e => setGrid({ ...grid, photo_low_price: +e.target.value })} className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {/* Strategy banner */}
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
+            <Sparkles className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <label className="text-xs text-muted-foreground">Download do vídeo</label>
-              <div className="flex items-center gap-1 mt-1">
-                <span className="text-xs text-muted-foreground">R$</span>
-                <input type="number" step="0.01" value={grid.video_price} onChange={e => setGrid({ ...grid, video_price: +e.target.value })} className="flex-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
-              </div>
+              <p className="text-xs font-semibold text-foreground">{strategy}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Cálculo abaixo baseado na sua configuração de Monetização do Evento
+                ({photographerShare}% absorvido · {clientShare}% repassado).
+              </p>
             </div>
           </div>
+
+          {/* Nome */}
+          <div>
+            <label className="text-xs font-semibold text-foreground">Nome da grade</label>
+            <input
+              value={grid.name}
+              onChange={(e) => setGrid({ ...grid, name: e.target.value })}
+              placeholder='Ex.: "Corrida Padrão", "MTB Premium"…'
+              className="w-full mt-1.5 px-3 py-2.5 rounded-lg bg-background border border-border text-foreground text-sm focus:border-primary outline-none"
+            />
+          </div>
+
+          {/* Foto Original */}
+          <PriceField
+            label="Foto Original (Alta resolução)"
+            description="Arquivo completo, sem marca d'água — ideal para impressão."
+            value={grid.photo_high_price}
+            onChange={(v) => setGrid({ ...grid, photo_high_price: v })}
+            photographerShare={photographerShare}
+            clientShare={clientShare}
+          />
+
+          {/* Foto Social */}
+          <PriceField
+            label="Foto Social (1200px / Média)"
+            description="Versão otimizada 1200px — entregue limpa após o pagamento, ideal para Instagram/WhatsApp."
+            badge="Sem marca d'água"
+            value={grid.photo_low_price}
+            onChange={(v) => setGrid({ ...grid, photo_low_price: v })}
+            photographerShare={photographerShare}
+            clientShare={clientShare}
+          />
+
+          {/* Vídeo */}
+          <PriceField
+            label="Download do vídeo"
+            description="Arquivo de vídeo entregue na resolução original."
+            value={grid.video_price}
+            onChange={(v) => setGrid({ ...grid, video_price: v })}
+            photographerShare={photographerShare}
+            clientShare={clientShare}
+          />
         </div>
 
-        <button onClick={() => onSave(grid)} disabled={isSaving} className="w-full mt-6 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm min-h-[44px] disabled:opacity-50">
-          {isSaving ? "Salvando..." : "SALVAR"}
-        </button>
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-2 px-6 py-4 border-t border-border bg-card">
+          <div className="flex items-center gap-1">
+            {grid.id && (
+              <>
+                <button
+                  onClick={duplicate}
+                  className="px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex items-center gap-1.5"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Duplicar
+                </button>
+                {onDelete && grids.length > 1 && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Remover preset "${grid.name}"?`)) {
+                        onDelete(grid.id!);
+                        setGrid({ ...EMPTY, name: "Padrão" });
+                      }
+                    }}
+                    className="px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Excluir
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={() => onSave(grid)}
+              disabled={isSaving || !canSave}
+              className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 min-w-[140px]"
+            >
+              {isSaving ? "Salvando..." : grid.id ? "Atualizar grade" : "Salvar nova grade"}
+            </button>
+          </div>
+        </div>
       </div>
+    </div>
+  );
+}
+
+interface PriceFieldProps {
+  label: string;
+  description: string;
+  badge?: string;
+  value: number;
+  onChange: (v: number) => void;
+  photographerShare: number;
+  clientShare: number;
+}
+
+function PriceField({ label, description, badge, value, onChange, photographerShare, clientShare }: PriceFieldProps) {
+  const b = computeBreakdown(value || 0, photographerShare, clientShare);
+  return (
+    <div className="rounded-xl border border-border p-4 bg-background">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <label className="text-sm font-bold text-foreground flex items-center gap-1.5">
+          {label}
+          <span title={description}>
+            <Info className="w-3 h-3 text-muted-foreground/70" />
+          </span>
+        </label>
+        {badge && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-200">
+            <ShieldCheck className="w-3 h-3" /> {badge}
+          </span>
+        )}
+      </div>
+      <p className="text-[11px] text-muted-foreground mb-2.5">{description}</p>
+
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">R$</span>
+        <input
+          type="number"
+          step="0.01"
+          min={0}
+          value={value}
+          onChange={(e) => onChange(+e.target.value)}
+          className="flex-1 px-3 py-2 rounded-lg bg-card border border-border text-foreground text-sm focus:border-primary outline-none"
+        />
+      </div>
+
+      {/* Preview da divisão */}
+      <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+        <PreviewCell label="Cliente paga" value={formatBRL(b.clientPrice)} />
+        <PreviewCell label="Você recebe líquido" value={formatBRL(b.photographerNet)} highlight />
+        <PreviewCell label="Sua margem" value={`${b.marginPct}%`} />
+      </div>
+      <p className="text-[10px] text-muted-foreground/80 mt-1.5">
+        Já considera 10% de comissão da plataforma e ~4,99% de taxa do gateway.
+      </p>
+    </div>
+  );
+}
+
+function PreviewCell({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div
+      className={`rounded-lg px-2 py-1.5 border ${
+        highlight ? "bg-primary/5 border-primary/30" : "bg-secondary/40 border-border"
+      }`}
+    >
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
+      <p className={`text-sm font-bold tabular-nums ${highlight ? "text-primary" : "text-foreground"}`}>
+        {value}
+      </p>
     </div>
   );
 }
