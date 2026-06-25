@@ -1087,6 +1087,123 @@ export type Database = {
           },
         ]
       }
+      fraud_cases: {
+        Row: {
+          created_at: string
+          decision_note: string | null
+          id: string
+          reviewed_at: string | null
+          reviewer_id: string | null
+          score: number
+          signals: Json
+          status: string
+          subject_id: string
+          subject_type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          decision_note?: string | null
+          id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          score?: number
+          signals?: Json
+          status?: string
+          subject_id: string
+          subject_type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          decision_note?: string | null
+          id?: string
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          score?: number
+          signals?: Json
+          status?: string
+          subject_id?: string
+          subject_type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      fraud_rules: {
+        Row: {
+          active: boolean
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          active?: boolean
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          active?: boolean
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: []
+      }
+      fraud_signals: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          ip: string | null
+          rule_key: string
+          subject_id: string | null
+          subject_type: string
+          user_agent: string | null
+          user_id: string | null
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          ip?: string | null
+          rule_key: string
+          subject_id?: string | null
+          subject_type: string
+          user_agent?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          ip?: string | null
+          rule_key?: string
+          subject_id?: string | null
+          subject_type?: string
+          user_agent?: string | null
+          user_id?: string | null
+          weight?: number
+        }
+        Relationships: []
+      }
       hero_settings: {
         Row: {
           autoplay: boolean
@@ -2675,6 +2792,22 @@ export type Database = {
         }[]
       }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
+      fraud_decide_case: {
+        Args: { _case_id: string; _decision: string; _note?: string }
+        Returns: undefined
+      }
+      fraud_register_signal: {
+        Args: {
+          _details?: Json
+          _ip?: string
+          _rule_key: string
+          _subject_id: string
+          _subject_type: string
+          _ua?: string
+          _user_id: string
+        }
+        Returns: string
+      }
       get_registration_availability: {
         Args: { _event_id: string }
         Returns: {
