@@ -4,7 +4,7 @@ import {
   Save, Plus, Trash2, Check
 } from "lucide-react";
 import { toast } from "sonner";
-import { usePhotographerSite, useCustomLinks } from "@/hooks/usePhotographerSite";
+import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import { supabase } from "@/integrations/supabase/client";
 import { cdnUrl } from "@/lib/cdnConfig";
 import { getSignedReadUrl } from "@/hooks/useS3Upload";
@@ -17,7 +17,6 @@ const siteSubTabs = [
   { id: "redes", label: "Redes sociais", icon: Share2 },
   { id: "imagem", label: "Imagem de perfil", icon: Image },
   { id: "cores", label: "Cores", icon: Palette },
-  { id: "links", label: "Links editáveis", icon: Link2 },
   { id: "marcadagua", label: "Marca d'água", icon: WatermarkIcon },
 ];
 
@@ -37,9 +36,7 @@ const presetColors = [
 const MeuSiteTab = () => {
   const [activeSubTab, setActiveSubTab] = useState("geral");
   const { site, isLoading, upsertSite, uploadAsset } = usePhotographerSite();
-  const { links, addLink, removeLink } = useCustomLinks();
   const [form, setForm] = useState<Record<string, any>>({});
-  const [newLink, setNewLink] = useState({ label: "", url: "" });
   const avatarRef = useRef<HTMLInputElement>(null);
   const watermarkRef = useRef<HTMLInputElement>(null);
 
@@ -311,51 +308,6 @@ const MeuSiteTab = () => {
                   onChange={e => set("primary_color", e.target.value)}
                   className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
                 />
-              </div>
-            </div>
-          )}
-
-          {/* Links editáveis */}
-          {activeSubTab === "links" && (
-            <div className="glass-card p-6 space-y-4">
-              <h3 className="text-lg font-bold">Links editáveis</h3>
-              <p className="text-sm text-muted-foreground">Você pode adicionar links editáveis no seu menu.</p>
-              {links.map((link: any) => (
-                <div key={link.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/50">
-                  <Link2 className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{link.label}</p>
-                    <p className="text-xs text-muted-foreground truncate">{link.url}</p>
-                  </div>
-                  <button onClick={() => removeLink.mutate(link.id)} className="p-1.5 hover:bg-destructive/20 rounded-lg text-muted-foreground hover:text-destructive">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  value={newLink.label}
-                  onChange={e => setNewLink(p => ({ ...p, label: e.target.value }))}
-                  placeholder="Nome do link"
-                  className="flex-1 bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border"
-                />
-                <input
-                  value={newLink.url}
-                  onChange={e => setNewLink(p => ({ ...p, url: e.target.value }))}
-                  placeholder="https://..."
-                  className="flex-1 bg-secondary/50 rounded-lg px-4 py-2.5 text-sm outline-none border border-border"
-                />
-                <button
-                  onClick={() => {
-                    if (newLink.label && newLink.url) {
-                      addLink.mutate(newLink);
-                      setNewLink({ label: "", url: "" });
-                    }
-                  }}
-                  className="px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold flex items-center gap-1"
-                >
-                  <Plus className="w-4 h-4" /> Adicionar
-                </button>
               </div>
             </div>
           )}
