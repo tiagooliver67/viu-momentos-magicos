@@ -68,6 +68,7 @@ import InscricaoPublic from "./pages/inscricoes/InscricaoPublic";
 import Parceiros from "./pages/Parceiros";
 import ReferralCapture from "./pages/ReferralCapture";
 import MeuNivel from "./pages/MeuNivel";
+import DashboardSidebar from "./components/DashboardSidebar";
 import AdminLevels from "./pages/admin/AdminLevels";
 import Sobre from "./pages/Sobre";
 
@@ -117,7 +118,16 @@ const App = () => (
               <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
               <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
               <Route path="/dashboard/parceiros" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Parceiros /></ProtectedRoute>} />
-              <Route path="/dashboard/nivel" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><MeuNivel /></ProtectedRoute>} />
+              <Route path="/dashboard/nivel" element={
+                <ProtectedRoute requiredRoles={["photographer", "organizer"]}>
+                  <div className="flex min-h-screen bg-background">
+                    <DashboardSidebar />
+                    <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto">
+                      <MeuNivel />
+                    </main>
+                  </div>
+                </ProtectedRoute>
+              } />
               <Route path="/dashboard/chamados" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Chamados /></ProtectedRoute>} />
               <Route path="/dashboard/evento/:id" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><EventDashboard /></ProtectedRoute>} />
               <Route path="/dashboard/inscricoes" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricoesList /></ProtectedRoute>} />
