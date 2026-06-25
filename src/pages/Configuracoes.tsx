@@ -13,7 +13,6 @@ import { supabase } from "@/integrations/supabase/client";
 const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
   { id: "site", label: "Meu site", icon: Globe },
-  { id: "portfolio", label: "Meu portfólio", icon: Image },
   { id: "carteira", label: "Carteira", icon: Wallet },
   { id: "exclusividade", label: "Exclusividade", icon: Star },
   { id: "cupons", label: "Cupons", icon: Ticket },
@@ -585,7 +584,6 @@ const TabDispositivos = () => (
 const tabComponents: Record<string, React.FC> = {
   conta: TabConta,
   site: TabSite,
-  portfolio: TabPortfolio,
   carteira: TabCarteira,
   exclusividade: TabExclusividade,
   cupons: TabCupons,

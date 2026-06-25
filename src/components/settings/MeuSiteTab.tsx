@@ -8,10 +8,12 @@ import { usePhotographerSite, useCustomLinks } from "@/hooks/usePhotographerSite
 import { supabase } from "@/integrations/supabase/client";
 import { cdnUrl } from "@/lib/cdnConfig";
 import { getSignedReadUrl } from "@/hooks/useS3Upload";
+import TabPortfolio from "@/components/settings/TabPortfolio";
 
 const siteSubTabs = [
   { id: "geral", label: "Meu site", icon: Globe },
   { id: "sobre", label: "Sobre", icon: User },
+  { id: "portfolio", label: "Meu portfólio", icon: Image },
   { id: "redes", label: "Redes sociais", icon: Share2 },
   { id: "imagem", label: "Imagem de perfil", icon: Image },
   { id: "cores", label: "Cores", icon: Palette },
@@ -213,6 +215,13 @@ const MeuSiteTab = () => {
                 className="w-full bg-secondary/50 rounded-lg px-4 py-3 text-sm outline-none border border-border focus:border-primary transition-colors resize-none"
                 placeholder="Conte sobre você e seu trabalho..."
               />
+            </div>
+          )}
+
+          {/* Portfólio */}
+          {activeSubTab === "portfolio" && (
+            <div className="glass-card p-6">
+              <TabPortfolio />
             </div>
           )}
 
