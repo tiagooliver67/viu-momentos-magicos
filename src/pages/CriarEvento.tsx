@@ -1,44 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle } from "lucide-react";
+import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle, Info, Wallet, Users, Split } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-const steps = ["Plano", "Informações", "Busca", "Visibilidade", "Resumo"];
+const steps = ["Monetização", "Informações", "Busca", "Visibilidade", "Resumo"];
 
-const models = [
-  {
-    key: "inicio" as const,
-    name: "ViuFoto Início",
-    description: "Comece a vender suas fotos sem custo inicial.",
-    commission: "12%",
-    commissionDesc: "A ViuFoto retém uma pequena porcentagem sobre cada venda realizada. O restante do valor é repassado automaticamente para você.",
-    features: [
-      "Até 20.000 uploads gratuitos",
-      "Reconhecimento facial",
-      "Busca por número de peito",
-      "Organização por pastas",
-    ],
-    uploadInfo: "Após o limite: R$ 0,023/foto · R$ 0,26/vídeo",
-  },
-  {
-    key: "profissional" as const,
-    name: "ViuFoto Profissional",
-    description: "Comissão reduzida para quem deseja vender mais e ter maior visibilidade na plataforma.",
-    commission: "10%",
-    commissionDesc: "Pague menos por cada venda e ganhe destaque nos resultados da plataforma.",
-    features: [
-      "Tudo do plano Início",
-      "Comissão reduzida por venda",
-      "Prioridade na plataforma",
-      "Destaque em eventos na Home",
-    ],
-    uploadInfo: "Após o limite: R$ 0,023/foto · R$ 0,26/vídeo",
-    highlighted: true,
-    badge: "Mais visibilidade",
-  },
-];
+const COMMISSION_RATE = 0.10; // 10% fixos
+const DEFAULT_SIM_PRICE = 14;
 
 const categories = [
   "Corrida", "Ciclismo", "Triathlon", "Natação", "Futebol", "Futsal", "Vôlei", "Basquete",
@@ -69,7 +39,10 @@ const searchTypes = [
 const CriarEvento = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedModel, setSelectedModel] = useState<"inicio" | "profissional" | null>(null);
+
+  // Monetização — quanto da comissão de 10% o CLIENTE absorve (0 a 10)
+  const [clientShare, setClientShare] = useState<number>(0);
+  const [simPrice, setSimPrice] = useState<number>(DEFAULT_SIM_PRICE);
 
   // Form fields
   const [eventName, setEventName] = useState("");
@@ -109,9 +82,11 @@ const CriarEvento = () => {
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (step === 0 && !selectedModel) {
-      toast.error("Selecione um modelo para continuar");
-      return false;
+    if (step === 0) {
+      if (clientShare < 0 || clientShare > 10) {
+        toast.error("Divisão da comissão inválida");
+        return false;
+      }
     }
 
     if (step === 1) {
@@ -162,7 +137,9 @@ const CriarEvento = () => {
         category: eventCategory,
         search_type: selectedSearchTypes,
         visibility: visibility ?? true,
-        plan_type: selectedModel || "inicio",
+        plan_type: "profissional",
+        commission_photographer_share: 10 - clientShare,
+        commission_client_share: clientShare,
       } as any).select().single();
 
       if (error) throw error;
@@ -212,45 +189,146 @@ const CriarEvento = () => {
           ))}
         </div>
 
-        {/* Step 0: Model */}
-        {currentStep === 0 && (
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-foreground mb-2">Escolha seu plano</h2>
-            <p className="text-sm text-muted-foreground mb-6">Selecione o plano ideal para o seu evento:</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
-              {models.map((model) => (
-                <div
-                  key={model.key}
-                  onClick={() => setSelectedModel(model.key)}
-                  className={`glass-card p-5 sm:p-6 cursor-pointer transition-all relative ${
-                    selectedModel === model.key ? "border-primary neon-border" : "hover:border-primary/30"
-                  } ${model.highlighted ? "ring-1 ring-primary/20" : ""}`}
-                >
-                  {model.highlighted && model.badge && (
-                    <span className="absolute -top-3 left-4 inline-flex px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg">
-                      🚀 {model.badge}
-                    </span>
-                  )}
-                  <h3 className="text-base sm:text-lg font-bold text-foreground mb-1 mt-1">{model.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-3">{model.description}</p>
-                  <p className="text-sm text-foreground mb-1">
-                    Comissão de <span className="text-primary font-bold text-lg">{model.commission}</span> sobre vendas
+        {/* Step 0: Monetização */}
+        {currentStep === 0 && (() => {
+          const photographerShare = 10 - clientShare;
+          const commissionValue = simPrice * COMMISSION_RATE;
+          const photographerAbsorbs = commissionValue * (photographerShare / 10);
+          const clientAbsorbs = commissionValue * (clientShare / 10);
+          const buyerPays = simPrice + clientAbsorbs;
+          const photographerReceives = simPrice - photographerAbsorbs;
+          const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+          const feedback =
+            clientShare === 0
+              ? "Você está absorvendo toda a comissão. Isso torna o preço mais competitivo para seus clientes."
+              : clientShare === 10
+              ? "Você está repassando toda a comissão ao comprador. Você preserva integralmente sua margem."
+              : "Divisão equilibrada — você mantém parte da margem e oferece preço competitivo.";
+
+          return (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl">
+              {/* Coluna esquerda — configuração */}
+              <div className="lg:col-span-2 space-y-5">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-foreground mb-1">Monetização do Evento</h2>
+                  <p className="text-sm text-muted-foreground">
+                    A ViuFoto possui uma comissão fixa de <span className="font-semibold text-foreground">10%</span> sobre cada venda. Defina como ela será dividida entre você e o comprador.
                   </p>
-                  <p className="text-[11px] text-muted-foreground mb-4">{model.commissionDesc}</p>
-                  <ul className="space-y-2 mb-3">
-                    {model.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Check className="w-4 h-4 text-lime flex-shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="text-[10px] text-muted-foreground/70 border-t border-border/50 pt-2">{model.uploadInfo}</p>
                 </div>
-              ))}
+
+                {/* Atalhos */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {[
+                    { label: "Eu absorvo tudo", icon: Wallet, val: 0 },
+                    { label: "Dividir igualmente", icon: Split, val: 5 },
+                    { label: "Repassar ao cliente", icon: Users, val: 10 },
+                  ].map((opt) => {
+                    const active = clientShare === opt.val;
+                    return (
+                      <button
+                        key={opt.label}
+                        onClick={() => setClientShare(opt.val)}
+                        className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border text-xs sm:text-sm font-medium transition-all min-h-[48px] ${
+                          active ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                        }`}
+                      >
+                        <opt.icon className="w-4 h-4" />
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Slider */}
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-foreground">Quanto o cliente absorve da comissão</label>
+                    <span className="text-base font-bold text-primary">{clientShare.toFixed(1)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={10}
+                    step={0.5}
+                    value={clientShare}
+                    onChange={(e) => setClientShare(parseFloat(e.target.value))}
+                    className="w-full accent-primary"
+                  />
+                  <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
+                    <span>0%</span>
+                    <span>10%</span>
+                  </div>
+                </div>
+
+                {/* Cards de divisão */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-border bg-card p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Você absorve</p>
+                    <p className="text-2xl font-bold text-foreground">{photographerShare.toFixed(1)}%</p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-card p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Cliente absorve</p>
+                    <p className="text-2xl font-bold text-foreground">{clientShare.toFixed(1)}%</p>
+                  </div>
+                </div>
+
+                {/* Feedback */}
+                <div className="rounded-xl bg-primary/5 border border-primary/20 p-4 flex items-start gap-3">
+                  <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  <p className="text-xs sm:text-sm text-foreground">{feedback}</p>
+                </div>
+              </div>
+
+              {/* Coluna direita — Simulação */}
+              <div className="lg:col-span-1">
+                <div className="rounded-2xl border border-border bg-card p-5 lg:sticky lg:top-6 space-y-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Simulação financeira</h3>
+                    <p className="text-[11px] text-muted-foreground">Ajuste o valor para simular com o seu preço.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">Preço da foto (simulação)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">R$</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.5}
+                        value={simPrice}
+                        onChange={(e) => setSimPrice(Math.max(0, parseFloat(e.target.value) || 0))}
+                        className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-border bg-background text-sm font-medium text-foreground outline-none focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Preço da foto</span><span className="font-medium text-foreground">{fmt(simPrice)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Comissão ViuFoto (10%)</span><span className="font-medium text-foreground">{fmt(commissionValue)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Você absorve</span><span className="font-medium text-foreground">{fmt(photographerAbsorbs)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Repasse ao cliente</span><span className="font-medium text-foreground">{fmt(clientAbsorbs)}</span></div>
+                  </div>
+
+                  <div className="border-t border-border pt-3 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">Comprador paga</span>
+                      <span className="text-sm font-bold text-foreground">{fmt(buyerPays)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">Você recebe</span>
+                      <span className="text-base font-bold text-primary">{fmt(photographerReceives)}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-muted-foreground/80 leading-relaxed">
+                    Taxas de processamento do meio de pagamento são aplicadas no checkout e não estão incluídas nesta simulação.
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Step 1: Info */}
         {currentStep === 1 && (
@@ -421,7 +499,8 @@ const CriarEvento = () => {
             <p className="text-sm text-muted-foreground mb-6">Confira as informações antes de criar seu evento.</p>
             <div className="glass-card p-5 sm:p-6 space-y-4">
               {[
-                { label: "Plano", value: models.find((m) => m.key === selectedModel)?.name || selectedModel },
+                { label: "Plano", value: "ViuFoto Profissional (10%)" },
+                { label: "Comissão", value: `Você absorve ${(10 - clientShare).toFixed(1)}% · Cliente absorve ${clientShare.toFixed(1)}%` },
                 { label: "Nome", value: eventName },
                 { label: "Data", value: eventDate ? new Date(eventDate + "T12:00:00").toLocaleDateString("pt-BR") : "" },
                 { label: "Horário", value: eventTime },
