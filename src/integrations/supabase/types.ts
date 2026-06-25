@@ -1432,6 +1432,68 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      portfolio_photos: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          id: string
+          image_url: string
+          is_featured: boolean
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          is_featured?: boolean
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_featured?: boolean
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_photos_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_grids: {
         Row: {
           created_at: string
