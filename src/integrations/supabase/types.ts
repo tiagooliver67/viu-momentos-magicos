@@ -1335,6 +1335,9 @@ export type Database = {
       }
       photographer_sites: {
         Row: {
+          ai_bio: string | null
+          ai_bio_generated_at: string | null
+          ai_bio_signature: string | null
           allow_custom_links: boolean | null
           avatar_url: string | null
           banner_url: string | null
@@ -1367,6 +1370,9 @@ export type Database = {
           youtube: string | null
         }
         Insert: {
+          ai_bio?: string | null
+          ai_bio_generated_at?: string | null
+          ai_bio_signature?: string | null
           allow_custom_links?: boolean | null
           avatar_url?: string | null
           banner_url?: string | null
@@ -1399,6 +1405,9 @@ export type Database = {
           youtube?: string | null
         }
         Update: {
+          ai_bio?: string | null
+          ai_bio_generated_at?: string | null
+          ai_bio_signature?: string | null
           allow_custom_links?: boolean | null
           avatar_url?: string | null
           banner_url?: string | null
@@ -2288,6 +2297,8 @@ export type Database = {
       }
       photographer_sites_public: {
         Row: {
+          ai_bio: string | null
+          ai_bio_generated_at: string | null
           allow_custom_links: boolean | null
           avatar_url: string | null
           banner_url: string | null
@@ -2316,6 +2327,8 @@ export type Database = {
           youtube: string | null
         }
         Insert: {
+          ai_bio?: string | null
+          ai_bio_generated_at?: string | null
           allow_custom_links?: boolean | null
           avatar_url?: string | null
           banner_url?: string | null
@@ -2344,6 +2357,8 @@ export type Database = {
           youtube?: string | null
         }
         Update: {
+          ai_bio?: string | null
+          ai_bio_generated_at?: string | null
           allow_custom_links?: boolean | null
           avatar_url?: string | null
           banner_url?: string | null
