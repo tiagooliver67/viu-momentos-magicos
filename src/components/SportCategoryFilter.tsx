@@ -9,8 +9,6 @@ type Category = {
   image: string;
   icon: LucideIcon;
   accent: string; // hex
-  events: string;
-  photos: string;
 };
 
 const categories: Category[] = [
@@ -21,8 +19,6 @@ const categories: Category[] = [
     image: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&q=80",
     icon: Footprints,
     accent: "#8B5CF6",
-    events: "487",
-    photos: "254 mil",
   },
   {
     id: "futebol",
@@ -31,8 +27,6 @@ const categories: Category[] = [
     image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1200&q=80",
     icon: Trophy,
     accent: "#22C55E",
-    events: "612",
-    photos: "1.8 milhão",
   },
   {
     id: "ciclismo",
@@ -41,8 +35,6 @@ const categories: Category[] = [
     image: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=1200&q=80",
     icon: Bike,
     accent: "#F97316",
-    events: "294",
-    photos: "180 mil",
   },
   {
     id: "triathlon",
@@ -51,8 +43,6 @@ const categories: Category[] = [
     image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1200&q=80",
     icon: Waves,
     accent: "#0EA5E9",
-    events: "128",
-    photos: "96 mil",
   },
   {
     id: "corrida_trilha",
@@ -61,8 +51,6 @@ const categories: Category[] = [
     image: "https://images.unsplash.com/photo-1486218119243-13883505764c?w=1200&q=80",
     icon: Mountain,
     accent: "#65A30D",
-    events: "173",
-    photos: "112 mil",
   },
 ];
 
@@ -73,7 +61,7 @@ const CategoryCard = ({ cat, priority }: { cat: Category; priority: boolean }) =
   return (
     <button
       onClick={() => navigate(`/buscar?categoria=${cat.id}`)}
-      className="group relative aspect-[3/4] w-full overflow-hidden rounded-[28px] border border-white/10 bg-neutral-900 text-left transition-all duration-[250ms] ease-out hover:-translate-y-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="group relative aspect-[4/5] sm:aspect-[5/6] w-full overflow-hidden rounded-[24px] border border-white/10 bg-neutral-900 text-left transition-all duration-[250ms] ease-out hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       style={{
         boxShadow: "0 20px 40px -20px rgba(0,0,0,0.35)",
         // @ts-ignore custom prop for hover
@@ -92,7 +80,7 @@ const CategoryCard = ({ cat, priority }: { cat: Category; priority: boolean }) =
       />
 
       {/* Cinematic overlays */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/25 transition-opacity duration-[250ms] group-hover:opacity-90" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/10 transition-opacity duration-[250ms] group-hover:opacity-95" />
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-[300ms] group-hover:opacity-100"
         style={{
@@ -106,7 +94,7 @@ const CategoryCard = ({ cat, priority }: { cat: Category; priority: boolean }) =
       />
 
       {/* Top badges */}
-      <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-2">
+      <div className="absolute inset-x-6 top-6 flex items-start justify-between gap-2">
         <div
           className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 backdrop-blur-md"
         >
@@ -138,27 +126,15 @@ const CategoryCard = ({ cat, priority }: { cat: Category; priority: boolean }) =
       </div>
 
       {/* Bottom content */}
-      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-        <h3 className="mb-2 text-2xl font-black leading-[1.02] tracking-tight text-white sm:text-3xl lg:text-4xl">
+      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
+        <h3 className="mb-2 text-2xl font-black leading-[1.02] tracking-tight text-white sm:text-3xl">
           {cat.label}
         </h3>
-        <p className="mb-3 max-w-[85%] text-[11px] text-white/75 sm:text-xs">{cat.tagline}</p>
+        <p className="mb-4 max-w-[90%] text-[11px] text-white/75 sm:text-xs">{cat.tagline}</p>
         <div
-          className="mb-4 h-[3px] w-14 rounded-full transition-all duration-[250ms] group-hover:w-24"
+          className="mb-5 h-[3px] w-12 rounded-full transition-all duration-[250ms] group-hover:w-20"
           style={{ background: cat.accent }}
         />
-
-        <div className="mb-4 flex items-center gap-4 text-white">
-          <div>
-            <div className="text-sm font-black leading-none sm:text-base">{cat.events}</div>
-            <div className="text-[9px] uppercase tracking-wider text-white/60">Eventos</div>
-          </div>
-          <div className="h-6 w-px bg-white/20" />
-          <div>
-            <div className="text-sm font-black leading-none sm:text-base">{cat.photos}</div>
-            <div className="text-[9px] uppercase tracking-wider text-white/60">Fotos</div>
-          </div>
-        </div>
 
         <div
           className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs font-bold text-white backdrop-blur-md transition-all duration-[250ms] group-hover:border-transparent group-hover:text-white"
