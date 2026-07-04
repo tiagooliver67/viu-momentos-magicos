@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import heroRunners from "@/assets/hero-runners.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { cdnUrl } from "@/lib/cdnConfig";
+import { getSignedReadUrls } from "@/hooks/useS3Upload";
 
 interface HeroSettings {
   title: string;
@@ -56,9 +57,20 @@ const HeroSection = () => {
       if (cancelled) return;
       if (s.data) setSettings(s.data as any);
       if (sl.data) {
-        const urls = sl.data
-          .map((row: any) => cdnUrl(row.image_path))
-          .filter((u: string | null): u is string => !!u);
+        const paths = sl.data.map((row: any) => row.image_path as string);
+        const cdnUrls = paths.map((p) => cdnUrl(p));
+        const needsSigning = paths.filter((_, i) => !cdnUrls[i]);
+        let signedMap: Record<string, string> = {};
+        if (needsSigning.length > 0) {
+          try {
+            signedMap = await getSignedReadUrls(needsSigning);
+          } catch (e) {
+            console.warn("[Hero] Falha ao assinar URLs dos slides:", e);
+          }
+        }
+        const urls = paths
+          .map((p, i) => cdnUrls[i] || signedMap[p] || null)
+          .filter((u): u is string => !!u);
         setSlides(urls);
       }
     })();
