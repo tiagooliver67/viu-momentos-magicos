@@ -418,3 +418,22 @@ function RadioCard({ title, desc, active, onClick }: { title: string; desc: stri
     </button>
   );
 }
+
+function RadioRow({ title, desc, active, onClick }: { title: string; desc: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left flex items-start gap-3 p-4 rounded-xl border-2 transition-all ${
+        active ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
+      }`}
+    >
+      <span className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${active ? "border-primary" : "border-muted-foreground/40"}`}>
+        {active && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
+      </span>
+      <span className="flex-1">
+        <span className="block text-sm font-bold text-foreground">{title}</span>
+        <span className="block text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</span>
+      </span>
+    </button>
+  );
+}
