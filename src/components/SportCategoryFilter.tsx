@@ -177,24 +177,21 @@ const SportCategoryFilter = () => {
           </div>
         </div>
 
-        {/* Mobile: horizontal snap carousel */}
-        <div className="md:hidden -mx-4 px-4">
-          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {categories.map((cat, i) => (
-              <div key={cat.id} className="w-[78%] shrink-0 snap-start">
+        {/* Infinite marquee — one continuous horizontal track */}
+        <div
+          className="group relative -mx-4 overflow-hidden px-4 [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)] motion-reduce:overflow-x-auto motion-reduce:snap-x motion-reduce:snap-mandatory motion-reduce:[mask-image:none]"
+        >
+          <div className="flex w-max gap-5 animate-marquee group-hover:[animation-play-state:paused] motion-reduce:animate-none">
+            {[...categories, ...categories].map((cat, i) => (
+              <div
+                key={`${cat.id}-${i}`}
+                className="w-[280px] shrink-0 snap-start sm:w-[320px] lg:w-[360px]"
+                aria-hidden={i >= categories.length ? true : undefined}
+              >
                 <CategoryCard cat={cat} priority={i === 0} />
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Tablet+ grid */}
-        <div className="hidden gap-5 md:grid md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-          {categories.map((cat, i) => (
-            <ScrollReveal key={cat.id} delay={i * 80}>
-              <CategoryCard cat={cat} priority={i === 0} />
-            </ScrollReveal>
-          ))}
         </div>
       </section>
     </ScrollReveal>
