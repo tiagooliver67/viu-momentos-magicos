@@ -100,7 +100,7 @@ export function useMarketingTracker(photographerId?: string | null, eventId?: st
         .eq("active", true);
 
       if (cancelled) return;
-      const pixels = (data || []) as Pixel[];
+      const pixels = ((data || []) as unknown) as Pixel[];
 
       for (const p of pixels) {
         if (p.provider === "meta") loadMeta(p.pixel_id);
