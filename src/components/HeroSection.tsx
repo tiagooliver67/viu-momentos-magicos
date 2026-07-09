@@ -186,7 +186,7 @@ const HeroSection = () => {
               className="text-base sm:text-lg text-muted-foreground max-w-md mb-8"
             >
               Encontre suas fotos de eventos esportivos em segundos com nossa
-              inteligência de busca facial e OCR de número de peito.
+              inteligência de busca facial e número de peito.
             </motion.p>
 
             <motion.form
