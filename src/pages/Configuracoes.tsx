@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import {
-  User, Globe, Image, Wallet, Star, Ticket, MessageSquare, Smartphone,
+  User, Globe, Image, Wallet, Star, MessageSquare, Smartphone,
   Save, Eye, EyeOff, Plus, Trash2, QrCode, Share2, Shield, LogOut, Copy, Check,
   Upload, ChevronRight, Lock, Bell, Mail, Phone, Loader2
 } from "lucide-react";
@@ -14,17 +14,10 @@ const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
   { id: "site", label: "Meu site", icon: Globe },
   { id: "carteira", label: "Carteira", icon: Wallet },
-  { id: "cupons", label: "Cupons", icon: Ticket },
   { id: "dispositivos", label: "Dispositivos", icon: Smartphone },
 ];
 
 // Mock data for other tabs
-
-const mockCupons = [
-  { id: 1, code: "VERAO10", tipo: "percentual", valor: 10, validade: "2026-06-30", usos: 24, limite: 100, ativo: true },
-  { id: 2, code: "PRIMEIRACOMPRA", tipo: "fixo", valor: 5, validade: "2026-12-31", usos: 87, limite: 500, ativo: true },
-  { id: 3, code: "BLACKFRIDAY", tipo: "percentual", valor: 25, validade: "2025-11-30", usos: 200, limite: 200, ativo: false },
-];
 
 const mockDevices = [
   { id: 1, name: "Chrome — Windows 11", ip: "189.44.120.33", location: "São Paulo, BR", lastActive: "Agora (sessão atual)", current: true },
@@ -401,78 +394,6 @@ const TabSmartCard = () => (
   </div>
 );
 
-// ─── Tab: Cupons ───
-const TabCupons = () => {
-  const [showForm, setShowForm] = useState(false);
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold">Cupons</h2>
-          <p className="text-sm text-muted-foreground">Crie e gerencie cupons de desconto</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm flex items-center gap-2 hover:bg-primary/90 transition-all">
-          <Plus className="w-4 h-4" /> Novo cupom
-        </button>
-      </div>
-
-      {showForm && (
-        <div className="glass-card p-6 space-y-4 animate-in slide-in-from-top-2">
-          <h3 className="font-semibold">Criar cupom</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField label="Código" value="" />
-            <SelectField label="Tipo" value="Percentual" options={["Percentual", "Valor fixo"]} />
-            <InputField label="Valor / %" value="" type="number" />
-            <InputField label="Validade" value="" type="date" />
-            <InputField label="Limite de uso" value="" type="number" />
-          </div>
-          <div className="flex gap-3">
-            <button onClick={() => { setShowForm(false); toast.success("Cupom criado!"); }} className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm">Criar</button>
-            <button onClick={() => setShowForm(false)} className="px-5 py-2.5 rounded-xl bg-secondary text-sm font-medium">Cancelar</button>
-          </div>
-        </div>
-      )}
-
-      <div className="glass-card overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border/50 text-left">
-              <th className="px-5 py-3 font-semibold text-muted-foreground">Código</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground">Tipo</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground">Desconto</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground">Validade</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground">Usos</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground">Status</th>
-              <th className="px-5 py-3 font-semibold text-muted-foreground">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mockCupons.map(c => (
-              <tr key={c.id} className="border-b border-border/30 hover:bg-secondary/30 transition-colors">
-                <td className="px-5 py-3 font-bold font-mono">{c.code}</td>
-                <td className="px-5 py-3">{c.tipo === "percentual" ? "%" : "R$"}</td>
-                <td className="px-5 py-3">{c.tipo === "percentual" ? `${c.valor}%` : `R$ ${c.valor}`}</td>
-                <td className="px-5 py-3">{new Date(c.validade).toLocaleDateString("pt-BR")}</td>
-                <td className="px-5 py-3">{c.usos}/{c.limite}</td>
-                <td className="px-5 py-3">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${c.ativo ? "bg-lime/20 text-lime" : "bg-secondary text-muted-foreground"}`}>
-                    {c.ativo ? "Ativo" : "Expirado"}
-                  </span>
-                </td>
-                <td className="px-5 py-3">
-                  <button className="p-1.5 rounded-lg hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
 // ─── Tab: Comunicação ───
 const TabComunicacao = () => {
   const [prefs, setPrefs] = useState({
@@ -583,7 +504,6 @@ const tabComponents: Record<string, React.FC> = {
   conta: TabConta,
   site: TabSite,
   carteira: TabCarteira,
-  cupons: TabCupons,
   dispositivos: TabDispositivos,
 };
 
