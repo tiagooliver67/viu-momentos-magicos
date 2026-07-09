@@ -156,16 +156,6 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-12 items-center">
           {/* Left: content */}
           <div className="relative z-10 max-w-xl">
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={mounted ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/25 bg-primary/5 text-primary text-[11px] sm:text-xs font-bold uppercase tracking-[0.18em] mb-6"
-            >
-              <Camera className="w-3.5 h-3.5" />
-              A revolução da fotografia esportiva
-            </motion.div>
-
             <motion.h1
               initial={{ opacity: 0, y: 22 }}
               animate={mounted ? { opacity: 1, y: 0 } : {}}
