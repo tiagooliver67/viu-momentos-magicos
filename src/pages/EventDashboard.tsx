@@ -266,7 +266,7 @@ const EventDashboard = () => {
           {/* Quick actions grid — dedicated row to avoid overlap */}
           <div className="mt-5 pt-5 border-t border-border/60">
             <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Ações rápidas</p>
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-13 gap-1.5">
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-1.5">
               {quickActions.map((a) => (
                 <button
                   key={a.key}
