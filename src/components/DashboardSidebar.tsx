@@ -107,16 +107,6 @@ const DashboardSidebar = () => {
         })}
       </nav>
 
-      <div className="glass-card p-4 mt-auto">
-        <p className="text-xs text-muted-foreground mb-1">Faturamento do mês</p>
-        <p className="text-xl font-bold text-primary">
-          R$ {(sidebarStats?.revenue ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-        </p>
-        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-          <span>📸 {sidebarStats?.photos ?? 0} fotos</span>
-          <span>📹 {sidebarStats?.videos ?? 0} vídeos</span>
-        </div>
-      </div>
     </>
   );
 
