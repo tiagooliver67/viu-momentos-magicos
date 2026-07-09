@@ -5,14 +5,16 @@ import MarketingDashboardTab from "@/components/marketing/MarketingDashboardTab"
 import MarketingPixelsTab from "@/components/marketing/MarketingPixelsTab";
 import MarketingComingSoon from "@/components/marketing/MarketingComingSoon";
 import MarketingInsightsTab from "@/components/marketing/MarketingInsightsTab";
+import MarketingCampanhasTab from "@/components/marketing/MarketingCampanhasTab";
+import MarketingPublicosTab from "@/components/marketing/MarketingPublicosTab";
 
 type Tab = "dashboard" | "pixels" | "campanhas" | "publicos" | "ia" | "relatorios";
 
 const TABS: { id: Tab; label: string; icon: any; badge?: string }[] = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
   { id: "pixels", label: "Pixels", icon: Zap },
-  { id: "campanhas", label: "Campanhas", icon: Target, badge: "Em breve" },
-  { id: "publicos", label: "Públicos", icon: Users, badge: "Em breve" },
+  { id: "campanhas", label: "Campanhas", icon: Target, badge: "Beta" },
+  { id: "publicos", label: "Públicos", icon: Users, badge: "Beta" },
   { id: "ia", label: "IA Estratégica", icon: Sparkles, badge: "Novo" },
   { id: "relatorios", label: "Relatórios", icon: FileText, badge: "Em breve" },
 ];
@@ -61,18 +63,8 @@ const Marketing = () => {
 
           {tab === "dashboard" && <MarketingDashboardTab />}
           {tab === "pixels" && <MarketingPixelsTab />}
-          {tab === "campanhas" && (
-            <MarketingComingSoon
-              title="Campanhas de anúncios"
-              description="Em breve: crie, pause e monitore campanhas do Meta Ads e Google Ads sem sair da ViuFoto."
-            />
-          )}
-          {tab === "publicos" && (
-            <MarketingComingSoon
-              title="Públicos e remarketing"
-              description="Em breve: descubra automaticamente quem encontrou fotos mas não comprou, e ative remarketing com um clique."
-            />
-          )}
+          {tab === "campanhas" && <MarketingCampanhasTab />}
+          {tab === "publicos" && <MarketingPublicosTab />}
           {tab === "ia" && <MarketingInsightsTab />}
           {tab === "relatorios" && (
             <MarketingComingSoon
