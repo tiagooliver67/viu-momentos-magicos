@@ -4,6 +4,7 @@ import { BarChart3, Zap, Target, Users, Sparkles, FileText } from "lucide-react"
 import MarketingDashboardTab from "@/components/marketing/MarketingDashboardTab";
 import MarketingPixelsTab from "@/components/marketing/MarketingPixelsTab";
 import MarketingComingSoon from "@/components/marketing/MarketingComingSoon";
+import MarketingInsightsTab from "@/components/marketing/MarketingInsightsTab";
 
 type Tab = "dashboard" | "pixels" | "campanhas" | "publicos" | "ia" | "relatorios";
 
@@ -12,7 +13,7 @@ const TABS: { id: Tab; label: string; icon: any; badge?: string }[] = [
   { id: "pixels", label: "Pixels", icon: Zap },
   { id: "campanhas", label: "Campanhas", icon: Target, badge: "Em breve" },
   { id: "publicos", label: "Públicos", icon: Users, badge: "Em breve" },
-  { id: "ia", label: "IA Estratégica", icon: Sparkles, badge: "Em breve" },
+  { id: "ia", label: "IA Estratégica", icon: Sparkles, badge: "Novo" },
   { id: "relatorios", label: "Relatórios", icon: FileText, badge: "Em breve" },
 ];
 
@@ -72,12 +73,7 @@ const Marketing = () => {
               description="Em breve: descubra automaticamente quem encontrou fotos mas não comprou, e ative remarketing com um clique."
             />
           )}
-          {tab === "ia" && (
-            <MarketingComingSoon
-              title="IA Estratégica"
-              description="Em breve: insights sobre por que um evento vendeu menos, melhor preço e melhor momento para anunciar."
-            />
-          )}
+          {tab === "ia" && <MarketingInsightsTab />}
           {tab === "relatorios" && (
             <MarketingComingSoon
               title="Relatórios avançados"
