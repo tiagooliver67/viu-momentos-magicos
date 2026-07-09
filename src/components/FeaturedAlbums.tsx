@@ -119,10 +119,7 @@ const FeaturedAlbums = () => {
     <ScrollReveal>
       <section className="mb-14">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Flame className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold text-foreground">Álbuns em Destaque</h2>
-          </div>
+          <h2 className="text-2xl font-bold text-foreground">Álbuns em Destaque</h2>
           <button
             onClick={() => window.location.href = "/buscar"}
             className="text-sm text-primary hover:underline"
