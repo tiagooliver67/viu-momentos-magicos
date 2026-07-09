@@ -1333,6 +1333,89 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_events_log: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          event_name: string
+          id: string
+          payload: Json
+          photographer_id: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          event_name: string
+          id?: string
+          payload?: Json
+          photographer_id?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          event_name?: string
+          id?: string
+          payload?: Json
+          photographer_id?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_events_log_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_pixels: {
+        Row: {
+          access_token: string | null
+          active: boolean
+          created_at: string
+          id: string
+          label: string | null
+          pixel_id: string
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string | null
+          pixel_id: string
+          provider: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string | null
+          pixel_id?: string
+          provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
