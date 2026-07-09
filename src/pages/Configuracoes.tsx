@@ -504,7 +504,6 @@ const tabComponents: Record<string, React.FC> = {
   conta: TabConta,
   site: TabSite,
   carteira: TabCarteira,
-  cupons: TabCupons,
   dispositivos: TabDispositivos,
 };
 
