@@ -1890,6 +1890,7 @@ export type Database = {
           created_at: string
           experience_level: string | null
           full_name: string | null
+          full_name_updated_at: string | null
           id: string
           interest: string | null
           last_sign_in_at: string | null
@@ -1908,6 +1909,7 @@ export type Database = {
           created_at?: string
           experience_level?: string | null
           full_name?: string | null
+          full_name_updated_at?: string | null
           id?: string
           interest?: string | null
           last_sign_in_at?: string | null
@@ -1926,6 +1928,7 @@ export type Database = {
           created_at?: string
           experience_level?: string | null
           full_name?: string | null
+          full_name_updated_at?: string | null
           id?: string
           interest?: string | null
           last_sign_in_at?: string | null
