@@ -62,6 +62,7 @@ const TabConta = () => {
   const [hasWallet, setHasWallet] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [fullNameUpdatedAt, setFullNameUpdatedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -69,7 +70,7 @@ const TabConta = () => {
     const loadProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, phone, cpf_cnpj, asaas_wallet_id, avatar_url")
+        .select("full_name, phone, cpf_cnpj, asaas_wallet_id, avatar_url, full_name_updated_at")
         .eq("user_id", user.id)
         .single();
       if (data) {
@@ -78,6 +79,7 @@ const TabConta = () => {
         setCpf(data.cpf_cnpj || "");
         setHasWallet(!!data.asaas_wallet_id);
         setAvatarUrl(data.avatar_url || null);
+        setFullNameUpdatedAt((data as any).full_name_updated_at || null);
       }
       // Try to get birth date from user metadata
       const meta = user.user_metadata;
@@ -97,6 +99,13 @@ const TabConta = () => {
         .eq("user_id", user.id);
       if (error) throw error;
       toast.success("Seus dados foram atualizados com sucesso.");
+      // Recarrega o timestamp para atualizar o cooldown imediatamente
+      const { data: fresh } = await supabase
+        .from("profiles")
+        .select("full_name_updated_at")
+        .eq("user_id", user.id)
+        .single();
+      if (fresh) setFullNameUpdatedAt((fresh as any).full_name_updated_at || null);
     } catch (err: any) {
       toast.error(err.message || "Não foi possível salvar. Tente novamente.");
     } finally {
