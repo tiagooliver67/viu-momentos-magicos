@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   User, Globe, Image, Wallet, Star, MessageSquare, Smartphone,
