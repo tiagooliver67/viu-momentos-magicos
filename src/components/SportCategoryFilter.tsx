@@ -165,9 +165,6 @@ const SportCategoryFilter = () => {
       <section className="mb-16 sm:mb-24">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-              <Sparkles className="h-3 w-3" /> Modalidades
-            </div>
             <h2 className="text-3xl font-black leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
               Explorar por modalidade
             </h2>
