@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, Plus, Trash2, Info, Tag, Package } from "lucide-react";
+import { X, Plus, Minus, Tag, Package, Sparkles } from "lucide-react";
 
 interface ProgressiveRule {
   active?: boolean;
@@ -82,7 +82,7 @@ export default function DiscountModal({
   if (!open) return null;
 
   const addRule = () =>
-    setRules([...rules, { enabled: true, min_photos: 0, discount_pct: 0 }]);
+    setRules(rules.length >= 4 ? rules : [...rules, { enabled: true, min_photos: 1, discount_pct: 5 }]);
   const removeRule = (i: number) => setRules(rules.filter((_, j) => j !== i));
   const updateRule = (i: number, patch: Partial<ProgressiveRule>) => {
     const n = [...rules];
@@ -155,87 +155,111 @@ export default function DiscountModal({
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {tab === "prices" && (
-            <div className="space-y-6">
-              {/* Custo por foto - referência */}
-              <div className="flex items-start justify-between gap-4 pb-5 border-b border-border/60">
-                <div>
-                  <p className="text-sm font-bold text-foreground">Custo por foto (referência)</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Definido na grade de preços do evento. Usado como base de cálculo abaixo.</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-foreground">{formatMoney(basePhotoPrice)}</p>
-                </div>
+            <div className="space-y-5">
+              <div>
+                <h4 className="text-base font-bold text-foreground">Descontos deste evento</h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ofereça descontos automáticos por quantidade de fotos e aumente o ticket médio da sua galeria.
+                </p>
               </div>
 
-              {/* Toggle progressivo */}
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-sm font-bold text-foreground">Ativar desconto progressivo</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Habilite descontos automáticos em vendas com mais de uma foto.</p>
-                </div>
-                <Switch checked={progressiveEnabled} onChange={setProgressiveEnabled} />
+              {/* Radio: Sem / Progressivo */}
+              <div className="space-y-2">
+                <RadioRow
+                  active={!progressiveEnabled}
+                  onClick={() => setProgressiveEnabled(false)}
+                  title="Sem desconto"
+                  desc="Manter o preço padrão da grade em cada foto comprada."
+                />
+                <RadioRow
+                  active={progressiveEnabled}
+                  onClick={() => setProgressiveEnabled(true)}
+                  title="Desconto progressivo"
+                  desc="Definir regras de desconto por quantidade de fotos adicionadas ao carrinho."
+                />
               </div>
 
               {progressiveEnabled && (
-                <div className="rounded-xl border border-border bg-secondary/30 p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-bold text-foreground">Regras de desconto</p>
-                    <button onClick={addRule} className="text-primary flex items-center gap-1 text-xs font-semibold hover:underline">
-                      <Plus className="w-3.5 h-3.5" /> Adicionar regra
-                    </button>
+                <div className="rounded-2xl border border-border bg-secondary/30 p-4 sm:p-5 space-y-4">
+                  {/* Referência de preço base */}
+                  <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/60">
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">Preço base por foto</p>
+                      <p className="text-[11px] text-muted-foreground">Definido na grade de preços do evento.</p>
+                    </div>
+                    <span className="text-sm font-bold text-foreground tabular-nums">{formatMoney(basePhotoPrice)}</span>
                   </div>
 
-                  <div className="hidden sm:grid grid-cols-[auto_1fr_1fr_auto_auto] gap-3 text-[11px] uppercase tracking-wide text-muted-foreground mb-2 px-1">
-                    <span className="w-10"></span>
-                    <span>Nº de fotos</span>
-                    <span>Desconto</span>
-                    <span>Preço por foto</span>
-                    <span></span>
-                  </div>
-
+                  {/* Regras */}
                   <div className="space-y-2">
                     {rules.map((r, i) => {
                       const finalPrice = basePhotoPrice * (1 - r.discount_pct / 100);
                       return (
-                        <div key={i} className="grid grid-cols-[auto_1fr_1fr_auto_auto] sm:grid-cols-[auto_1fr_1fr_auto_auto] gap-3 items-center">
-                          <Switch checked={r.enabled} onChange={(v) => updateRule(i, { enabled: v })} small />
-                          <input
-                            type="number"
-                            min={1}
-                            value={r.min_photos}
-                            onChange={(e) => updateRule(i, { min_photos: +e.target.value })}
-                            className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:border-primary outline-none"
-                          />
+                        <div
+                          key={i}
+                          className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 rounded-xl bg-background border border-border px-3 py-2.5"
+                        >
                           <div className="flex items-center gap-1">
                             <input
                               type="number"
-                              min={0}
+                              min={1}
                               max={100}
                               value={r.discount_pct}
-                              onChange={(e) => updateRule(i, { discount_pct: +e.target.value })}
-                              className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:border-primary outline-none"
+                              onChange={(e) => updateRule(i, { discount_pct: Math.max(1, Math.min(100, +e.target.value || 0)), enabled: true })}
+                              className="w-16 px-2 py-1.5 rounded-lg bg-secondary/60 border border-border text-foreground text-sm font-semibold text-center focus:border-primary focus:bg-background outline-none"
                             />
-                            <span className="text-xs text-muted-foreground">%</span>
+                            <span className="text-xs font-semibold text-muted-foreground">%</span>
                           </div>
-                          <span className="text-sm font-semibold text-primary tabular-nums whitespace-nowrap min-w-[80px] text-right">
-                            {formatMoney(finalPrice)}
+                          <span className="text-xs text-muted-foreground">a partir de</span>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={1}
+                              value={r.min_photos}
+                              onChange={(e) => updateRule(i, { min_photos: Math.max(1, +e.target.value || 0), enabled: true })}
+                              className="w-16 px-2 py-1.5 rounded-lg bg-secondary/60 border border-border text-foreground text-sm font-semibold text-center focus:border-primary focus:bg-background outline-none"
+                            />
+                            <span className="text-xs font-semibold text-muted-foreground">fotos</span>
+                          </div>
+                          <span className="hidden sm:inline text-xs text-muted-foreground ml-auto tabular-nums">
+                            → <span className="font-semibold text-primary">{formatMoney(finalPrice)}</span> / foto
                           </span>
                           <button
                             onClick={() => removeRule(i)}
-                            className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                             disabled={rules.length === 1}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed ml-auto sm:ml-0"
+                            aria-label="Remover regra"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Minus className="w-4 h-4" />
                           </button>
                         </div>
                       );
                     })}
                   </div>
 
-                  <div className="flex items-start gap-2 mt-3 pt-3 border-t border-border/60">
-                    <Info className="w-3.5 h-3.5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-muted-foreground">O desconto é aplicado automaticamente quando o atleta atinge o número de fotos da regra.</p>
-                  </div>
+                  <button
+                    onClick={addRule}
+                    disabled={rules.length >= 4}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-primary text-sm font-semibold hover:bg-primary/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <Plus className="w-4 h-4" /> Adicionar regra de desconto
+                  </button>
+
+                  <p className="text-[11px] text-muted-foreground">
+                    Você adicionou <strong className="text-foreground">{rules.length}</strong> de 4 regras. Os descontos são aplicados automaticamente no carrinho e destacados no topo da galeria.
+                  </p>
+
+                  {/* Preview */}
+                  {rules.length > 0 && (
+                    <div className="flex items-start gap-3 rounded-xl bg-primary/5 border border-primary/20 p-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="text-[11px] text-muted-foreground leading-relaxed">
+                        Prévia do banner da galeria: <span className="font-bold text-foreground">Ganhe até {Math.max(...rules.map(r => r.discount_pct))}% de desconto</span> comprando a partir de {Math.min(...rules.map(r => r.min_photos))} fotos.
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
