@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import {
-  User, Globe, Image, Wallet, Star, Ticket, MessageSquare, Smartphone,
+  User, Globe, Image, Wallet, Star, MessageSquare, Smartphone,
   Save, Eye, EyeOff, Plus, Trash2, QrCode, Share2, Shield, LogOut, Copy, Check,
   Upload, ChevronRight, Lock, Bell, Mail, Phone, Loader2
 } from "lucide-react";
@@ -14,17 +14,10 @@ const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
   { id: "site", label: "Meu site", icon: Globe },
   { id: "carteira", label: "Carteira", icon: Wallet },
-  { id: "cupons", label: "Cupons", icon: Ticket },
   { id: "dispositivos", label: "Dispositivos", icon: Smartphone },
 ];
 
 // Mock data for other tabs
-
-const mockCupons = [
-  { id: 1, code: "VERAO10", tipo: "percentual", valor: 10, validade: "2026-06-30", usos: 24, limite: 100, ativo: true },
-  { id: 2, code: "PRIMEIRACOMPRA", tipo: "fixo", valor: 5, validade: "2026-12-31", usos: 87, limite: 500, ativo: true },
-  { id: 3, code: "BLACKFRIDAY", tipo: "percentual", valor: 25, validade: "2025-11-30", usos: 200, limite: 200, ativo: false },
-];
 
 const mockDevices = [
   { id: 1, name: "Chrome — Windows 11", ip: "189.44.120.33", location: "São Paulo, BR", lastActive: "Agora (sessão atual)", current: true },
