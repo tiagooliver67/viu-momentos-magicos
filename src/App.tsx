@@ -74,6 +74,7 @@ import AdminLevels from "./pages/admin/AdminLevels";
 import AdminParceiros from "./pages/admin/AdminParceiros";
 import AdminAntifraude from "./pages/admin/AdminAntifraude";
 import Sobre from "./pages/Sobre";
+import Marketing from "./pages/Marketing";
 
 const queryClient = new QueryClient();
 
@@ -115,6 +116,7 @@ const App = () => (
               <Route path="/r/:code" element={<ReferralCapture />} />
               <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
               <Route path="/dashboard/financeiro" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Financeiro /></ProtectedRoute>} />
+              <Route path="/dashboard/marketing" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Marketing /></ProtectedRoute>} />
               <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
               <Route path="/dashboard/pedidos" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Pedidos /></ProtectedRoute>} />
               <Route path="/dashboard/clientes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Clientes /></ProtectedRoute>} />

@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { getPhotoCode } from "@/lib/photoCode";
 import DiscountBanner from "@/components/event/DiscountBanner";
 import FaceSearchModal from "@/components/event/FaceSearchModal";
+import { useMarketingTracker } from "@/hooks/useMarketingTracker";
 import {
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
@@ -81,6 +82,9 @@ const EventPage = () => {
     },
     enabled: !!id,
   });
+
+  // Marketing tracker: injeta pixels do fotógrafo dono + registra eventos do funil
+  const { track: mktTrack } = useMarketingTracker(event?.organizer_id, id);
 
   // Fetch photos
   const { data: photos } = useQuery({
