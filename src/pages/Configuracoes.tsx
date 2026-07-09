@@ -215,15 +215,44 @@ const TabConta = () => {
       </div>
 
       {/* Dados básicos */}
-      <div className="glass-card p-6 space-y-0">
-        <InputField label="Nome completo" value={fullName} onChange={setFullName} />
-        <InputField label="E-mail" value={email} disabled />
-        <InputField label="CPF" value={cpf} disabled={hasWallet} onChange={!hasWallet ? setCpf : undefined} />
-        <InputField label="Data de nascimento" value={birthDate} type="date" disabled={hasWallet} onChange={!hasWallet ? setBirthDate : undefined} />
-        {hasWallet && (
-          <p className="text-xs text-muted-foreground pt-2">CPF e data de nascimento não podem ser alterados após ativação do recebimento.</p>
-        )}
-      </div>
+      {(() => {
+        const lockedUntil = fullNameUpdatedAt
+          ? new Date(new Date(fullNameUpdatedAt).getTime() + 15 * 24 * 60 * 60 * 1000)
+          : null;
+        const nameLocked = !!(lockedUntil && lockedUntil.getTime() > Date.now());
+        const daysRemaining = nameLocked && lockedUntil
+          ? Math.ceil((lockedUntil.getTime() - Date.now()) / (24 * 60 * 60 * 1000))
+          : 0;
+        return (
+          <div className="glass-card p-6 space-y-0">
+            <InputField
+              label="Nome completo"
+              value={fullName}
+              onChange={nameLocked ? undefined : setFullName}
+              disabled={nameLocked}
+            />
+            {nameLocked && lockedUntil && (
+              <p className="text-xs text-muted-foreground -mt-2 pb-3">
+                Você poderá alterar o nome novamente em {daysRemaining} dia{daysRemaining === 1 ? "" : "s"} (liberado em {lockedUntil.toLocaleDateString("pt-BR")}).
+              </p>
+            )}
+            <InputField label="E-mail" value={email} disabled />
+            <InputField label="CPF" value={cpf} disabled={hasWallet} onChange={!hasWallet ? setCpf : undefined} />
+            <InputField label="Data de nascimento" value={birthDate} type="date" disabled={hasWallet} onChange={!hasWallet ? setBirthDate : undefined} />
+            {hasWallet && (
+              <div className="pt-2 space-y-1">
+                <p className="text-xs text-muted-foreground">CPF e data de nascimento não podem ser alterados após ativação do recebimento.</p>
+                <Link
+                  to="/chamados/novo?categoria=alteracao_dados&assunto=Alteracao%20de%20CPF"
+                  className="text-xs text-primary hover:underline inline-block"
+                >
+                  Preciso alterar meu CPF
+                </Link>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Contato */}
       <div className="glass-card p-6 space-y-0">
