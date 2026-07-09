@@ -8,7 +8,6 @@ import { AlertTriangle, ArrowRight, HelpCircle } from "lucide-react";
 import KpiStrip from "@/components/financeiro/KpiStrip";
 import MetaMensalCard from "@/components/financeiro/MetaMensalCard";
 import DesempenhoChart from "@/components/financeiro/DesempenhoChart";
-import AtalhosRapidos from "@/components/financeiro/AtalhosRapidos";
 import EstimativaGanhos from "@/components/financeiro/EstimativaGanhos";
 import FaturamentoTable from "@/components/financeiro/FaturamentoTable";
 import PedidosTab from "@/components/financeiro/PedidosTab";
@@ -282,9 +281,6 @@ const Financeiro = () => {
             eventosAtivos={eventosAtivos}
             fotosNoMes={photosCount}
           />
-
-          {/* Atalhos rápidos */}
-          <AtalhosRapidos />
 
           {/* Faturamento por evento */}
           <FaturamentoTable rows={billingRows} total={billingTotal} />
