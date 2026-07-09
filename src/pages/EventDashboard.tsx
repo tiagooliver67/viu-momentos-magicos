@@ -31,16 +31,15 @@ const quickActions = [
   { label: "Financeiro", icon: DollarSign, key: "financial" },
   { label: "Enviar Fotos", icon: Upload, key: "upload-photos" },
   { label: "Fotos", icon: Image, key: "photos" },
-  { label: "Ações", icon: MoreHorizontal, key: "actions" },
   { label: "Senha", icon: Lock, key: "password" },
   { label: "Divulgação", icon: Megaphone, key: "promo" },
   { label: "Colaboração", icon: Users, key: "collab" },
-  { label: "Cupons", icon: Tag, key: "coupons" },
   { label: "Enviar Vídeos", icon: Video, key: "upload-videos" },
   { label: "Vídeos", icon: Video, key: "videos" },
   { label: "Importar Pedidos", icon: FileDown, key: "import" },
   { label: "Convidar", icon: CameraIcon, key: "invite" },
   { label: "Galeria", icon: Eye, key: "gallery" },
+  { label: "Ações", icon: MoreHorizontal, key: "actions" },
 ];
 
 const EventDashboard = () => {
@@ -208,11 +207,11 @@ const EventDashboard = () => {
 
         {/* Event Info Card */}
         <div className="glass-card p-4 sm:p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
             {/* Cover */}
             <div
               onClick={() => coverInputRef.current?.click()}
-              className="w-full lg:w-48 h-32 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
+              className="w-full md:w-52 h-36 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
             >
               {event.cover_url ? (
                 <img src={event.cover_url} alt="Capa" className="w-full h-full object-cover" />
@@ -228,7 +227,7 @@ const EventDashboard = () => {
             {/* Event details */}
             <div className="flex-1 min-w-0">
               <p className="text-xs text-primary font-bold">{event.id.slice(0, 8).toUpperCase()}</p>
-              <h1 className="text-lg sm:text-xl font-bold text-foreground mb-1">{event.name}</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-foreground mb-1 break-words">{event.name}</h1>
               <p className="text-xs text-muted-foreground mb-3">
                 {new Date(event.event_date).toLocaleDateString("pt-BR")} - {event.location}
               </p>
@@ -262,17 +261,20 @@ const EventDashboard = () => {
                 </button>
               </div>
             </div>
+          </div>
 
-            {/* Quick actions grid */}
-            <div className="grid grid-cols-4 sm:grid-cols-7 gap-1">
+          {/* Quick actions grid — dedicated row to avoid overlap */}
+          <div className="mt-5 pt-5 border-t border-border/60">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Ações rápidas</p>
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-1.5">
               {quickActions.map((a) => (
                 <button
                   key={a.key}
                   onClick={() => handleAction(a.key)}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-secondary/50 transition-colors min-w-[50px]"
+                  className="flex flex-col items-center justify-start gap-1.5 p-2.5 rounded-lg hover:bg-secondary/60 transition-colors text-center"
                 >
-                  <a.icon className="w-4 h-4 text-primary" />
-                  <span className="text-[9px] text-muted-foreground text-center leading-tight">{a.label}</span>
+                  <a.icon className="w-4 h-4 text-primary flex-shrink-0" />
+                  <span className="text-[10px] text-muted-foreground leading-tight">{a.label}</span>
                 </button>
               ))}
             </div>
