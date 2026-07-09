@@ -1380,6 +1380,42 @@ export type Database = {
           },
         ]
       }
+      marketing_insights_cache: {
+        Row: {
+          created_at: string
+          expires_at: string
+          generated_at: string
+          id: string
+          insights: Json
+          model: string | null
+          signature: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          generated_at?: string
+          id?: string
+          insights: Json
+          model?: string | null
+          signature: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          generated_at?: string
+          id?: string
+          insights?: Json
+          model?: string | null
+          signature?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketing_pixels: {
         Row: {
           access_token: string | null
