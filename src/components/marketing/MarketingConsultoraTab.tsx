@@ -31,7 +31,7 @@ const MarketingConsultoraTab = () => {
       .order("created_at", { ascending: true })
       .limit(50)
       .then(({ data }) => {
-        if (data) setMessages(data.filter((m: any) => m.role !== "system") as Msg[]);
+        if (data) setMessages((data as any[]).filter((m: any) => m.role !== "system") as Msg[]);
       });
   }, [user?.id]);
 
