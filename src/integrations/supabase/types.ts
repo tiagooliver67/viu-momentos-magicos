@@ -1333,6 +1333,60 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_automation_settings: {
+        Row: {
+          auto_approve: boolean
+          autopilot_enabled: boolean
+          created_at: string
+          daily_budget_limit: number | null
+          last_scan_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_approve?: boolean
+          autopilot_enabled?: boolean
+          created_at?: string
+          daily_budget_limit?: number | null
+          last_scan_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_approve?: boolean
+          autopilot_enabled?: boolean
+          created_at?: string
+          daily_budget_limit?: number | null
+          last_scan_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketing_consultant_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketing_events_log: {
         Row: {
           created_at: string
@@ -1447,6 +1501,48 @@ export type Database = {
           label?: string | null
           pixel_id?: string
           provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      marketing_suggestions: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string | null
+          id: string
+          kind: string
+          payload: Json
+          reviewed_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          kind: string
+          payload?: Json
+          reviewed_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string | null
+          id?: string
+          kind?: string
+          payload?: Json
+          reviewed_at?: string | null
+          status?: string
+          title?: string
           updated_at?: string
           user_id?: string
         }
