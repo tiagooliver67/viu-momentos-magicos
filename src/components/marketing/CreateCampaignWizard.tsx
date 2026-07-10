@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,12 +44,12 @@ const CreateCampaignWizard = ({ open, onOpenChange, audiencePreset }: Props) => 
   const [generatingAi, setGeneratingAi] = useState(false);
 
   // Aplica preset de público de remarketing quando o wizard abre
-  useState(() => {
-    if (audiencePreset && PRESET_LABELS[audiencePreset]) {
+  useEffect(() => {
+    if (open && audiencePreset && PRESET_LABELS[audiencePreset]) {
       setObjective(PRESET_LABELS[audiencePreset].objective);
       setAudience((a) => ({ ...a, interests: PRESET_LABELS[audiencePreset].hint }));
     }
-  });
+  }, [open, audiencePreset]);
 
   const reset = () => {
     setStep(0);
