@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Users, ShoppingCart, Search, Eye, Link2 } from "lucide-react";
+import { Users, ShoppingCart, Search, Eye, Link2, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import CreateCampaignWizard from "./CreateCampaignWizard";
 
 interface Segment {
   id: string;
@@ -18,6 +19,8 @@ const MarketingPublicosTab = () => {
   const { user } = useAuth();
   const [segments, setSegments] = useState<Segment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardPreset, setWizardPreset] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -66,14 +69,27 @@ const MarketingPublicosTab = () => {
               </div>
               <h4 className="font-semibold">{s.name}</h4>
               <p className="text-xs text-muted-foreground mt-1 flex-1">{s.description}</p>
-              <Button variant="outline" size="sm" className="mt-4 gap-2 self-start" disabled>
-                <Link2 className="w-3.5 h-3.5" />
-                Sincronizar com Meta (em breve)
-              </Button>
+              <div className="mt-4 flex gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  className="gap-2"
+                  disabled={s.count === 0}
+                  onClick={() => { setWizardPreset(s.id); setWizardOpen(true); }}
+                >
+                  <Megaphone className="w-3.5 h-3.5" />
+                  Criar campanha
+                </Button>
+                <Button variant="outline" size="sm" className="gap-2" disabled>
+                  <Link2 className="w-3.5 h-3.5" />
+                  Sincronizar com Meta (em breve)
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      <CreateCampaignWizard open={wizardOpen} onOpenChange={setWizardOpen} audiencePreset={wizardPreset} />
     </div>
   );
 };

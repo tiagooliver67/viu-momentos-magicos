@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  audiencePreset?: string | null;
 }
 
 type Objective = "vendas" | "trafego" | "reconhecimento" | "leads";
@@ -26,7 +27,14 @@ const OBJECTIVES: { id: Objective; label: string; desc: string }[] = [
 
 const STEPS = ["Objetivo", "Orçamento", "Público", "Criativo & Publicar"];
 
-const CreateCampaignWizard = ({ open, onOpenChange }: Props) => {
+const PRESET_LABELS: Record<string, { objective: Objective; hint: string }> = {
+  visitors: { objective: "vendas", hint: "Visitantes que não compraram" },
+  searchers: { objective: "vendas", hint: "Fizeram busca facial ou por número" },
+  viewers: { objective: "vendas", hint: "Viram uma foto específica" },
+  cart: { objective: "vendas", hint: "Abandonaram o carrinho" },
+};
+
+const CreateCampaignWizard = ({ open, onOpenChange, audiencePreset }: Props) => {
   const [step, setStep] = useState(0);
   const [objective, setObjective] = useState<Objective>("vendas");
   const [budget, setBudget] = useState<number[]>([50]);
@@ -34,6 +42,14 @@ const CreateCampaignWizard = ({ open, onOpenChange }: Props) => {
   const [audience, setAudience] = useState({ age_min: 18, age_max: 55, location: "", interests: "" });
   const [creative, setCreative] = useState({ headline: "", body: "", cta: "Ver fotos" });
   const [generatingAi, setGeneratingAi] = useState(false);
+
+  // Aplica preset de público de remarketing quando o wizard abre
+  useEffect(() => {
+    if (open && audiencePreset && PRESET_LABELS[audiencePreset]) {
+      setObjective(PRESET_LABELS[audiencePreset].objective);
+      setAudience((a) => ({ ...a, interests: PRESET_LABELS[audiencePreset].hint }));
+    }
+  }, [open, audiencePreset]);
 
   const reset = () => {
     setStep(0);

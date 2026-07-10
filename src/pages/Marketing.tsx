@@ -1,22 +1,26 @@
 import { useState } from "react";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { BarChart3, Zap, Target, Users, Sparkles, FileText } from "lucide-react";
+import { BarChart3, Zap, Target, Users, Sparkles, FileText, Bot, MessageSquare } from "lucide-react";
 import MarketingDashboardTab from "@/components/marketing/MarketingDashboardTab";
 import MarketingPixelsTab from "@/components/marketing/MarketingPixelsTab";
-import MarketingComingSoon from "@/components/marketing/MarketingComingSoon";
 import MarketingInsightsTab from "@/components/marketing/MarketingInsightsTab";
 import MarketingCampanhasTab from "@/components/marketing/MarketingCampanhasTab";
 import MarketingPublicosTab from "@/components/marketing/MarketingPublicosTab";
+import MarketingAutomacaoTab from "@/components/marketing/MarketingAutomacaoTab";
+import MarketingConsultoraTab from "@/components/marketing/MarketingConsultoraTab";
+import MarketingRelatoriosTab from "@/components/marketing/MarketingRelatoriosTab";
 
-type Tab = "dashboard" | "pixels" | "campanhas" | "publicos" | "ia" | "relatorios";
+type Tab = "dashboard" | "pixels" | "campanhas" | "publicos" | "automacao" | "ia" | "consultora" | "relatorios";
 
 const TABS: { id: Tab; label: string; icon: any; badge?: string }[] = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
   { id: "pixels", label: "Pixels", icon: Zap },
   { id: "campanhas", label: "Campanhas", icon: Target, badge: "Beta" },
   { id: "publicos", label: "Públicos", icon: Users, badge: "Beta" },
+  { id: "automacao", label: "Automação", icon: Bot, badge: "Novo" },
   { id: "ia", label: "IA Estratégica", icon: Sparkles, badge: "Novo" },
-  { id: "relatorios", label: "Relatórios", icon: FileText, badge: "Em breve" },
+  { id: "consultora", label: "IA Consultora", icon: MessageSquare, badge: "Novo" },
+  { id: "relatorios", label: "Relatórios", icon: FileText, badge: "Novo" },
 ];
 
 const Marketing = () => {
@@ -65,13 +69,10 @@ const Marketing = () => {
           {tab === "pixels" && <MarketingPixelsTab />}
           {tab === "campanhas" && <MarketingCampanhasTab />}
           {tab === "publicos" && <MarketingPublicosTab />}
+          {tab === "automacao" && <MarketingAutomacaoTab />}
           {tab === "ia" && <MarketingInsightsTab />}
-          {tab === "relatorios" && (
-            <MarketingComingSoon
-              title="Relatórios avançados"
-              description="Em breve: ROI, ROAS, ticket médio por evento e por modalidade em gráficos exportáveis."
-            />
-          )}
+          {tab === "consultora" && <MarketingConsultoraTab />}
+          {tab === "relatorios" && <MarketingRelatoriosTab />}
         </div>
       </main>
     </div>
