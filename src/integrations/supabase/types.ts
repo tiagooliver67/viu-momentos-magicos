@@ -85,6 +85,7 @@ export type Database = {
           event_id: string | null
           id: string
           photo_id: string | null
+          pipeline: string
           retry_count: number
           s3_key: string
         }
@@ -95,6 +96,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           photo_id?: string | null
+          pipeline?: string
           retry_count?: number
           s3_key: string
         }
@@ -105,6 +107,7 @@ export type Database = {
           event_id?: string | null
           id?: string
           photo_id?: string | null
+          pipeline?: string
           retry_count?: number
           s3_key?: string
         }
