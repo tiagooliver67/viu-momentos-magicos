@@ -1,56 +1,78 @@
-# Auditoria: fotos ficam brancas no upload/dashboard
+# Frente A — Fix Lambda BIB (resize + convert antes do Rekognition)
 
-## Diagnóstico
-O problema está **principalmente no frontend atual do dashboard**, não em um bloqueio geral externo de WebP.
+## Mudanças de código
 
-### Evidências encontradas
-- No banco, as fotos novas estão sendo salvas com o novo caminho multi-tenant:
-  - `usuarios/{userId}/eventos/{eventId}/fotos/...`
-- O código público do site (`src/pages/EventPage.tsx`) já usa a lógica nova de miniaturas:
-  - monta `/thumb/...webp`
-  - usa CDN diretamente quando disponível
-- O componente do dashboard (`src/components/event/PhotoGallery.tsx`) **ainda está preso à lógica antiga**:
-  - só trata paths que começam com `eventos/`
-  - ignora paths que começam com `usuarios/`
-  - nesses casos, usa `photo.file_url` cru no `<img src>`
-- Testei URLs reais de thumbs no CDN para esse evento e elas responderam **200 OK** com `content-type: image/webp`.
+**1. `viufoto-lambda-bib-detector/package.json`** — adicionar `sharp`:
 
-## Conclusão da auditoria
-### O que é interno
-- O dashboard/gerenciador de fotos está montando a URL errada para as imagens após a mudança para a estrutura `usuarios/{userId}/...`.
-- Por isso as miniaturas ficam brancas ali.
+```json
+"sharp": "^0.33.5"
+```
 
-### O que não parece ser o problema principal
-- **Não há evidência de bloqueio de WebP no frontend como um todo.**
-- **Não há evidência, nas amostras testadas, de falha externa geral no CDN/S3**, porque os thumbs `.webp` existem e respondem corretamente.
+**2. `viufoto-lambda-bib-detector/src/index.js`** — nova função `prepareForRekognition()` e simplificação de `detectText()`:
 
-### Por que ao clicar no site aparece
-- A página pública (`EventPage`) já está buscando a miniatura/medium com a lógica nova.
-- O dashboard (`PhotoGallery`) não foi atualizado junto e ficou incompatível com o novo formato de caminho.
+- Constantes: `TARGET_MAX_BYTES = 4MB`, `TARGET_MAX_SIDE = 2000px`.
+- `prepareForRekognition(bytes, s3Key)`:
+  - Se extensão é `webp|heic|heif|tif|tiff|avif` → converte para JPEG.
+  - Se `bytes > 4MB` OU precisa converter → passa por `sharp`:
+    - `.rotate()` para aplicar EXIF orientation.
+    - `.resize({ ..., fit: "inside", withoutEnlargement: true })` limitando o lado maior a 2000 px.
+    - `.jpeg({ quality: q, mozjpeg: true })` tentando `q = 88 → 78 → 68 → 58` até caber em 4 MB.
+    - Se ainda não couber: força `1600×1600` com `q = 60` (fallback duro).
+  - Se já é JPEG/PNG ≤ 4 MB → devolve os bytes originais sem tocar.
+- `detectText(s3Key)`: remove o caminho `S3Object` (não funciona cross-region + não aceita WebP). Sempre baixa do S3, chama `prepareForRekognition`, envia bytes ao `DetectTextCommand`.
+- Mantém o resto do handler intacto (parse de eventos SNS/SQS, `bumpProgress`, `bib_detection_errors`, etc.).
 
-## Plano de correção
-1. **Unificar a resolução de URLs no dashboard**
-   - Fazer `PhotoGallery` parar de depender de `startsWith("eventos/")`.
-   - Tratar `usuarios/...` como caminho válido de storage.
+Nenhuma mudança de schema, RLS, secret ou UI.
 
-2. **Usar a mesma estratégia do site público no dashboard**
-   - Grid: carregar `thumb/.webp`
-   - Lightbox: carregar `medium/.webp` ou original assinado quando fizer sentido
-   - Reaproveitar helpers de `cdnConfig.ts`
+## Comando de deploy (para você rodar depois)
 
-3. **Adicionar fallback e rastreabilidade**
-   - `onError` nas imagens para registrar falha real de carregamento
-   - fallback visual quando a thumb não existir
-   - isso separa claramente erro interno de erro externo em próximas auditorias
+`sharp` tem binário nativo — precisa ser instalado para a plataforma da Lambda (`linux-x64`), então **não use `npm install` do seu Mac direto**. Faça assim:
 
-4. **Validar após ajuste**
-   - conferir dashboard do evento com fotos novas
-   - conferir que as requests vão para `usuarios/.../thumb/*.webp`
-   - confirmar que o site público continua funcionando
+```bash
+cd viufoto-lambda-bib-detector
 
-## Resultado esperado
-- As fotos deixam de aparecer brancas no gerenciador.
-- O comportamento do dashboard fica consistente com o site público.
-- Se houver algum caso realmente externo no futuro, ele ficará explícito via erro de carregamento, em vez de “blanco silencioso”.
+# limpa qualquer instalação anterior (binários errados do host)
+rm -rf node_modules package-lock.json
 
-Se você quiser, no próximo passo eu implemento essa correção no dashboard e valido o fluxo inteiro.
+# instala forçando o binário Linux x64 que a Lambda usa
+npm install --omit=dev \
+  --os=linux --cpu=x64 \
+  --libc=glibc \
+  sharp @aws-sdk/client-rekognition @aws-sdk/client-s3 @supabase/supabase-js
+
+# empacota
+rm -f ../bib-detector.zip
+zip -rq ../bib-detector.zip src node_modules package.json
+
+# publica no Lambda
+aws lambda update-function-code \
+  --region sa-east-1 \
+  --function-name viufoto-bib-detector \
+  --zip-file fileb://../bib-detector.zip
+
+# (opcional) aumenta memória — sharp gosta de RAM, 512MB é apertado
+aws lambda update-function-configuration \
+  --region sa-east-1 \
+  --function-name viufoto-bib-detector \
+  --memory-size 1024 --timeout 90
+```
+
+Se seu ambiente for Windows, roda dentro do WSL/Linux ou usa Docker `public.ecr.aws/lambda/nodejs:20` para o `npm install`.
+
+## Validação após o deploy
+
+1. Subir 1 foto grande (>5 MB) e 1 WebP em evento de teste.
+2. `aws logs tail /aws/lambda/viufoto-bib-detector --follow --region sa-east-1` — procurar linhas `[bib] sharp prepared bytes=...`.
+3. Consulta: `SELECT error_code, count(*) FROM bib_detection_errors WHERE created_at > now() - interval '10 minutes' GROUP BY 1;` — não deve aparecer `ImageTooLargeException` nem `InvalidImageFormatException`.
+4. `IndexingProgressCard` no `/admin/eventos/:id` deve avançar processadas em tempo real.
+
+## Depois que confirmar sucesso
+
+- Rodar `bib-reindex-event` uma vez por evento afetado (58 pending + 26 error) — o botão "Reprocessar OCR" no admin já dispara isso.
+- (Opcional) purgar os 63k `bib_detection_errors` antigos com `ImageTooLargeException` (mantendo últimos 7 dias para auditoria).
+
+## Fora do escopo desta rodada
+
+- Frente B1 (IndexFaces na mesma Lambda) — fica para a próxima confirmação.
+- Backfill via edge function — fica para depois do fix A validado.
+- Lambda Sharp de derivadas + CloudFront — backlog separado.
