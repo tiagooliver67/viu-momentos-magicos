@@ -16,13 +16,16 @@
 const { RekognitionClient, DetectTextCommand } = require("@aws-sdk/client-rekognition");
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { createClient } = require("@supabase/supabase-js");
+const sharp = require("sharp");
 
 const REK_REGION = process.env.REK_REGION || "us-east-1";
 const S3_REGION = process.env.S3_REGION || "sa-east-1";
 const BUCKET = process.env.S3_BUCKET;
 const MIN_CONF = Number(process.env.MIN_CONFIDENCE || 80);
 const DEFAULT_REGEX = process.env.DEFAULT_REGEX || "^\\d{1,6}$";
-const MAX_BYTES = 5 * 1024 * 1024; // Rekognition Image.Bytes hard limit
+const REK_MAX_BYTES = 5 * 1024 * 1024;   // Rekognition Image.Bytes hard limit
+const TARGET_MAX_BYTES = 4 * 1024 * 1024; // safety margin
+const TARGET_MAX_SIDE = 2000;             // px — plenty for bib OCR
 
 const rek = new RekognitionClient({ region: REK_REGION });
 const s3 = new S3Client({ region: S3_REGION });
@@ -43,25 +46,65 @@ async function streamToBytes(body) {
   return Buffer.concat(chunks);
 }
 
-async function detectText(s3Key) {
-  // 1) Try S3Object (works only when Rekognition region == S3 region).
-  if (REK_REGION === S3_REGION) {
-    try {
-      return await rek.send(new DetectTextCommand({
-        Image: { S3Object: { Bucket: BUCKET, Name: s3Key } },
-      }));
-    } catch (err) {
-      console.warn("S3Object failed, falling back to Bytes:", err.name, err.message);
+/**
+ * Prepare bytes for Rekognition:
+ *  - Convert unsupported formats (WebP/HEIC/HEIF/TIFF/AVIF) to JPEG.
+ *  - Downscale to max side <= TARGET_MAX_SIDE.
+ *  - Compress until it fits under TARGET_MAX_BYTES (q 88 -> 78 -> 68 -> 58).
+ *  - If already JPEG/PNG and under the limit, returns the original bytes untouched.
+ */
+async function prepareForRekognition(originalBytes, s3Key) {
+  const ext = (s3Key.split(".").pop() || "").toLowerCase();
+  const needsFormatConvert = ["webp", "heic", "heif", "tif", "tiff", "avif"].includes(ext);
+  const needsResize = originalBytes.length > TARGET_MAX_BYTES;
+
+  if (!needsFormatConvert && !needsResize) {
+    return { bytes: originalBytes, transformed: false };
+  }
+
+  const meta = await sharp(originalBytes, { failOn: "none" }).metadata();
+  const maxSide = Math.max(meta.width || 0, meta.height || 0);
+  const resizeTo = maxSide > TARGET_MAX_SIDE ? TARGET_MAX_SIDE : undefined;
+
+  for (const q of [88, 78, 68, 58]) {
+    let pipe = sharp(originalBytes, { failOn: "none" }).rotate(); // apply EXIF orientation
+    if (resizeTo) {
+      pipe = pipe.resize({
+        width: (meta.width || 0) >= (meta.height || 0) ? resizeTo : undefined,
+        height: (meta.height || 0) > (meta.width || 0) ? resizeTo : undefined,
+        withoutEnlargement: true,
+        fit: "inside",
+      });
+    }
+    const out = await pipe.jpeg({ quality: q, mozjpeg: true }).toBuffer();
+    if (out.length <= TARGET_MAX_BYTES) {
+      console.log(`[bib] sharp prepared bytes=${out.length} quality=${q} resize=${resizeTo || "no"} src=${originalBytes.length} ext=${ext}`);
+      return { bytes: out, transformed: true, quality: q };
     }
   }
-  // 2) Cross-region or fallback: download from S3 and send bytes.
-  const obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: s3Key }));
-  const bytes = await streamToBytes(obj.Body);
-  if (bytes.length > MAX_BYTES) {
-    const e = new Error(`Image exceeds Rekognition 5MB limit (${bytes.length} bytes)`);
+
+  // Last resort: harder downscale (1600px) + q60
+  const forced = await sharp(originalBytes, { failOn: "none" })
+    .rotate()
+    .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 60, mozjpeg: true })
+    .toBuffer();
+  if (forced.length > REK_MAX_BYTES) {
+    const e = new Error(`Could not fit image under Rekognition 5MB limit (${forced.length} bytes)`);
     e.name = "ImageTooLargeException";
     throw e;
   }
+  console.log(`[bib] sharp FORCED prepared bytes=${forced.length} src=${originalBytes.length} ext=${ext}`);
+  return { bytes: forced, transformed: true, quality: 60 };
+}
+
+async function detectText(s3Key) {
+  // Always download from S3 and prepare bytes. S3Object direct isn't used because:
+  //  - Rekognition runs in us-east-1 and the bucket is in sa-east-1 (cross-region blocked).
+  //  - Rekognition doesn't accept WebP even via S3Object.
+  const obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: s3Key }));
+  const rawBytes = await streamToBytes(obj.Body);
+  const { bytes } = await prepareForRekognition(rawBytes, s3Key);
   return await rek.send(new DetectTextCommand({ Image: { Bytes: bytes } }));
 }
 
