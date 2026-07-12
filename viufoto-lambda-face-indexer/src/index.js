@@ -1,6 +1,6 @@
 /**
  * viufoto-face-indexer — production
- * Pipeline: S3 PUT -> SNS (viufoto-photo-uploaded) -> SQS (viufoto-face-queue) -> this Lambda
+ * Pipeline: S3 PUT -> SNS (viufoto-photo-uploaded) -> SQS (viufoto-face-index-queue) -> this Lambda
  *
  * Mesmo padrão da Lambda BIB:
  *  - Rekognition fixed em us-east-1.
