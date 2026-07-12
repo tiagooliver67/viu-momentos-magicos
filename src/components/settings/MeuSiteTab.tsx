@@ -1,13 +1,10 @@
 import { useState, useRef } from "react";
 import {
-  Globe, User, Share2, Image, Palette, Link2, Shield as WatermarkIcon,
+  Globe, User, Share2, Image, Palette, Link2,
   Save, Plus, Trash2, Check
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
-import { supabase } from "@/integrations/supabase/client";
-import { cdnUrl } from "@/lib/cdnConfig";
-import { getSignedReadUrl } from "@/hooks/useS3Upload";
 import TabPortfolio from "@/components/settings/TabPortfolio";
 
 const siteSubTabs = [
@@ -17,7 +14,6 @@ const siteSubTabs = [
   { id: "redes", label: "Redes sociais", icon: Share2 },
   { id: "imagem", label: "Imagem de perfil", icon: Image },
   { id: "cores", label: "Cores", icon: Palette },
-  { id: "marcadagua", label: "Marca d'água", icon: WatermarkIcon },
 ];
 
 const tabCompletionKey: Record<string, string> = {
@@ -26,7 +22,6 @@ const tabCompletionKey: Record<string, string> = {
   redes: "instagram",
   imagem: "avatar_url",
   cores: "primary_color",
-  marcadagua: "watermark_url",
 };
 
 const presetColors = [
@@ -38,7 +33,6 @@ const MeuSiteTab = () => {
   const { site, isLoading, upsertSite, uploadAsset } = usePhotographerSite();
   const [form, setForm] = useState<Record<string, any>>({});
   const avatarRef = useRef<HTMLInputElement>(null);
-  const watermarkRef = useRef<HTMLInputElement>(null);
 
   const val = (key: string) => form[key] ?? (site as any)?.[key] ?? "";
   const set = (key: string, value: any) => setForm(prev => ({ ...prev, [key]: value }));
@@ -57,58 +51,6 @@ const MeuSiteTab = () => {
       upsertSite.mutate({ avatar_url: url });
     } catch (err: any) {
       toast.error("Erro ao enviar imagem: " + err.message);
-    }
-  };
-
-  const handleWatermarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    // The Lambda processor reads the watermark from a FIXED path:
-    //   usuarios/{userId}/config/watermark.png
-    // We must upload to S3 at exactly that path so Lambda can find it.
-    if (file.type !== "image/png") {
-      toast.error("A marca d'água deve ser um arquivo PNG (com fundo transparente).");
-      return;
-    }
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Não autenticado");
-
-      const objectPath = `usuarios/${user.id}/config/watermark.png`;
-
-      // 1. Get presigned PUT URL from S3
-      const { data: signed, error: signErr } = await supabase.functions.invoke("s3-presign", {
-        body: { action: "sign_upload", object_path: objectPath },
-      });
-      if (signErr || !signed?.url) {
-        throw new Error(signErr?.message || "Falha ao gerar URL de upload");
-      }
-
-      // 2. PUT directly to S3 (overwrites previous watermark — same fixed path)
-      const putRes = await fetch(signed.url, {
-        method: signed.method || "PUT",
-        headers: { "Content-Type": "image/png" },
-        body: file,
-      });
-      if (!putRes.ok) throw new Error(`S3 PUT status ${putRes.status}`);
-
-      // 3. Resolve a viewable URL for the UI (CDN if available, else signed read URL)
-      let displayUrl = cdnUrl(objectPath);
-      if (!displayUrl) {
-        try {
-          displayUrl = await getSignedReadUrl(objectPath);
-        } catch {
-          displayUrl = "";
-        }
-      }
-      // Cache-bust so the new image shows immediately after re-upload
-      const finalUrl = displayUrl ? `${displayUrl}${displayUrl.includes("?") ? "&" : "?"}v=${Date.now()}` : "";
-
-      set("watermark_url", finalUrl);
-      upsertSite.mutate({ watermark_url: finalUrl });
-      toast.success("Marca d'água enviada — processamento ativo nos próximos uploads.");
-    } catch (err: any) {
-      toast.error("Erro ao enviar marca d'água: " + err.message);
     }
   };
 
@@ -309,120 +251,6 @@ const MeuSiteTab = () => {
                   className="mt-2 bg-secondary/50 rounded-lg px-4 py-2 text-sm outline-none border border-border w-32"
                 />
               </div>
-            </div>
-          )}
-
-          {/* Marca d'água */}
-          {activeSubTab === "marcadagua" && (
-            <div className="glass-card p-6 space-y-6">
-              <h3 className="text-lg font-bold">Marca d'água</h3>
-              <p className="text-sm text-muted-foreground">
-                Personalize sua marca d'água para proteger suas fotos na galeria.
-              </p>
-
-              {/* Upload */}
-              <div className="flex gap-3 flex-wrap">
-                <button
-                  onClick={() => watermarkRef.current?.click()}
-                  className="px-5 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm"
-                >
-                  Fazer upload (PNG)
-                </button>
-                <button
-                  onClick={() => {
-                    set("watermark_url", "");
-                    upsertSite.mutate({ watermark_url: null });
-                  }}
-                  className="px-5 py-3 rounded-xl bg-secondary text-foreground font-medium text-sm"
-                >
-                  Utilizar padrão ViuFoto
-                </button>
-                <input ref={watermarkRef} type="file" accept="image/png" className="hidden" onChange={handleWatermarkUpload} />
-              </div>
-
-              {/* Position */}
-              <div>
-                <label className="text-sm font-semibold mb-2 block">Posição</label>
-                <div className="flex gap-2 flex-wrap">
-                  {[
-                    { value: "tile", label: "Repetida (tile)" },
-                    { value: "center", label: "Centro" },
-                    { value: "corner", label: "Canto inferior" },
-                  ].map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => set("watermark_position", opt.value)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
-                        (val("watermark_position") || "tile") === opt.value
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:border-primary/50"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Opacity */}
-              <div>
-                <label className="text-sm font-semibold mb-2 block">
-                  Opacidade: {val("watermark_opacity") || 25}%
-                </label>
-                <input
-                  type="range"
-                  min={10}
-                  max={50}
-                  step={5}
-                  value={val("watermark_opacity") || 25}
-                  onChange={(e) => set("watermark_opacity", Number(e.target.value))}
-                  className="w-full max-w-xs accent-primary"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground max-w-xs">
-                  <span>Sutil (10%)</span>
-                  <span>Forte (50%)</span>
-                </div>
-              </div>
-
-              {/* Size */}
-              <div>
-                <label className="text-sm font-semibold mb-2 block">
-                  Tamanho: {val("watermark_size") || 30}% da imagem
-                </label>
-                <input
-                  type="range"
-                  min={10}
-                  max={60}
-                  step={5}
-                  value={val("watermark_size") || 30}
-                  onChange={(e) => set("watermark_size", Number(e.target.value))}
-                  className="w-full max-w-xs accent-primary"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground max-w-xs">
-                  <span>Pequena (10%)</span>
-                  <span>Grande (60%)</span>
-                </div>
-              </div>
-
-              {/* Preview */}
-              {val("watermark_url") && (
-                <div>
-                  <h4 className="font-semibold mb-2">Visualização</h4>
-                  <div className="relative inline-block rounded-xl overflow-hidden">
-                    <img
-                      src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80"
-                      alt="Preview"
-                      className="max-w-md rounded-xl"
-                    />
-                    <img
-                      src={val("watermark_url")}
-                      alt="Watermark"
-                      className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-                      style={{ opacity: (val("watermark_opacity") || 25) / 100 }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
