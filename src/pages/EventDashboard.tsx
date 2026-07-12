@@ -8,6 +8,7 @@ import DiscountModal from "@/components/event/DiscountModal";
 import CouponModal from "@/components/event/CouponModal";
 import EditEventModal from "@/components/event/EditEventModal";
 import PasswordModal from "@/components/event/PasswordModal";
+import ScheduleModal from "@/components/event/ScheduleModal";
 import PhotoGallery from "@/components/event/PhotoGallery";
 import PromoArtModal from "@/components/event/PromoArtModal";
 import CollaborationModal from "@/components/event/CollaborationModal";
@@ -82,6 +83,7 @@ const EventDashboard = () => {
   const [showActions, setShowActions] = useState(false);
   const [showPromo, setShowPromo] = useState(false);
   const [showCollab, setShowCollab] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
   const { profile } = useAuth();
 
   const orders = ordersQuery.data || [];
@@ -233,7 +235,14 @@ const EventDashboard = () => {
               </p>
               <StatusDropdown
                 status={event.status}
-                onChange={(s) => updateEvent.mutate({ status: s })}
+                publishAt={(event as any).publish_at}
+                onChange={(s) => {
+                  if (s === "agendado") {
+                    setShowSchedule(true);
+                    return;
+                  }
+                  updateEvent.mutate({ status: s, publish_at: null } as any);
+                }}
                 disabled={updateEvent.isPending}
               />
               {/* Prominent action buttons */}
@@ -508,6 +517,17 @@ const EventDashboard = () => {
           eventId={event.id}
           ownerCommissionPct={Number((event as any).owner_commission_pct ?? 0)}
           collabNote={(event as any).collab_note ?? null}
+        />
+        <ScheduleModal
+          open={showSchedule}
+          onClose={() => setShowSchedule(false)}
+          initial={(event as any).publish_at}
+          isSaving={updateEvent.isPending}
+          onConfirm={(iso) => {
+            updateEvent.mutate({ status: "agendado", publish_at: iso } as any);
+            setShowSchedule(false);
+            toast.success("Publicação agendada!");
+          }}
         />
 
         {/* Actions dropdown */}
