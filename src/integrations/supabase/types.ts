@@ -864,6 +864,7 @@ export type Database = {
           plan_type: string
           progressive_discount_enabled: boolean
           progressive_discount_rules: Json
+          publish_at: string | null
           search_type: string[] | null
           status: Database["public"]["Enums"]["event_status"]
           updated_at: string
@@ -891,6 +892,7 @@ export type Database = {
           plan_type?: string
           progressive_discount_enabled?: boolean
           progressive_discount_rules?: Json
+          publish_at?: string | null
           search_type?: string[] | null
           status?: Database["public"]["Enums"]["event_status"]
           updated_at?: string
@@ -918,6 +920,7 @@ export type Database = {
           plan_type?: string
           progressive_discount_enabled?: boolean
           progressive_discount_rules?: Json
+          publish_at?: string | null
           search_type?: string[] | null
           status?: Database["public"]["Enums"]["event_status"]
           updated_at?: string
@@ -3000,6 +3003,7 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: never; Returns: boolean }
+      publish_scheduled_events: { Args: never; Returns: number }
       recalc_photographer_level: { Args: { _user_id: string }; Returns: string }
       refresh_photo_search_index: { Args: never; Returns: undefined }
       release_due_referral_earnings: { Args: never; Returns: number }
@@ -3012,7 +3016,7 @@ export type Database = {
       app_role: "user" | "photographer" | "organizer" | "super_admin"
       application_status: "pendente" | "aceita" | "rejeitada" | "cancelada"
       discount_type: "percentual" | "valor_fixo"
-      event_status: "ativo" | "em_breve" | "inativo"
+      event_status: "ativo" | "em_breve" | "inativo" | "agendado"
       order_status: "aguardando_pagamento" | "pago" | "enviado" | "cancelado"
       payment_method: "pix" | "cartao"
       photographer_level:
@@ -3165,7 +3169,7 @@ export const Constants = {
       app_role: ["user", "photographer", "organizer", "super_admin"],
       application_status: ["pendente", "aceita", "rejeitada", "cancelada"],
       discount_type: ["percentual", "valor_fixo"],
-      event_status: ["ativo", "em_breve", "inativo"],
+      event_status: ["ativo", "em_breve", "inativo", "agendado"],
       order_status: ["aguardando_pagamento", "pago", "enviado", "cancelado"],
       payment_method: ["pix", "cartao"],
       photographer_level: ["bronze", "prata", "ouro", "diamante", "embaixador"],
