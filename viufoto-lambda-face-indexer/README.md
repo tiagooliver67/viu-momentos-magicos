@@ -4,6 +4,11 @@ Lambda dedicada para indexação facial (Amazon Rekognition `IndexFaces`).
 Espelha o padrão da `viufoto-bib-detector`: SNS → SQS → Lambda com `sharp` para
 resize/compressão, gravando em `event_photo_faces` + `event_face_collections`.
 
+> **Nota:** a fila principal já existe em produção como `viufoto-face-index-queue`
+> (já assinada no SNS `viufoto-photo-uploaded`). Se você **já tem tudo criado**,
+> pule direto para a seção **"Update de código (redeploy)"** no fim deste arquivo.
+> A seção abaixo cobre criação do zero, caso precise recriar o pipeline.
+
 ## Deploy (do zero)
 
 ### 0) Variáveis
@@ -24,10 +29,10 @@ export FACE_DLQ_URL=$(aws sqs get-queue-url --queue-name viufoto-face-dlq --quer
 export FACE_DLQ_ARN=$(aws sqs get-queue-attributes --queue-url $FACE_DLQ_URL \
   --attribute-names QueueArn --query Attributes.QueueArn --output text)
 
-aws sqs create-queue --region $AWS_REGION --queue-name viufoto-face-queue \
+aws sqs create-queue --region $AWS_REGION --queue-name viufoto-face-index-queue \
   --attributes "{\"VisibilityTimeout\":\"360\",\"RedrivePolicy\":\"{\\\"deadLetterTargetArn\\\":\\\"$FACE_DLQ_ARN\\\",\\\"maxReceiveCount\\\":\\\"3\\\"}\"}"
 
-export FACE_QUEUE_URL=$(aws sqs get-queue-url --queue-name viufoto-face-queue --query QueueUrl --output text)
+export FACE_QUEUE_URL=$(aws sqs get-queue-url --queue-name viufoto-face-index-queue --query QueueUrl --output text)
 export FACE_QUEUE_ARN=$(aws sqs get-queue-attributes --queue-url $FACE_QUEUE_URL \
   --attribute-names QueueArn --query Attributes.QueueArn --output text)
 ```
