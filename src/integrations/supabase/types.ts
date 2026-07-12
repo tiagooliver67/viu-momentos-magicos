@@ -925,54 +925,6 @@ export type Database = {
         }
         Relationships: []
       }
-      face_index_jobs: {
-        Row: {
-          attempts: number
-          created_at: string
-          enqueued_at: string
-          error_code: string | null
-          error_message: string | null
-          event_id: string
-          finished_at: string | null
-          id: string
-          photo_id: string
-          s3_key: string | null
-          started_at: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          attempts?: number
-          created_at?: string
-          enqueued_at?: string
-          error_code?: string | null
-          error_message?: string | null
-          event_id: string
-          finished_at?: string | null
-          id?: string
-          photo_id: string
-          s3_key?: string | null
-          started_at?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          attempts?: number
-          created_at?: string
-          enqueued_at?: string
-          error_code?: string | null
-          error_message?: string | null
-          event_id?: string
-          finished_at?: string | null
-          id?: string
-          photo_id?: string
-          s3_key?: string | null
-          started_at?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       face_search_logs: {
         Row: {
           avg_similarity: number | null
@@ -2997,20 +2949,6 @@ export type Database = {
       }
     }
     Functions: {
-      claim_face_index_jobs: {
-        Args: { _batch_size?: number; _event_id: string }
-        Returns: {
-          job_id: string
-          photo_id: string
-          s3_key: string
-        }[]
-      }
-      enqueue_event_backfill: {
-        Args: { _event_id: string; _force?: boolean }
-        Returns: {
-          enqueued: number
-        }[]
-      }
       ensure_face_collection: {
         Args: { _event_id: string }
         Returns: {
@@ -3062,19 +3000,6 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: never; Returns: boolean }
-      mark_face_index_done: {
-        Args: { _faces_count: number; _job_id: string }
-        Returns: undefined
-      }
-      mark_face_index_error: {
-        Args: {
-          _error_code: string
-          _error_message: string
-          _job_id: string
-          _permanent?: boolean
-        }
-        Returns: undefined
-      }
       recalc_photographer_level: { Args: { _user_id: string }; Returns: string }
       refresh_photo_search_index: { Args: never; Returns: undefined }
       release_due_referral_earnings: { Args: never; Returns: number }
