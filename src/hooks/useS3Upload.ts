@@ -114,18 +114,22 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
         console.warn("[S3Upload] Falha ao obter organizer_id, usando uploader id:", e);
       }
 
-      const MAX_SIZE = 30 * 1024 * 1024;
+      // Fotos: 30 MB por arquivo. Vídeos: 5 GB por arquivo.
+      const MAX_SIZE = isPhoto ? 30 * 1024 * 1024 : 5 * 1024 * 1024 * 1024;
+      const humanLimit = isPhoto ? "30MB" : "5GB";
       const validFiles: File[] = [];
       const invalidFiles: string[] = [];
       for (const f of files) {
         if (f.size > MAX_SIZE) {
-          invalidFiles.push(`${f.name} (${(f.size / 1024 / 1024).toFixed(1)}MB)`);
+          const mb = f.size / 1024 / 1024;
+          const size = mb >= 1024 ? `${(mb / 1024).toFixed(2)}GB` : `${mb.toFixed(1)}MB`;
+          invalidFiles.push(`${f.name} (${size})`);
         } else {
           validFiles.push(f);
         }
       }
       if (invalidFiles.length > 0) {
-        toast.error(`Arquivos acima de 30MB: ${invalidFiles.join(", ")}`);
+        toast.error(`Arquivos acima de ${humanLimit}: ${invalidFiles.join(", ")}`);
       }
       if (validFiles.length === 0) throw new Error("Nenhum arquivo válido");
 

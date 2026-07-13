@@ -2,7 +2,9 @@ import { useState, useRef, useCallback } from "react";
 import { X, Upload, Image } from "lucide-react";
 import { toast } from "sonner";
 
-const MAX_SIZE_BYTES = 30 * 1024 * 1024;
+const PHOTO_MAX_BYTES = 30 * 1024 * 1024;
+const VIDEO_MAX_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB
+const VIDEO_MAX_DURATION_SEC = 90;
 
 function filterPhotos(input: File[]): { valid: File[]; invalidFormat: string[]; tooLarge: string[] } {
   const valid: File[] = [];
@@ -15,13 +17,65 @@ function filterPhotos(input: File[]): { valid: File[]; invalidFormat: string[]; 
       invalidFormat.push(f.name);
       continue;
     }
-    if (f.size > MAX_SIZE_BYTES) {
+    if (f.size > PHOTO_MAX_BYTES) {
       tooLarge.push(f.name);
       continue;
     }
     valid.push(f);
   }
   return { valid, invalidFormat, tooLarge };
+}
+
+function isMp4OrMov(f: File): boolean {
+  const name = f.name.toLowerCase();
+  const t = (f.type || "").toLowerCase();
+  return (
+    name.endsWith(".mp4") ||
+    name.endsWith(".mov") ||
+    t === "video/mp4" ||
+    t === "video/quicktime" ||
+    t === "video/mov"
+  );
+}
+
+function readVideoDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    const cleanup = () => {
+      URL.revokeObjectURL(url);
+      video.src = "";
+    };
+    video.onloadedmetadata = () => {
+      const d = Number(video.duration) || 0;
+      cleanup();
+      resolve(d);
+    };
+    video.onerror = () => { cleanup(); resolve(0); };
+    video.src = url;
+  });
+}
+
+async function filterVideos(input: File[]): Promise<{
+  valid: File[]; invalidFormat: string[]; tooLarge: string[]; tooLong: string[];
+}> {
+  const valid: File[] = [];
+  const invalidFormat: string[] = [];
+  const tooLarge: string[] = [];
+  const tooLong: string[] = [];
+  for (const f of input) {
+    if (!isMp4OrMov(f)) { invalidFormat.push(f.name); continue; }
+    if (f.size > VIDEO_MAX_BYTES) { tooLarge.push(f.name); continue; }
+    const dur = await readVideoDuration(f);
+    if (dur > VIDEO_MAX_DURATION_SEC + 0.5) {
+      tooLong.push(`${f.name} (${Math.round(dur)}s)`);
+      continue;
+    }
+    valid.push(f);
+  }
+  return { valid, invalidFormat, tooLarge, tooLong };
 }
 
 interface Props {
@@ -47,18 +101,32 @@ export default function UploadModal({ open, onClose, onUpload, isUploading, type
     if (valid.length > 0) setFiles(prev => [...prev, ...valid]);
   }, []);
 
+  const addVideos = useCallback(async (incoming: File[]) => {
+    const { valid, invalidFormat, tooLarge, tooLong } = await filterVideos(incoming);
+    if (invalidFormat.length > 0) {
+      toast.error(`Formato não suportado. Envie apenas MP4 ou MOV: ${invalidFormat.join(", ")}`);
+    }
+    if (tooLarge.length > 0) {
+      toast.error(`Arquivo acima de 5GB: ${tooLarge.join(", ")}`);
+    }
+    if (tooLong.length > 0) {
+      toast.error(`Vídeo acima de 90s: ${tooLong.join(", ")}`);
+    }
+    if (valid.length > 0) setFiles(prev => [...prev, ...valid]);
+  }, []);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     const dropped = Array.from(e.dataTransfer.files);
     if (type === "photos") addPhotos(dropped);
-    else setFiles(prev => [...prev, ...dropped]);
-  }, [type, addPhotos]);
+    else addVideos(dropped);
+  }, [type, addPhotos, addVideos]);
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const list = Array.from(e.target.files);
     if (type === "photos") addPhotos(list);
-    else setFiles(prev => [...prev, ...list]);
+    else addVideos(list);
     e.target.value = "";
   };
 
@@ -70,7 +138,9 @@ export default function UploadModal({ open, onClose, onUpload, isUploading, type
 
   if (!open) return null;
 
-  const accept = type === "photos" ? ".jpg,.jpeg,image/jpeg" : "video/mp4,video/mov,video/avi";
+  const accept = type === "photos"
+    ? ".jpg,.jpeg,image/jpeg"
+    : ".mp4,.mov,video/mp4,video/quicktime";
   const label = type === "photos" ? "Fotos" : "Vídeos";
 
   return (
@@ -89,7 +159,7 @@ export default function UploadModal({ open, onClose, onUpload, isUploading, type
         >
           <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm text-foreground font-medium mb-1">Solte arquivos aqui, cole ou <span className="text-primary">procure arquivos</span></p>
-          <p className="text-xs text-muted-foreground">{type === "photos" ? "Apenas JPG ou JPEG • Máximo 30MB por arquivo" : "MP4, MOV, AVI • Máximo 100MB por arquivo"}</p>
+          <p className="text-xs text-muted-foreground">{type === "photos" ? "Apenas JPG ou JPEG • Máximo 30MB por arquivo" : "MP4 ou MOV • Máximo 5GB e até 90 segundos"}</p>
           <input ref={inputRef} type="file" multiple accept={accept} onChange={handleSelect} className="hidden" />
         </div>
 
