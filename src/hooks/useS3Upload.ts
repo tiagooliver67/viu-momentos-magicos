@@ -279,26 +279,21 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
           progressMap[i] = { ...progressMap[i], progress: 20 };
           onProgress?.([...progressMap]);
 
-          // Upload ORIGINAL (clean, no watermark) — protected, only accessible post-purchase
-          await new Promise<void>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open(signed.method || "PUT", signed.url);
-            xhr.setRequestHeader("Content-Type", obj.file.type);
-            xhr.upload.onprogress = (e) => {
-              if (e.lengthComputable) {
-                const pct = Math.round((e.loaded / e.total) * 50) + 20;
-                progressMap[i] = { ...progressMap[i], progress: pct };
-                onProgress?.([...progressMap]);
-              }
-            };
-            xhr.onload = () => {
-              if (xhr.status >= 200 && xhr.status < 300) resolve();
-              else reject(new Error(`S3 status ${xhr.status}`));
-            };
-            xhr.onerror = () => reject(new Error("Erro de rede ou CORS"));
-            xhr.ontimeout = () => reject(new Error("Timeout"));
-            xhr.timeout = 120000;
-            xhr.send(obj.file);
+          // Upload ORIGINAL (clean, no watermark) — protected, only accessible post-purchase.
+          // No fixed timeout: large videos (até 5GB) podem legitimamente demorar vários
+          // minutos em conexões residenciais. Retry automático (3 tentativas) com re-sign
+          // caso a URL pré-assinada tenha expirado entre uma tentativa e outra.
+          await uploadFileWithRetry({
+            path: obj.path,
+            file: obj.file,
+            initialUrl: signed.url,
+            initialMethod: signed.method || "PUT",
+            onProgress: (frac) => {
+              // Faixa 20..75% reservada para o upload do original.
+              const pct = Math.round(frac * 55) + 20;
+              progressMap[i] = { ...progressMap[i], progress: pct };
+              onProgress?.([...progressMap]);
+            },
           });
 
           progressMap[i] = { ...progressMap[i], progress: 75 };
