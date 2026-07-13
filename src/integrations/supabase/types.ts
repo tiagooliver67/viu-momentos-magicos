@@ -808,28 +808,61 @@ export type Database = {
       }
       event_videos: {
         Row: {
+          codec: string | null
           created_at: string
+          duration_seconds: number | null
           event_id: string
           file_name: string | null
+          file_size_bytes: number | null
           file_url: string
+          height: number | null
           id: string
           photographer_id: string | null
+          poster_url: string | null
+          preview_url: string | null
+          processed_at: string | null
+          processing_error: string | null
+          status: Database["public"]["Enums"]["video_processing_status"]
+          thumbnail_url: string | null
+          width: number | null
         }
         Insert: {
+          codec?: string | null
           created_at?: string
+          duration_seconds?: number | null
           event_id: string
           file_name?: string | null
+          file_size_bytes?: number | null
           file_url: string
+          height?: number | null
           id?: string
           photographer_id?: string | null
+          poster_url?: string | null
+          preview_url?: string | null
+          processed_at?: string | null
+          processing_error?: string | null
+          status?: Database["public"]["Enums"]["video_processing_status"]
+          thumbnail_url?: string | null
+          width?: number | null
         }
         Update: {
+          codec?: string | null
           created_at?: string
+          duration_seconds?: number | null
           event_id?: string
           file_name?: string | null
+          file_size_bytes?: number | null
           file_url?: string
+          height?: number | null
           id?: string
           photographer_id?: string | null
+          poster_url?: string | null
+          preview_url?: string | null
+          processed_at?: string | null
+          processing_error?: string | null
+          status?: Database["public"]["Enums"]["video_processing_status"]
+          thumbnail_url?: string | null
+          width?: number | null
         }
         Relationships: [
           {
@@ -3039,6 +3072,7 @@ export type Database = {
         | "encerrado"
         | "cancelado"
       registration_payment_status: "pendente" | "pago" | "cancelado"
+      video_processing_status: "pending" | "processing" | "ready" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3189,6 +3223,7 @@ export const Constants = {
         "cancelado",
       ],
       registration_payment_status: ["pendente", "pago", "cancelado"],
+      video_processing_status: ["pending", "processing", "ready", "failed"],
     },
   },
 } as const
