@@ -10,6 +10,7 @@ import EditEventModal from "@/components/event/EditEventModal";
 import PasswordModal from "@/components/event/PasswordModal";
 import ScheduleModal from "@/components/event/ScheduleModal";
 import PhotoGallery from "@/components/event/PhotoGallery";
+import VideoGallery from "@/components/event/VideoGallery";
 import PromoArtModal from "@/components/event/PromoArtModal";
 import CollaborationModal from "@/components/event/CollaborationModal";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
@@ -49,6 +50,7 @@ const EventDashboard = () => {
   const queryClient = useQueryClient();
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [photoUploadProgress, setPhotoUploadProgress] = useState<UploadFileProgress[]>([]);
+  const [videoUploadProgress, setVideoUploadProgress] = useState<UploadFileProgress[]>([]);
 
   // Data hooks
   const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
@@ -65,7 +67,16 @@ const EventDashboard = () => {
       setTimeout(() => setPhotoUploadProgress([]), 5000);
     }
   }});
-  const s3UploadVideos = useS3Upload({ eventId: id || "", type: "videos" });
+  const s3UploadVideos = useS3Upload({ eventId: id || "", type: "videos", onProgress: (files) => {
+    setVideoUploadProgress(files.map(f => ({
+      fileName: f.fileName,
+      progress: f.progress,
+      status: f.status,
+    })));
+    if (files.every(f => f.status === "done" || f.status === "error")) {
+      setTimeout(() => setVideoUploadProgress([]), 5000);
+    }
+  }});
   const ordersQuery = useEventOrders(id);
   const { coupons, createCoupon, toggleCoupon } = useEventCoupons(id);
   const { grids, savePriceGrid, deletePriceGrid } = useEventPriceGrid(id);
@@ -80,6 +91,7 @@ const EventDashboard = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
+  const [showVideoGallery, setShowVideoGallery] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showPromo, setShowPromo] = useState(false);
   const [showCollab, setShowCollab] = useState(false);
@@ -100,7 +112,7 @@ const EventDashboard = () => {
       case "orders": navigate(`/dashboard/pedidos`); break;
       case "financial": navigate(`/dashboard/configuracoes?tab=carteira`); break;
       case "upload-photos": setShowGallery(true); break;
-      case "upload-videos": setShowUploadVideos(true); break;
+      case "upload-videos": setShowVideoGallery(true); break;
       case "photos": case "gallery": setShowGallery(true); break;
       case "password": setShowPassword(true); break;
       case "coupons": setShowCoupon(true); break;
@@ -109,7 +121,7 @@ const EventDashboard = () => {
       case "collab": setShowCollab(true); break;
       case "import": toast.info("Importação de pedidos em breve!"); break;
       case "invite": toast.info("Convite de fotógrafos em breve!"); break;
-      case "videos": toast.info("Galeria de vídeos em breve!"); break;
+      case "videos": setShowVideoGallery(true); break;
       default: break;
     }
   };
