@@ -510,6 +510,26 @@ const EventDashboard = () => {
             queryClient.invalidateQueries({ queryKey: ["event-photos", id] });
           }}
         />
+        <VideoGallery
+          open={showVideoGallery}
+          onClose={() => setShowVideoGallery(false)}
+          videos={videos as any}
+          onDelete={(vid) => deleteVideo.mutate(vid)}
+          isDeleting={deleteVideo.isPending}
+          totalVideos={videos.length}
+          onUploadFiles={(files) => s3UploadVideos.mutate(files)}
+          isUploading={s3UploadVideos.isPending}
+          uploadProgress={videoUploadProgress}
+          onBulkDelete={async (ids) => {
+            const { error } = await supabase.from("event_videos").delete().in("id", ids);
+            if (error) {
+              toast.error("Erro ao excluir vídeos");
+              return;
+            }
+            toast.success(`${ids.length} vídeo(s) excluído(s)`);
+            queryClient.invalidateQueries({ queryKey: ["event-videos", id] });
+          }}
+        />
         <PromoArtModal
           open={showPromo}
           onClose={() => setShowPromo(false)}
