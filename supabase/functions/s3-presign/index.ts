@@ -7,6 +7,19 @@ const corsHeaders = {
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev";
 
+// Camada de validação de backend (2ª linha de defesa, além do frontend) — regra
+// oficial da plataforma: apenas .mp4/.mov são aceitos no caminho /videos/.
+// Não valida tamanho aqui porque o presign não recebe o Content-Length do arquivo;
+// o tamanho é reforçado no client (useS3Upload.ts) e, de forma definitiva, no
+// Lambda Video Processor ao inspecionar o objeto já no S3.
+function validateUploadPath(objectPath: string): string | null {
+  const isVideoPath = /\/videos\//i.test(objectPath);
+  if (isVideoPath && !/\.(mp4|mov)$/i.test(objectPath)) {
+    return "Formato de vídeo não suportado. Apenas .mp4 ou .mov são aceitos.";
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -63,6 +76,13 @@ Deno.serve(async (req) => {
         });
       }
 
+      const validationError = validateUploadPath(object_path);
+      if (validationError) {
+        return new Response(JSON.stringify({ error: validationError }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const signRes = await fetch(
         `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=write`,
         {
@@ -97,6 +117,10 @@ Deno.serve(async (req) => {
       // Parallel signing — drastically lower wall-clock for large batches.
       const results = await Promise.all(
         objects.map(async (obj: { path: string }) => {
+          const validationError = validateUploadPath(obj.path);
+          if (validationError) {
+            return { path: obj.path, error: validationError };
+          }
           try {
             const signRes = await fetch(
               `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=write`,
