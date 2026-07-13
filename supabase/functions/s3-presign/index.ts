@@ -76,6 +76,13 @@ Deno.serve(async (req) => {
         });
       }
 
+      const validationError = validateUploadPath(object_path);
+      if (validationError) {
+        return new Response(JSON.stringify({ error: validationError }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const signRes = await fetch(
         `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=write`,
         {
@@ -110,6 +117,10 @@ Deno.serve(async (req) => {
       // Parallel signing — drastically lower wall-clock for large batches.
       const results = await Promise.all(
         objects.map(async (obj: { path: string }) => {
+          const validationError = validateUploadPath(obj.path);
+          if (validationError) {
+            return { path: obj.path, error: validationError };
+          }
           try {
             const signRes = await fetch(
               `${GATEWAY_URL}/api/v1/sign_storage_url?provider=aws_s3&mode=write`,
