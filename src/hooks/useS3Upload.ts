@@ -29,6 +29,73 @@ async function getPresignedUrls(objects: { path: string }[]) {
   return data.results as { path: string; url: string; expires_in: number; method: string; error?: string }[];
 }
 
+/** Re-sign a single upload URL (used for retries after the original expires). */
+async function resignUpload(path: string): Promise<{ url: string; method: string } | null> {
+  try {
+    const { data, error } = await supabase.functions.invoke("s3-presign", {
+      body: { action: "sign_upload", object_path: path },
+    });
+    if (error || !data?.url) return null;
+    return { url: data.url, method: data.method || "PUT" };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Upload a single file to S3 with real progress and automatic retry.
+ * - No fixed timeout (large videos can take many minutes on slower connections).
+ * - Up to 3 attempts; each retry re-signs the URL to avoid expiry mid-retry.
+ * - onProgress emits 0..1 for the current attempt.
+ */
+async function uploadFileWithRetry(opts: {
+  path: string;
+  file: File;
+  initialUrl: string;
+  initialMethod: string;
+  onProgress: (pct: number) => void;
+  maxAttempts?: number;
+}): Promise<void> {
+  const maxAttempts = opts.maxAttempts ?? 3;
+  let url = opts.initialUrl;
+  let method = opts.initialMethod || "PUT";
+  let lastErr: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.setRequestHeader("Content-Type", opts.file.type || "application/octet-stream");
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) opts.onProgress(e.loaded / e.total);
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`S3 status ${xhr.status}`));
+        };
+        xhr.onerror = () => reject(new Error("Erro de rede ou CORS"));
+        xhr.onabort = () => reject(new Error("Upload abortado"));
+        // No xhr.timeout — large videos may legitimately take many minutes.
+        xhr.send(opts.file);
+      });
+      return; // success
+    } catch (err: any) {
+      lastErr = err instanceof Error ? err : new Error(String(err));
+      if (attempt < maxAttempts) {
+        // Backoff + re-sign URL (in case previous URL expired).
+        await new Promise((r) => setTimeout(r, 1000 * attempt));
+        const fresh = await resignUpload(opts.path);
+        if (fresh) {
+          url = fresh.url;
+          method = fresh.method;
+        }
+      }
+    }
+  }
+  throw lastErr ?? new Error("Falha no upload após múltiplas tentativas");
+}
+
 export async function getSignedReadUrl(objectPath: string): Promise<string> {
   const { data, error } = await supabase.functions.invoke("s3-presign", {
     body: { action: "sign_read", object_path: objectPath },
@@ -212,26 +279,21 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
           progressMap[i] = { ...progressMap[i], progress: 20 };
           onProgress?.([...progressMap]);
 
-          // Upload ORIGINAL (clean, no watermark) — protected, only accessible post-purchase
-          await new Promise<void>((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open(signed.method || "PUT", signed.url);
-            xhr.setRequestHeader("Content-Type", obj.file.type);
-            xhr.upload.onprogress = (e) => {
-              if (e.lengthComputable) {
-                const pct = Math.round((e.loaded / e.total) * 50) + 20;
-                progressMap[i] = { ...progressMap[i], progress: pct };
-                onProgress?.([...progressMap]);
-              }
-            };
-            xhr.onload = () => {
-              if (xhr.status >= 200 && xhr.status < 300) resolve();
-              else reject(new Error(`S3 status ${xhr.status}`));
-            };
-            xhr.onerror = () => reject(new Error("Erro de rede ou CORS"));
-            xhr.ontimeout = () => reject(new Error("Timeout"));
-            xhr.timeout = 120000;
-            xhr.send(obj.file);
+          // Upload ORIGINAL (clean, no watermark) — protected, only accessible post-purchase.
+          // No fixed timeout: large videos (até 5GB) podem legitimamente demorar vários
+          // minutos em conexões residenciais. Retry automático (3 tentativas) com re-sign
+          // caso a URL pré-assinada tenha expirado entre uma tentativa e outra.
+          await uploadFileWithRetry({
+            path: obj.path,
+            file: obj.file,
+            initialUrl: signed.url,
+            initialMethod: signed.method || "PUT",
+            onProgress: (frac) => {
+              // Faixa 20..75% reservada para o upload do original.
+              const pct = Math.round(frac * 55) + 20;
+              progressMap[i] = { ...progressMap[i], progress: pct };
+              onProgress?.([...progressMap]);
+            },
           });
 
           progressMap[i] = { ...progressMap[i], progress: 75 };
