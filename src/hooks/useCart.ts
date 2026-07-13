@@ -70,7 +70,11 @@ export function useCart() {
 
   const addItem = useCallback((item: Omit<CartItem, "id">) => {
     setCart(prev => {
-      const exists = prev.find(i => i.photoId === item.photoId && i.resolution === item.resolution);
+      // Vídeos têm preço único (sem variação alta/baixa) — dedupe só por videoId.
+      // Fotos continuam podendo ter 2 entradas (alta e baixa) para a mesma foto.
+      const exists = item.videoId
+        ? prev.find(i => i.videoId === item.videoId)
+        : prev.find(i => i.photoId === item.photoId && !i.videoId && i.resolution === item.resolution);
       if (exists) return prev;
       return [...prev, { ...item, id: crypto.randomUUID() }];
     });

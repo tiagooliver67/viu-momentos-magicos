@@ -1,4 +1,4 @@
-import { ShoppingCart, X, Trash2, CreditCard, PartyPopper } from "lucide-react";
+import { ShoppingCart, X, Trash2, CreditCard, PartyPopper, Film } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -18,10 +18,8 @@ const CartDrawer = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Derive eventId from first cart item
   const eventId = items.length > 0 ? items[0].eventId || "" : "";
 
-  // Carrega regras de desconto do evento associado ao carrinho
   const { data: eventDiscount } = useQuery({
     queryKey: ["event-discount", eventId],
     queryFn: async () => {
@@ -105,15 +103,22 @@ const CartDrawer = () => {
                 <div className="p-4 space-y-3">
                   {items.map(item => (
                     <div key={item.id} className="flex gap-3 p-3 rounded-xl bg-secondary/30 border border-border/50">
-                      <img
-                        src={item.photoUrl}
-                        alt=""
-                        className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
-                      />
+                      <div className="relative w-16 h-16 flex-shrink-0">
+                        <img
+                          src={item.photoUrl}
+                          alt=""
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        {item.videoId && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+                            <Film className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{item.eventName}</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.resolution === "high" ? "Alta resolução" : "Baixa resolução"}
+                          {item.videoId ? "Vídeo original" : (item.resolution === "high" ? "Alta resolução" : "Baixa resolução")}
                         </p>
                         {item.photoId && (
                           <p className="text-[10px] font-mono text-muted-foreground/80 mt-0.5">

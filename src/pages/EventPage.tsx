@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2, ChevronLeft, ChevronRight, Folder, ArrowLeft } from "lucide-react";
+import { Calendar, MapPin, Camera, ScanFace, Search, ShoppingCart, X, Heart, Lock, Share2, RefreshCw, Loader2, ChevronLeft, ChevronRight, Folder, ArrowLeft, Film, Play } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -22,6 +22,7 @@ import {
   toMediumPath as cdnToMediumPath,
   getThumbCdnUrl,
   getMediumCdnUrl,
+  getVideoDerivativeCdnUrl,
   IS_LAMBDA_PIPELINE_ACTIVE,
 } from "@/lib/cdnConfig";
 
@@ -171,6 +172,69 @@ const EventPage = () => {
     refetchOnWindowFocus: false,
   });
 
+  // Fetch videos — só os que já terminaram de processar (status "ready") entram na
+  // vitrine pública; pending/processing/failed ficam invisíveis para o comprador.
+  const { data: videos } = useQuery({
+    queryKey: ["public-videos", id],
+    queryFn: async () => {
+      if (!id) return [];
+      const { data } = await supabase
+        .from("event_videos")
+        .select("*")
+        .eq("event_id", id)
+        .order("created_at");
+      return ((data || []) as any[]).filter((v) => v.status === "ready");
+    },
+    enabled: !!id,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+  const videoList = videos || [];
+
+  // Resolve poster (grid thumbnail) URLs for videos
+  const videoIds = useMemo(() => videoList.map((v: any) => v.id).sort().join(","), [videoList]);
+  const { data: videoPosterUrls } = useQuery({
+    queryKey: ["video-poster-urls", id, videoIds],
+    queryFn: async () => {
+      if (videoList.length === 0) return {};
+      if (IS_LAMBDA_PIPELINE_ACTIVE) {
+        const map: Record<string, string> = {};
+        for (const v of videoList) {
+          const u = getVideoDerivativeCdnUrl(v.thumbnail_url);
+          if (u) map[v.id] = u;
+        }
+        return map;
+      }
+      const paths = videoList.map((v: any) => v.thumbnail_url).filter(Boolean);
+      if (paths.length === 0) return {};
+      const urls = await getPublicSignedUrls(paths);
+      const byId: Record<string, string> = {};
+      for (const v of videoList) {
+        if (v.thumbnail_url && urls[v.thumbnail_url]) byId[v.id] = urls[v.thumbnail_url];
+      }
+      return byId;
+    },
+    enabled: videoList.length > 0,
+    staleTime: IS_LAMBDA_PIPELINE_ACTIVE ? 60 * 60 * 1000 : 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+  const { data: selectedVideoPreviewUrl, isLoading: videoPreviewLoading } = useQuery({
+    queryKey: ["video-preview-url", selectedVideo?.id],
+    queryFn: async () => {
+      if (!selectedVideo?.preview_url) return "";
+      if (IS_LAMBDA_PIPELINE_ACTIVE) {
+        return getVideoDerivativeCdnUrl(selectedVideo.preview_url) || "";
+      }
+      const res = await getPublicSignedUrls([selectedVideo.preview_url]);
+      return res[selectedVideo.preview_url] || "";
+    },
+    enabled: !!selectedVideo,
+    staleTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
   // Fetch price grid
   const { data: priceGrid } = useQuery({
     queryKey: ["public-price", id],
@@ -203,6 +267,7 @@ const EventPage = () => {
 
   const highPrice = priceGrid?.photo_high_price ?? 15;
   const lowPrice = priceGrid?.photo_low_price ?? 11;
+  const videoPrice = priceGrid?.video_price ?? 15.99;
   const allPhotos = photos || [];
 
   // --- FASE 1: Busca por número de peito ---
@@ -435,6 +500,18 @@ const EventPage = () => {
     toast.success("Foto adicionada ao carrinho!");
   };
 
+  const handleAddVideoToCart = (video: any) => {
+    addItem({
+      videoId: video.id,
+      photoUrl: videoPosterUrls?.[video.id] || "",
+      eventId: id,
+      eventName: event.name,
+      resolution: "high",
+      price: videoPrice,
+    });
+    toast.success("Vídeo adicionado ao carrinho!");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -450,6 +527,9 @@ const EventPage = () => {
               <span className="flex items-center gap-1"><Calendar className="w-3 h-3 sm:w-4 sm:h-4" /> {new Date(event.event_date).toLocaleDateString("pt-BR")}</span>
               <span className="flex items-center gap-1"><MapPin className="w-3 h-3 sm:w-4 sm:h-4" /> {event.location}</span>
               <span className="flex items-center gap-1"><Camera className="w-3 h-3 sm:w-4 sm:h-4" /> {photoList.length} fotos</span>
+              {videoList.length > 0 && (
+                <span className="flex items-center gap-1"><Film className="w-3 h-3 sm:w-4 sm:h-4" /> {videoList.length} vídeos</span>
+              )}
               {photographerSite?.slug && (
                 <Link to={`/fotografo/${photographerSite.slug}`} className="text-primary hover:underline">
                   # Evento por {photographerSite.display_name || "Fotógrafo"}
@@ -503,6 +583,46 @@ const EventPage = () => {
               {faceMatchIds.size === 0
                 ? "Nenhuma foto encontrada com este rosto."
                 : `${faceMatchIds.size} foto(s) encontrada(s) por reconhecimento facial.`}
+            </div>
+          )}
+
+          {/* Video gallery — vitrine pública de vídeos, prévia com marca d'água até a compra */}
+          {videoList.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                <Film className="w-5 h-5 text-primary" />
+                Vídeos
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+                {videoList.map((video: any) => {
+                  const posterUrl = videoPosterUrls?.[video.id];
+                  return (
+                    <button
+                      key={video.id}
+                      onClick={() => setSelectedVideo(video)}
+                      className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary group text-left"
+                    >
+                      {posterUrl ? (
+                        <img src={posterUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Film className="w-8 h-8 text-muted-foreground opacity-40" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity">
+                          <Play className="w-4 h-4 text-white fill-white ml-0.5" />
+                        </div>
+                      </div>
+                      {video.duration_seconds != null && (
+                        <span className="absolute bottom-1.5 right-1.5 text-[10px] text-white bg-black/60 px-1.5 py-0.5 rounded">
+                          {Math.floor(video.duration_seconds / 60)}:{Math.round(video.duration_seconds % 60).toString().padStart(2, "0")}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -845,6 +965,91 @@ const EventPage = () => {
                 <button
                   onClick={() => {
                     setSelectedPhoto(null);
+                    setTimeout(() => {
+                      const cartBtn = document.querySelector('[data-cart-trigger]') as HTMLElement;
+                      cartBtn?.click();
+                    }, 100);
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all"
+                >
+                  Ir para o carrinho
+                </button>
+              </div>
+
+              <p className="text-[11px] text-muted-foreground text-center pt-2 leading-relaxed">
+                Uso exclusivamente pessoal. Comercialização e divulgação editorial requerem autorização (Lei 9.610/98).
+              </p>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Video player + purchase */}
+      {selectedVideo && createPortal(
+        <div
+          className="fixed inset-0 z-[100] w-screen h-[100dvh] overflow-hidden bg-background/85 backdrop-blur-md flex flex-col justify-start items-center sm:pt-[5vh] animate-in fade-in duration-150"
+          onClick={() => setSelectedVideo(null)}
+        >
+          <button
+            onClick={() => setSelectedVideo(null)}
+            className="absolute top-3 right-3 z-30 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center bg-card/90 hover:bg-card text-foreground rounded-full border border-border shadow-md transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <div
+            className="flex flex-col sm:flex-row sm:items-start sm:justify-center w-full h-[100dvh] sm:h-[calc(100vh-5vh)] sm:max-h-[calc(100vh-5vh)] sm:max-w-7xl sm:mx-auto sm:gap-6 sm:px-6 overflow-y-auto sm:overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="relative flex items-center justify-center p-1 sm:p-2 flex-1 min-h-0">
+              {videoPreviewLoading || !selectedVideoPreviewUrl ? (
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <p className="text-sm">Carregando prévia...</p>
+                </div>
+              ) : (
+                <video
+                  src={selectedVideoPreviewUrl}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[55dvh] sm:max-h-[calc(100vh-10vh)] rounded-lg shadow-2xl bg-black animate-in fade-in zoom-in-95 duration-200"
+                />
+              )}
+            </div>
+
+            <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-card rounded-t-2xl sm:rounded-2xl shrink-0 max-h-[40dvh] sm:max-h-[calc(100vh-10vh)] sm:border sm:border-border sm:shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200">
+              <h3 className="font-bold text-foreground text-lg">Vídeo digital para download</h3>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Prévia com marca d'água. O arquivo original (sem marca d'água) é liberado após a compra.
+              </p>
+
+              <div className="flex items-center justify-between p-4 rounded-xl border border-primary bg-primary/5">
+                <div className="flex items-center gap-3">
+                  <Film className="w-5 h-5 text-primary" />
+                  <span className="text-sm">Vídeo original</span>
+                </div>
+                <span className="text-primary font-bold">R$ {videoPrice.toFixed(2)}</span>
+              </div>
+
+              <button
+                onClick={() => handleAddVideoToCart(selectedVideo)}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                + Adicionar ao carrinho
+              </button>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setSelectedVideo(null)}
+                  className="flex-1 py-3 rounded-xl border border-primary text-primary font-medium text-sm hover:bg-primary/10 transition-all"
+                >
+                  Continuar comprando
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedVideo(null);
                     setTimeout(() => {
                       const cartBtn = document.querySelector('[data-cart-trigger]') as HTMLElement;
                       cartBtn?.click();

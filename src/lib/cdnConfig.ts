@@ -68,3 +68,14 @@ export function getThumbCdnUrl(originalPath: string): string | null {
 export function getMediumCdnUrl(originalPath: string): string | null {
   return cdnUrl(toMediumPath(originalPath));
 }
+
+/**
+ * Vídeos: o Lambda viufoto-video-processor já grava os caminhos resolvidos
+ * de thumbnail/poster/preview como colunas separadas em event_videos (não
+ * seguem um padrão derivável do file_url original como as fotos), então
+ * aqui só precisamos resolver o path já pronto para uma URL pública/assinada.
+ */
+export function getVideoDerivativeCdnUrl(derivativePath: string | null | undefined): string | null {
+  if (!derivativePath) return null;
+  return cdnUrl(derivativePath);
+}
