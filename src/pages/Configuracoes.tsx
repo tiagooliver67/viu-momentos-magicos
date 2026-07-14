@@ -419,7 +419,7 @@ const TabSmartCard = () => (
           </div>
         </div>
         <div className="flex gap-3 mt-6 justify-center">
-          <button onClick={() => { navigator.clipboard.writeText("https://viufoto.com.br/tiagooliverfotografias"); toast.success("Link copiado!"); }}
+          <button onClick={() => { navigator.clipboard.writeText("https://viufoto.com/tiagooliverfotografias"); toast.success("Link copiado!"); }}
             className="px-5 py-2.5 rounded-xl bg-secondary/50 text-sm font-medium flex items-center gap-2 hover:bg-secondary transition-colors">
             <Copy className="w-4 h-4" /> Copiar link
           </button>

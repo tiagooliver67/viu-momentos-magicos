@@ -18,7 +18,7 @@ const AdminSettings = () => {
           </div>
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">Domínio personalizado</label>
-            <input defaultValue="" placeholder="Ex: app.viufoto.com.br" className="w-full bg-secondary/50 rounded-lg px-3 py-2 text-sm outline-none border border-border focus:border-primary transition-colors" />
+            <input defaultValue="" placeholder="Ex: app.viufoto.com" className="w-full bg-secondary/50 rounded-lg px-3 py-2 text-sm outline-none border border-border focus:border-primary transition-colors" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">Cor primária</label>
