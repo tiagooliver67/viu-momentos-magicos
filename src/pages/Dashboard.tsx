@@ -12,6 +12,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { Skeleton } from "@/components/ui/skeleton";
 import LevelProgressCard from "@/components/levels/LevelProgressCard";
 import QuickUploadModal from "@/components/dashboard/QuickUploadModal";
+import { getCoverUrl } from "@/lib/eventCover";
 import {
   Pagination, PaginationContent, PaginationItem, PaginationLink,
   PaginationPrevious, PaginationNext, PaginationEllipsis,
