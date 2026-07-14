@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { getPhotoCode } from "@/lib/photoCode";
 import DiscountBanner from "@/components/event/DiscountBanner";
 import FaceSearchModal from "@/components/event/FaceSearchModal";
+import GalleryTabs, { type GalleryTab } from "@/components/event/GalleryTabs";
 import { useMarketingTracker } from "@/hooks/useMarketingTracker";
 import {
   toThumbPath as cdnToThumbPath,
