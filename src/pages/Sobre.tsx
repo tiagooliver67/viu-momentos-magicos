@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 
-const CANONICAL = "https://viufoto-premium.lovable.app/sobre";
+const CANONICAL = "https://viufoto.com/sobre";
 
 const publicos = [
   {
@@ -160,7 +160,7 @@ const Sobre = () => {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: "VIUFOTO",
-      url: "https://viufoto-premium.lovable.app",
+      url: "https://viufoto.com",
       description: desc,
       sameAs: [],
     });
