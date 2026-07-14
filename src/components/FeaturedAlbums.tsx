@@ -4,6 +4,7 @@ import EventCard from "./EventCard";
 import EventCardSkeleton from "./EventCardSkeleton";
 import ScrollReveal from "./ScrollReveal";
 import { Flame, Camera } from "lucide-react";
+import { getCoverUrl } from "@/lib/eventCover";
 
 interface FeaturedEvent {
   id: string;
