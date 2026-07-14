@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
 import UploadModal from "@/components/event/UploadModal";
+import DuplicateFilesModal, { type DuplicateResolution } from "@/components/event/DuplicateFilesModal";
+import { detectDuplicates, uniqueName, renameFile, type DuplicateEntry } from "@/lib/duplicateDetection";
 import PriceGridModal from "@/components/event/PriceGridModal";
 import DiscountModal from "@/components/event/DiscountModal";
 import CouponModal from "@/components/event/CouponModal";
