@@ -658,7 +658,9 @@ export type Database = {
           created_at: string
           event_id: string
           faces_indexed_at: string | null
+          file_hash: string | null
           file_name: string | null
+          file_size: number | null
           file_url: string
           id: string
           identified: boolean
@@ -672,7 +674,9 @@ export type Database = {
           created_at?: string
           event_id: string
           faces_indexed_at?: string | null
+          file_hash?: string | null
           file_name?: string | null
+          file_size?: number | null
           file_url: string
           id?: string
           identified?: boolean
@@ -686,7 +690,9 @@ export type Database = {
           created_at?: string
           event_id?: string
           faces_indexed_at?: string | null
+          file_hash?: string | null
           file_name?: string | null
+          file_size?: number | null
           file_url?: string
           id?: string
           identified?: boolean
@@ -812,7 +818,9 @@ export type Database = {
           created_at: string
           duration_seconds: number | null
           event_id: string
+          file_hash: string | null
           file_name: string | null
+          file_size: number | null
           file_size_bytes: number | null
           file_url: string
           height: number | null
@@ -831,7 +839,9 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           event_id: string
+          file_hash?: string | null
           file_name?: string | null
+          file_size?: number | null
           file_size_bytes?: number | null
           file_url: string
           height?: number | null
@@ -850,7 +860,9 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           event_id?: string
+          file_hash?: string | null
           file_name?: string | null
+          file_size?: number | null
           file_size_bytes?: number | null
           file_url?: string
           height?: number | null

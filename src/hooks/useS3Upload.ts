@@ -322,6 +322,7 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
             photographer_id: user.id,
             file_url: obj.path,
             file_name: obj.file.name,
+            file_size: obj.file.size,
           };
           if (isPhoto && album) {
             insertData.album = album;
