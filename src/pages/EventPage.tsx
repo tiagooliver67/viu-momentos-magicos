@@ -562,6 +562,17 @@ const EventPage = () => {
             rules={event.progressive_discount_rules}
             enabled={!!event.progressive_discount_enabled}
           />
+
+          {/* Abas Fotos / Vídeos — troca instantânea, contadores, persistência por evento */}
+          <GalleryTabs
+            active={activeTab}
+            onChange={setActiveTab}
+            photoCount={allPhotos.length}
+            videoCount={videoList.length}
+          />
+
+          {activeTab === "photos" && (
+          <>
           {/* Search */}
           <div className="glass-card p-3 sm:p-4 mb-6 sm:mb-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2 flex-1">
