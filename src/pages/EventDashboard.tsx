@@ -23,6 +23,7 @@ import type { UploadFileProgress } from "@/components/event/PhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { getCoverUrl } from "@/lib/eventCover";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
   Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
@@ -326,7 +327,7 @@ const EventDashboard = () => {
               className="w-full md:w-52 h-36 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
             >
               {event.cover_url ? (
-                <img src={event.cover_url} alt="Capa" className="w-full h-full object-cover" />
+                <img src={getCoverUrl(event.cover_url, 1200) ?? undefined} alt="Capa" decoding="async" className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-1">
                   <Image className="w-10 h-10 text-muted-foreground" />

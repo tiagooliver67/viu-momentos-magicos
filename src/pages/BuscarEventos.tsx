@@ -6,6 +6,7 @@ import { Search, Calendar, MapPin, Camera, User2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
+import { getCoverUrl } from "@/lib/eventCover";
 
 const BuscarEventos = () => {
   const [searchParams, setSearchParams] = useSearchParams();

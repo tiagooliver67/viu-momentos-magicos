@@ -17,6 +17,7 @@ import { getPhotoCode } from "@/lib/photoCode";
 import DiscountBanner from "@/components/event/DiscountBanner";
 import FaceSearchModal from "@/components/event/FaceSearchModal";
 import GalleryTabs, { type GalleryTab } from "@/components/event/GalleryTabs";
+import { getCoverUrl } from "@/lib/eventCover";
 import { useMarketingTracker } from "@/hooks/useMarketingTracker";
 import {
   toThumbPath as cdnToThumbPath,
@@ -531,7 +532,7 @@ const EventPage = () => {
       <div className="pt-14 sm:pt-16">
         {/* Event Header */}
         <div className="relative h-32 sm:h-40 overflow-hidden">
-          <img src={event.cover_url || "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&q=80"} alt="" className="w-full h-full object-cover" />
+          <img src={getCoverUrl(event.cover_url, 1600) || "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200&q=80"} alt="" decoding="async" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 container mx-auto px-4">
             {event.status === "ativo" && <span className="badge-live mb-2 sm:mb-3">AO VIVO</span>}

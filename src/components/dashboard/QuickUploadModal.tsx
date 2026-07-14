@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import UploadModal from "@/components/event/UploadModal";
 import { useS3Upload } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
+import { getCoverUrl } from "@/lib/eventCover";
 
 interface Props {
   open: boolean;
@@ -109,7 +110,7 @@ export default function QuickUploadModal({ open, onClose, type }: Props) {
                 >
                   <div className="h-24 bg-muted relative overflow-hidden">
                     {ev.cover_url ? (
-                      <img src={ev.cover_url} alt={ev.name} className="w-full h-full object-cover" />
+                      <img src={getCoverUrl(ev.cover_url, 400) ?? undefined} alt={ev.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Camera className="w-6 h-6 text-muted-foreground/40" />

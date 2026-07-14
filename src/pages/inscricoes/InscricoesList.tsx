@@ -7,6 +7,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, STATUS_LABEL, type RegistrationEvent } from "@/lib/inscricoes";
+import { getCoverUrl } from "@/lib/eventCover";
 
 export default function InscricoesList() {
   const { user } = useAuth();
@@ -70,7 +71,7 @@ export default function InscricoesList() {
                 className="glass-card p-4 hover:border-primary/40 transition-all flex flex-col"
               >
                 {ev.cover_url ? (
-                  <div className="aspect-video rounded-lg bg-cover bg-center mb-3" style={{ backgroundImage: `url(${ev.cover_url})` }} />
+                  <div className="aspect-video rounded-lg bg-cover bg-center mb-3" style={{ backgroundImage: `url(${getCoverUrl(ev.cover_url, 800)})` }} />
                 ) : (
                   <div className="aspect-video rounded-lg bg-secondary mb-3 flex items-center justify-center text-muted-foreground">
                     <Calendar className="w-8 h-8" />
