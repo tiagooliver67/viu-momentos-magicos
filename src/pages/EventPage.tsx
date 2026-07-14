@@ -610,46 +610,6 @@ const EventPage = () => {
             </div>
           )}
 
-          {/* Video gallery — vitrine pública de vídeos, prévia com marca d'água até a compra */}
-          {videoList.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <Film className="w-5 h-5 text-primary" />
-                Vídeos
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-                {videoList.map((video: any) => {
-                  const posterUrl = videoPosterUrls?.[video.id];
-                  return (
-                    <button
-                      key={video.id}
-                      onClick={() => setSelectedVideo(video)}
-                      className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary group text-left"
-                    >
-                      {posterUrl ? (
-                        <img src={posterUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Film className="w-8 h-8 text-muted-foreground opacity-40" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity">
-                          <Play className="w-4 h-4 text-white fill-white ml-0.5" />
-                        </div>
-                      </div>
-                      {video.duration_seconds != null && (
-                        <span className="absolute bottom-1.5 right-1.5 text-[10px] text-white bg-black/60 px-1.5 py-0.5 rounded">
-                          {Math.floor(video.duration_seconds / 60)}:{Math.round(video.duration_seconds % 60).toString().padStart(2, "0")}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
           {/* Breadcrumb folder when navegando dentro de uma pasta */}
           {selectedFolder !== null && !trimmedBib && (
             <div className="mb-4 flex items-center gap-2 text-sm">
