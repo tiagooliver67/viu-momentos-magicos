@@ -103,9 +103,21 @@ export default function InscricaoForm() {
   const onUploadCover = async (file: File) => {
     if (!user) return;
     setUploadingCover(true);
-    const ext = file.name.split(".").pop();
+    let payload: Blob = file;
+    let ext = file.name.split(".").pop() || "jpg";
+    try {
+      const { resizeImage } = await import("@/lib/imageResize");
+      const resized = await resizeImage(file, 1600, 0.82);
+      payload = resized;
+      ext = resized.type === "image/webp" ? "webp" : "jpg";
+    } catch (err) {
+      console.warn("[inscricaoCover] resize falhou, subindo original:", err);
+    }
     const path = `${user.id}/covers/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("registration-assets").upload(path, file, { upsert: true });
+    const { error } = await supabase.storage.from("registration-assets").upload(path, payload, {
+      upsert: true,
+      contentType: payload.type || `image/${ext}`,
+    });
     if (error) toast.error("Erro no upload da capa");
     else {
       const { data } = supabase.storage.from("registration-assets").getPublicUrl(path);

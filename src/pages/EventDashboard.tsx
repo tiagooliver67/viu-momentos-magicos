@@ -23,6 +23,8 @@ import type { UploadFileProgress } from "@/components/event/PhotoGallery";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { getCoverUrl } from "@/lib/eventCover";
+import { resizeImage } from "@/lib/imageResize";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
   Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
@@ -228,8 +230,23 @@ const EventDashboard = () => {
     const file = e.target.files?.[0];
     if (!file || !id) return;
     try {
-      const fileName = `${id}/cover-${Date.now()}.${file.name.split('.').pop()}`;
-      const { error: uploadError } = await supabase.storage.from("event-covers").upload(fileName, file);
+      // Reduz o arquivo no cliente antes de subir: WebP ~1600px, quality 82.
+      // Reduz drasticamente o tamanho do objeto no bucket e melhora o TTFB
+      // mesmo sem depender das image transformations do Supabase.
+      let payload: Blob = file;
+      let ext = file.name.split(".").pop() || "jpg";
+      try {
+        const resized = await resizeImage(file, 1600, 0.82);
+        payload = resized;
+        ext = resized.type === "image/webp" ? "webp" : "jpg";
+      } catch (err) {
+        console.warn("[coverUpload] resize falhou, subindo original:", err);
+      }
+      const fileName = `${id}/cover-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("event-covers").upload(fileName, payload, {
+        contentType: payload.type || `image/${ext}`,
+        upsert: false,
+      });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from("event-covers").getPublicUrl(fileName);
       await updateEvent.mutateAsync({ cover_url: publicUrl });
@@ -326,7 +343,7 @@ const EventDashboard = () => {
               className="w-full md:w-52 h-36 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
             >
               {event.cover_url ? (
-                <img src={event.cover_url} alt="Capa" className="w-full h-full object-cover" />
+                <img src={getCoverUrl(event.cover_url, 1200) ?? undefined} alt="Capa" decoding="async" className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-1">
                   <Image className="w-10 h-10 text-muted-foreground" />

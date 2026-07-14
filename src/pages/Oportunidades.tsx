@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import ApplyEventModal from "@/components/oportunidades/ApplyEventModal";
 import { Button } from "@/components/ui/button";
+import { getCoverUrl } from "@/lib/eventCover";
 import {
   Briefcase, Calendar, MapPin, Lightbulb, ArrowRight,
   PlusCircle, FileText, Award, BookOpen, Image as ImageIcon,
@@ -155,7 +156,7 @@ const Oportunidades = () => {
                     <div className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-all">
                       <Link to={`/evento/${ev.id}`} className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                           {ev.cover_url ? (
-                            <img src={ev.cover_url} alt={ev.name} className="w-full h-full object-cover" />
+                            <img src={getCoverUrl(ev.cover_url, 600) ?? undefined} alt={ev.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <ImageIcon className="w-4 h-4 text-muted-foreground/40" />

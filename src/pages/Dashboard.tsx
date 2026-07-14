@@ -12,6 +12,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { Skeleton } from "@/components/ui/skeleton";
 import LevelProgressCard from "@/components/levels/LevelProgressCard";
 import QuickUploadModal from "@/components/dashboard/QuickUploadModal";
+import { getCoverUrl } from "@/lib/eventCover";
 import {
   Pagination, PaginationContent, PaginationItem, PaginationLink,
   PaginationPrevious, PaginationNext, PaginationEllipsis,
@@ -382,7 +383,7 @@ const Dashboard = () => {
                   {/* Cover */}
                   <div className="h-32 bg-muted relative overflow-hidden">
                     {event.cover_url ? (
-                      <img src={event.cover_url} alt={event.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={getCoverUrl(event.cover_url, 600) ?? undefined} alt={event.name} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Camera className="w-8 h-8 text-muted-foreground/40" />

@@ -6,6 +6,7 @@ import { Search, Calendar, MapPin, Camera, User2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ClientNavbar from "@/components/ClientNavbar";
 import Footer from "@/components/Footer";
+import { getCoverUrl } from "@/lib/eventCover";
 
 const BuscarEventos = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -133,7 +134,7 @@ const BuscarEventos = () => {
                   >
                     <div className="aspect-[16/10] overflow-hidden bg-secondary/30">
                       {event.cover_url ? (
-                        <img src={event.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <img src={getCoverUrl(event.cover_url, 600) ?? undefined} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Camera className="w-8 h-8 text-muted-foreground" />
