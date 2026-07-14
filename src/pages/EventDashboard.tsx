@@ -539,8 +539,16 @@ const EventDashboard = () => {
         </div>
 
         {/* ======= MODALS ======= */}
-        <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => { s3UploadPhotos.mutate(files); setShowUploadPhotos(false); }} isUploading={s3UploadPhotos.isPending} type="photos" />
-        <UploadModal open={showUploadVideos} onClose={() => setShowUploadVideos(false)} onUpload={(files) => { s3UploadVideos.mutate(files); setShowUploadVideos(false); }} isUploading={s3UploadVideos.isPending} type="videos" />
+        <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => runUploadWithDupCheck(files, "photos")} isUploading={s3UploadPhotos.isPending} type="photos" />
+        <UploadModal open={showUploadVideos} onClose={() => setShowUploadVideos(false)} onUpload={(files) => runUploadWithDupCheck(files, "videos")} isUploading={s3UploadVideos.isPending} type="videos" />
+        <DuplicateFilesModal
+          open={!!dupState}
+          onClose={() => setDupState(null)}
+          onConfirm={handleDupResolution}
+          type={dupState?.type ?? "photos"}
+          duplicates={dupState?.duplicates ?? []}
+          freshCount={dupState?.fresh.length ?? 0}
+        />
         <PriceGridModal
           open={showPriceGrid}
           onClose={() => setShowPriceGrid(false)}
