@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ASAAS_BASE_URL = "https://sandbox.asaas.com/api/v3";
+const ASAAS_BASE_URL = "https://api.asaas.com/v3";
 
 // 🔧 Feature flag: set to true when email sending is configured
 const REQUIRE_2FA = false;
