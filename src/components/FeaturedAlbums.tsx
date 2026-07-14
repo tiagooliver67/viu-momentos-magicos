@@ -69,7 +69,7 @@ const FeaturedAlbums = () => {
           date: new Date(e.event_date).toLocaleDateString("pt-BR"),
           location: e.location,
           photoCount: countMap[e.id] || 0,
-          imageUrl: e.cover_url || "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80",
+          imageUrl: getCoverUrl(e.cover_url, 800) || "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80",
         })));
       } catch { /* silent */ } finally { setLoading(false); }
     };
