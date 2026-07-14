@@ -69,6 +69,18 @@ const EventPage = () => {
   const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
 
+  // Aba ativa (Fotos | Vídeos) — persistida por evento em localStorage.
+  const tabStorageKey = id ? `viufoto_gallery_tab_${id}` : null;
+  const [activeTab, setActiveTab] = useState<GalleryTab>(() => {
+    if (typeof window === "undefined" || !tabStorageKey) return "photos";
+    const saved = window.localStorage.getItem(tabStorageKey);
+    return saved === "videos" ? "videos" : "photos";
+  });
+  useEffect(() => {
+    if (!tabStorageKey) return;
+    window.localStorage.setItem(tabStorageKey, activeTab);
+  }, [activeTab, tabStorageKey]);
+
   // Fetch event
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["public-event", id],
