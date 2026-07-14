@@ -7,11 +7,35 @@ const corsHeaders = {
 
 const ASAAS_BASE_URL = "https://sandbox.asaas.com/api/v3";
 
-// Commission rates by plan type
-const PLAN_COMMISSION: Record<string, number> = {
-  inicio: 0.12,
+// Fallback commission rates (used only if DB config is missing).
+// Source of truth: table `eligibility_rules` (keys `asaas_commission_<plan>`).
+const DEFAULT_COMMISSION = 0.10;
+const FALLBACK_PLAN_COMMISSION: Record<string, number> = {
+  inicio: 0.10,
   profissional: 0.10,
 };
+
+async function getCommissionRate(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
+  planType: string,
+): Promise<number> {
+  const key = `asaas_commission_${planType}`;
+  try {
+    const { data } = await supabaseAdmin
+      .from("eligibility_rules")
+      .select("value, active")
+      .eq("key", key)
+      .maybeSingle();
+    if (data?.active && data.value != null) {
+      const raw = typeof data.value === "string" ? data.value : (data.value as any);
+      const num = typeof raw === "number" ? raw : parseFloat(String(raw));
+      if (Number.isFinite(num) && num >= 0 && num <= 1) return num;
+    }
+  } catch (e) {
+    console.error("getCommissionRate error:", e);
+  }
+  return FALLBACK_PLAN_COMMISSION[planType] ?? DEFAULT_COMMISSION;
+}
 
 function getAsaasKey(): string {
   const key = Deno.env.get("ASAAS_API_KEY");
@@ -183,8 +207,8 @@ Deno.serve(async (req) => {
         });
       }
 
-      // 3. Calculate split
-      const commissionRate = PLAN_COMMISSION[event.plan_type] ?? 0.12;
+      // 3. Calculate split (commission rate loaded from eligibility_rules)
+      const commissionRate = await getCommissionRate(supabaseAdmin, event.plan_type);
       const platformFee = Math.round(total * commissionRate * 100) / 100;
 
       const viufotoWalletId = getViufotoWalletId();
