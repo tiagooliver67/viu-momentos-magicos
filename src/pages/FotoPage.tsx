@@ -313,39 +313,9 @@ const FotoPage = () => {
               <div className="glass-card p-5 space-y-4">
                 <h2 className="font-bold text-foreground text-lg">Comprar esta foto</h2>
 
-                <div className="space-y-2">
-                  <label
-                    onClick={() => setResolution("high")}
-                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                      resolution === "high" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        resolution === "high" ? "border-primary" : "border-muted-foreground"
-                      }`}>
-                        {resolution === "high" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                      </div>
-                      <span className="text-sm">Alta resolução</span>
-                    </div>
-                    <span className="text-primary font-bold">R$ {highPrice.toFixed(2)}</span>
-                  </label>
-                  <label
-                    onClick={() => setResolution("low")}
-                    className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                      resolution === "low" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        resolution === "low" ? "border-primary" : "border-muted-foreground"
-                      }`}>
-                        {resolution === "low" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                      </div>
-                      <span className="text-sm">Baixa resolução</span>
-                    </div>
-                    <span className="text-primary font-bold">R$ {lowPrice.toFixed(2)}</span>
-                  </label>
+                <div className="flex items-center justify-between p-4 rounded-xl border border-primary bg-primary/5">
+                  <span className="text-sm font-medium">Foto original (Alta resolução)</span>
+                  <span className="text-primary font-bold">R$ {highPrice.toFixed(2)}</span>
                 </div>
 
                 <button
