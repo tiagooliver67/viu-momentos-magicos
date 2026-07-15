@@ -280,7 +280,6 @@ const EventPage = () => {
   });
 
   const highPrice = priceGrid?.photo_high_price ?? 15;
-  const lowPrice = priceGrid?.photo_low_price ?? 11;
   const videoPrice = priceGrid?.video_price ?? 15.99;
   const allPhotos = photos || [];
 
@@ -502,14 +501,14 @@ const EventPage = () => {
     );
   }
 
-  const handleAddToCart = (photo: any, res: "high" | "low") => {
+  const handleAddToCart = (photo: any, _res?: "high" | "low") => {
     addItem({
       photoId: photo.id,
       photoUrl: getPhotoUrl(photo),
       eventId: id,
       eventName: event.name,
-      resolution: res,
-      price: res === "high" ? highPrice : lowPrice,
+      resolution: "high",
+      price: highPrice,
     });
     toast.success("Foto adicionada ao carrinho!");
   };
@@ -946,43 +945,13 @@ const EventPage = () => {
             <div className="w-full sm:w-80 p-4 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto bg-card rounded-t-2xl sm:rounded-2xl shrink-0 max-h-[40dvh] sm:max-h-[calc(100vh-10vh)] sm:border sm:border-border sm:shadow-xl animate-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200">
               <h3 className="font-bold text-foreground text-lg">Foto digital para download</h3>
 
-              <div className="space-y-2">
-                <label
-                  onClick={() => setResolution("high")}
-                  className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                    resolution === "high" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      resolution === "high" ? "border-primary" : "border-muted-foreground"
-                    }`}>
-                      {resolution === "high" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                    </div>
-                    <span className="text-sm">Alta resolução</span>
-                  </div>
-                  <span className="text-primary font-bold">R$ {highPrice.toFixed(2)}</span>
-                </label>
-                <label
-                  onClick={() => setResolution("low")}
-                  className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                    resolution === "low" ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      resolution === "low" ? "border-primary" : "border-muted-foreground"
-                    }`}>
-                      {resolution === "low" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                    </div>
-                    <span className="text-sm">Baixa resolução</span>
-                  </div>
-                  <span className="text-primary font-bold">R$ {lowPrice.toFixed(2)}</span>
-                </label>
+              <div className="flex items-center justify-between p-4 rounded-xl border border-primary bg-primary/5">
+                <span className="text-sm font-medium">Foto original (Alta resolução)</span>
+                <span className="text-primary font-bold">R$ {highPrice.toFixed(2)}</span>
               </div>
 
               <button
-                onClick={() => handleAddToCart(selectedPhoto, resolution)}
+                onClick={() => handleAddToCart(selectedPhoto, "high")}
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px]"
               >
                 <ShoppingCart className="w-5 h-5" />
