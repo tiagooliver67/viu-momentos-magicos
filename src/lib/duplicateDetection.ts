@@ -86,8 +86,12 @@ export function uniqueName(name: string, taken: Set<string>): string {
   const dot = name.lastIndexOf(".");
   const base = dot > 0 ? name.slice(0, dot) : name;
   const ext = dot > 0 ? name.slice(dot) : "";
+  // Sufixo com hífen (não " (N)") — parênteses e espaços quebram a assinatura
+  // SigV4 do S3 quando são reenviados no PUT com encoding diferente do canonical
+  // URI assinado pelo gateway, resultando em 403. Hífen + dígito é seguro em
+  // qualquer sistema de arquivos e legível para o usuário.
   for (let i = 2; i < 10_000; i++) {
-    const candidate = `${base} (${i})${ext}`;
+    const candidate = `${base}-${i}${ext}`;
     if (!taken.has(candidate.toLowerCase())) return candidate;
   }
   // Extremely unlikely fallback: timestamp.
