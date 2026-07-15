@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { X, Camera, ArrowRight } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import UploadModal from "@/components/event/UploadModal";
 import { useS3Upload } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
 import { getCoverUrl } from "@/lib/eventCover";
-import DuplicateFilesModal, { type DuplicateResolution } from "@/components/event/DuplicateFilesModal";
-import { detectDuplicates, uniqueName, renameFile, type DuplicateEntry } from "@/lib/duplicateDetection";
 
 interface Props {
   open: boolean;
@@ -19,119 +17,22 @@ interface Props {
 
 function UploadForEvent({ eventId, eventName, type, onDone }: { eventId: string; eventName: string; type: "photos" | "videos"; onDone: () => void }) {
   const uploader = useS3Upload({ eventId, type: type === "photos" ? "fotos" : "videos" });
-  const queryClient = useQueryClient();
-  const [dupState, setDupState] = useState<{ duplicates: DuplicateEntry[]; fresh: File[] } | null>(null);
-  const [pickerOpen, setPickerOpen] = useState(true);
-
-  const runUpload = (toUpload: File[]) => {
-    if (toUpload.length === 0) {
-      toast.info("Nenhum arquivo novo para enviar.");
-      onDone();
-      return;
-    }
-    uploader.mutate(toUpload as any, {
-      onSuccess: () => { toast.success(`Enviado para ${eventName}`); onDone(); },
-      onError: (e: any) => toast.error(e?.message || "Falha no envio"),
-    });
-  };
-
-  const handleFiles = async (files: File[]) => {
-    const tableName = type === "photos" ? "event_photos" : "event_videos";
-    const { data, error } = await supabase
-      .from(tableName)
-      .select("id, file_name, file_size")
-      .eq("event_id", eventId);
-    if (error) {
-      toast.error("Falha ao verificar duplicados: " + error.message);
-      return;
-    }
-    const existing = (data || []).map((r: any) => ({
-      id: r.id,
-      file_name: r.file_name,
-      file_size: typeof r.file_size === "number" ? r.file_size : null,
-    }));
-    const { fresh, duplicates } = detectDuplicates(files, existing);
-
-    if (duplicates.length === 0) {
-      setPickerOpen(false);
-      runUpload(fresh);
-      return;
-    }
-    setPickerOpen(false);
-    setDupState({ duplicates, fresh });
-  };
-
-  const handleDupResolution = async (choice: DuplicateResolution) => {
-    if (!dupState) return;
-    const { duplicates, fresh } = dupState;
-    const tableName = type === "photos" ? "event_photos" : "event_videos";
-    const existingNames = new Set<string>();
-    for (const d of duplicates) existingNames.add((d.existing.file_name || "").toLowerCase());
-    for (const f of fresh) existingNames.add(f.name.toLowerCase());
-
-    let toUpload: File[] = [...fresh];
-
-    if (choice === "ignore") {
-      // fresh only
-    } else if (choice === "keep-both") {
-      for (const d of duplicates) {
-        const newName = uniqueName(d.file.name, existingNames);
-        existingNames.add(newName.toLowerCase());
-        toUpload.push(renameFile(d.file, newName));
-      }
-    } else if (choice === "replace") {
-      try {
-        const ids = duplicates.map(d => d.existing.id);
-        const { error } = await supabase.from(tableName).delete().in("id", ids);
-        if (error) throw error;
-        toUpload.push(...duplicates.map(d => d.file));
-      } catch (err: any) {
-        toast.error("Falha ao substituir: " + (err.message || err));
-        setDupState(null);
-        return;
-      }
-    } else if (choice === "update") {
-      const toDelete: string[] = [];
-      for (const d of duplicates) {
-        if (d.identical) continue;
-        toDelete.push(d.existing.id);
-        toUpload.push(d.file);
-      }
-      if (toDelete.length > 0) {
-        try {
-          const { error } = await supabase.from(tableName).delete().in("id", toDelete);
-          if (error) throw error;
-        } catch (err: any) {
-          toast.error("Falha ao atualizar: " + (err.message || err));
-          setDupState(null);
-          return;
-        }
-      }
-    }
-
-    setDupState(null);
-    queryClient.invalidateQueries({ queryKey: [type === "photos" ? "event-photos" : "event-videos", eventId] });
-    runUpload(toUpload);
-  };
-
   return (
-    <>
-      <UploadModal
-        open={pickerOpen}
-        onClose={onDone}
-        isUploading={uploader.isPending}
-        type={type}
-        onUpload={handleFiles}
-      />
-      <DuplicateFilesModal
-        open={!!dupState}
-        onClose={() => { setDupState(null); onDone(); }}
-        onConfirm={handleDupResolution}
-        type={type}
-        duplicates={dupState?.duplicates ?? []}
-        freshCount={dupState?.fresh.length ?? 0}
-      />
-    </>
+    <UploadModal
+      open
+      onClose={onDone}
+      isUploading={uploader.isPending}
+      type={type}
+      onUpload={(files) => {
+        uploader.mutate(files as any, {
+          onSuccess: () => {
+            toast.success(`Enviado para ${eventName}`);
+            onDone();
+          },
+          onError: (e: any) => toast.error(e?.message || "Falha no envio"),
+        });
+      }}
+    />
   );
 }
 
