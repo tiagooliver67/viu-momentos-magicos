@@ -47,7 +47,7 @@ export default function DuplicateFilesModal({ open, onClose, onConfirm, type, du
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div className="glass-card w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h3 className="font-bold text-foreground text-lg">Arquivos duplicados encontrados</h3>
