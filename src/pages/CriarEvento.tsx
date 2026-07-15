@@ -339,7 +339,7 @@ const CriarEvento = () => {
                   </div>
 
                   <p className="text-[10px] text-muted-foreground/80 leading-relaxed">
-                    Taxas de processamento do meio de pagamento são aplicadas no checkout e não estão incluídas nesta simulação.
+                    Já considera 10% de comissão da plataforma + taxa do gateway.
                   </p>
                 </div>
               </div>

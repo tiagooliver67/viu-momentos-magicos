@@ -159,7 +159,7 @@ export default function PriceGridModal({
           {/* Foto Original */}
           <PriceField
             label="Foto Original (Alta resolução)"
-            description={`Arquivo completo, sem marca d'água — ideal para impressão. Valor mínimo: R$ ${MIN_PHOTO_PRICE.toFixed(2).replace(".", ",")}.`}
+            description={`Arquivo sem marca d'água  -  Valor mínimo: R$ ${MIN_PHOTO_PRICE.toFixed(2).replace(".", ",")}.\u00A0Sugerido: R$ 10,00.`}
             value={grid.photo_high_price}
             onChange={handleHighChange}
             min={MIN_PHOTO_PRICE}
@@ -282,7 +282,7 @@ function PriceField({ label, description, badge, value, onChange, min = 0, photo
         <PreviewCell label="Sua margem" value={`${b.marginPct}%`} />
       </div>
       <p className="text-[10px] text-muted-foreground/80 mt-1.5">
-        Já considera 10% de comissão da plataforma e ~4,99% de taxa do gateway.
+        Já considera 10% de comissão da plataforma + taxa do gateway.
       </p>
     </div>
   );
