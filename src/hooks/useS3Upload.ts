@@ -161,9 +161,10 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
   const UPLOAD_CONCURRENCY = 6;
 
   return useMutation({
-    mutationFn: async (input: File[] | { files: File[]; album?: string | null }) => {
+    mutationFn: async (input: File[] | { files: File[]; album?: string | null; fileHashes?: Map<File, string> }) => {
       const files: File[] = Array.isArray(input) ? input : input.files;
       const album: string | null = Array.isArray(input) ? null : (input.album ?? null);
+      const fileHashes: Map<File, string> | undefined = Array.isArray(input) ? undefined : input.fileHashes;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
@@ -324,6 +325,8 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
             file_name: obj.file.name,
             file_size: obj.file.size,
           };
+          const hash = fileHashes?.get(obj.file);
+          if (hash) insertData.file_hash = hash;
           if (isPhoto && album) {
             insertData.album = album;
           }
@@ -335,8 +338,19 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
             .single();
 
           if (error) {
+            // Postgres 23505 = unique_violation → nosso índice parcial
+            // (event_id, file_hash) rejeitou uma duplicata que passou pelo modal
+            // (ex.: dois uploads simultâneos em janelas diferentes).
+            const isDupe = (error as any).code === "23505";
             console.error(`[S3Upload] DB insert error for ${obj.file.name}:`, error);
-            progressMap[i] = { ...progressMap[i], status: "error", progress: 0, errorDetail: "Erro ao salvar no banco" };
+            progressMap[i] = {
+              ...progressMap[i],
+              status: "error",
+              progress: 0,
+              errorDetail: isDupe
+                ? "Arquivo idêntico já existe neste evento"
+                : "Erro ao salvar no banco",
+            };
             onProgress?.([...progressMap]);
             return;
           }

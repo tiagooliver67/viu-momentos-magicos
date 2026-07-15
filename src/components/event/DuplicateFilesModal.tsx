@@ -155,7 +155,7 @@ export default function DuplicateFilesModal({ open, onClose, onConfirm, type, du
         </div>
 
         <div className="p-4 border-t border-border flex items-center justify-between gap-3">
-          <p className="text-[11px] text-muted-foreground">A comparação é feita pelo nome do arquivo{diffCount > 0 && " e tamanho"}.</p>
+          <p className="text-[11px] text-muted-foreground">A comparação é feita pelo conteúdo do arquivo (hash SHA-256) e, como fallback, por nome e tamanho.</p>
           <div className="flex gap-2">
             <button onClick={onClose} className="px-4 py-2 rounded-lg border border-border text-foreground text-sm font-medium">Cancelar</button>
             <button
