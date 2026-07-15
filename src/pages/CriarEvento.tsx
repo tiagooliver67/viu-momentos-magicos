@@ -8,7 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 const steps = ["Monetização", "Informações", "Busca", "Visibilidade", "Resumo"];
 
 const COMMISSION_RATE = 0.10; // 10% fixos
-const DEFAULT_SIM_PRICE = 14;
+const DEFAULT_SIM_PRICE = 15;
+const MIN_PHOTO_PRICE = 3;
+const DEFAULT_VIDEO_PRICE = 15;
 
 const categories = [
   "Corrida", "Ciclismo", "Triathlon", "Natação", "Futebol", "Futsal", "Vôlei", "Basquete",
@@ -144,9 +146,9 @@ const CriarEvento = () => {
 
       if (error) throw error;
 
-      // Grade padrão derivada da simulação: foto = simPrice, vídeo = simPrice * 1,30
-      const highPrice = Math.max(0, Number(simPrice) || DEFAULT_SIM_PRICE);
-      const videoPrice = Math.round(highPrice * 1.3 * 100) / 100;
+      // Grade padrão: foto = simPrice (mín R$ 3,00); vídeo = R$ 15,00 (sugerido fixo, editável na grade)
+      const highPrice = Math.max(MIN_PHOTO_PRICE, Number(simPrice) || DEFAULT_SIM_PRICE);
+      const videoPrice = DEFAULT_VIDEO_PRICE;
       await supabase.from("price_grids").insert({
         event_id: data.id,
         name: "Padrão",
@@ -288,7 +290,7 @@ const CriarEvento = () => {
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Simulação financeira</h3>
                     <p className="text-[11px] text-muted-foreground">
-                      Este valor será usado como preço da foto na grade padrão do evento. O vídeo será sugerido em 30% acima.
+                      Este valor será usado como preço da foto na grade padrão do evento. Mínimo R$ 3,00. O vídeo é sugerido em R$ 15,00 e pode ser editado depois na grade.
                     </p>
                   </div>
 
@@ -298,18 +300,28 @@ const CriarEvento = () => {
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">R$</span>
                       <input
                         type="number"
-                        min={0}
+                        min={MIN_PHOTO_PRICE}
                         step={0.5}
                         value={simPrice}
-                        onChange={(e) => setSimPrice(Math.max(0, parseFloat(e.target.value) || 0))}
+                        onChange={(e) => setSimPrice(parseFloat(e.target.value) || 0)}
+                        onBlur={(e) => {
+                          const v = parseFloat(e.target.value) || 0;
+                          if (v < MIN_PHOTO_PRICE) {
+                            toast.error(`Preço mínimo da foto é R$ ${MIN_PHOTO_PRICE.toFixed(2).replace(".", ",")}.`);
+                            setSimPrice(MIN_PHOTO_PRICE);
+                          }
+                        }}
                         className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-border bg-background text-sm font-medium text-foreground outline-none focus:border-primary"
                       />
                     </div>
+                    {simPrice < MIN_PHOTO_PRICE && (
+                      <p className="text-[11px] text-destructive mt-1">Valor mínimo: R$ {MIN_PHOTO_PRICE.toFixed(2).replace(".", ",")}.</p>
+                    )}
                   </div>
 
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between"><span className="text-muted-foreground">Preço da foto</span><span className="font-medium text-foreground">{fmt(simPrice)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Preço do vídeo (sugerido)</span><span className="font-medium text-foreground">{fmt(Math.round(simPrice * 1.3 * 100) / 100)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Preço do vídeo (sugerido)</span><span className="font-medium text-foreground">{fmt(DEFAULT_VIDEO_PRICE)}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Comissão ViuFoto (10%)</span><span className="font-medium text-foreground">{fmt(commissionValue)}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Você absorve</span><span className="font-medium text-foreground">{fmt(photographerAbsorbs)}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Repasse ao cliente</span><span className="font-medium text-foreground">{fmt(clientAbsorbs)}</span></div>
