@@ -128,9 +128,17 @@ export function useUploadWithDupCheck({ eventId, type, watermarkUrl, onProgress 
           const newName = uniqueName(d.file.name, existingNames);
           existingNames.add(newName.toLowerCase());
           const renamed = renameFile(d.file, newName);
-          // Carry hash over to the renamed File wrapper.
-          const h = hashes.get(d.file);
-          if (h) hashes.set(renamed, h);
+          // "Manter todos" é a decisão explícita do usuário de guardar duas
+          // cópias do mesmo conteúdo. Se copiássemos o hash, o índice único
+          // parcial (event_id, file_hash) rejeitaria o insert com 23505.
+          // Para arquivos idênticos, deixamos file_hash=NULL nesse novo
+          // registro (o índice parcial ignora NULLs). Para "mesmo nome,
+          // conteúdo diferente", os hashes já são diferentes, então
+          // preservamos normalmente.
+          if (!d.identical) {
+            const h = hashes.get(d.file);
+            if (h) hashes.set(renamed, h);
+          }
           toUpload.push(renamed);
         }
       } else if (choice === "replace") {
