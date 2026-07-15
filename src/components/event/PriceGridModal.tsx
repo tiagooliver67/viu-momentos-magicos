@@ -282,7 +282,7 @@ function PriceField({ label, description, badge, value, onChange, min = 0, photo
         <PreviewCell label="Sua margem" value={`${b.marginPct}%`} />
       </div>
       <p className="text-[10px] text-muted-foreground/80 mt-1.5">
-        Já considera 10% de comissão da plataforma e ~4,99% de taxa do gateway.
+        Já considera 10% de comissão da plataforma + taxa do gateway.
       </p>
     </div>
   );
