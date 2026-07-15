@@ -428,12 +428,12 @@ const EventDashboard = () => {
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Alta</span>
+              <span className="text-muted-foreground">Foto original</span>
               <span className="text-foreground font-medium">{grid?.photo_high_price?.toFixed(2).replace(".", ",") || "12,00"}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Baixa</span>
-              <span className="text-foreground font-medium">{grid?.photo_low_price?.toFixed(2).replace(".", ",") || "8,00"}</span>
+              <span className="text-muted-foreground">Vídeo</span>
+              <span className="text-foreground font-medium">{grid?.video_price?.toFixed(2).replace(".", ",") || "—"}</span>
             </div>
             <div className="mt-3 border-t border-border pt-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}>
               <div className="flex items-center justify-between">

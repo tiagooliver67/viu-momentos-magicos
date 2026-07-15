@@ -144,13 +144,15 @@ const CriarEvento = () => {
 
       if (error) throw error;
 
-      // Create default price grid
+      // Grade padrão derivada da simulação: foto = simPrice, vídeo = simPrice * 1,30
+      const highPrice = Math.max(0, Number(simPrice) || DEFAULT_SIM_PRICE);
+      const videoPrice = Math.round(highPrice * 1.3 * 100) / 100;
       await supabase.from("price_grids").insert({
         event_id: data.id,
         name: "Padrão",
-        photo_high_price: 12,
-        photo_low_price: 8,
-        video_price: 10,
+        photo_high_price: highPrice,
+        photo_low_price: highPrice, // compat: mesmo valor da foto original
+        video_price: videoPrice,
       });
 
       toast.success("Evento criado com sucesso! 🎉");
@@ -285,11 +287,13 @@ const CriarEvento = () => {
                 <div className="rounded-2xl border border-border bg-card p-5 lg:sticky lg:top-6 space-y-4">
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Simulação financeira</h3>
-                    <p className="text-[11px] text-muted-foreground">Ajuste o valor para simular com o seu preço.</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Este valor será usado como preço da foto na grade padrão do evento. O vídeo será sugerido em 30% acima.
+                    </p>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">Preço da foto (simulação)</label>
+                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">Preço da foto</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">R$</span>
                       <input
@@ -305,6 +309,7 @@ const CriarEvento = () => {
 
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between"><span className="text-muted-foreground">Preço da foto</span><span className="font-medium text-foreground">{fmt(simPrice)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Preço do vídeo (sugerido)</span><span className="font-medium text-foreground">{fmt(Math.round(simPrice * 1.3 * 100) / 100)}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Comissão ViuFoto (10%)</span><span className="font-medium text-foreground">{fmt(commissionValue)}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Você absorve</span><span className="font-medium text-foreground">{fmt(photographerAbsorbs)}</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Repasse ao cliente</span><span className="font-medium text-foreground">{fmt(clientAbsorbs)}</span></div>
