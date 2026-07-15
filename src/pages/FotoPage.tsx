@@ -163,7 +163,6 @@ const FotoPage = () => {
   });
 
   const highPrice = priceGrid?.photo_high_price ?? 15;
-  const lowPrice = priceGrid?.photo_low_price ?? 11;
 
   const handleCopyLink = () => {
     const url = `${window.location.origin}/foto/${photoId}`;
@@ -180,8 +179,8 @@ const FotoPage = () => {
       photoUrl: photoSignedUrl || "",
       eventId: event.id,
       eventName: event.name,
-      resolution,
-      price: resolution === "high" ? highPrice : lowPrice,
+      resolution: "high",
+      price: highPrice,
     });
     toast.success("Foto adicionada ao carrinho!");
   };
