@@ -336,7 +336,15 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
 
           if (error) {
             console.error(`[S3Upload] DB insert error for ${obj.file.name}:`, error);
-            progressMap[i] = { ...progressMap[i], status: "error", progress: 0, errorDetail: "Erro ao salvar no banco" };
+            const isDup = (error as any)?.code === "23505";
+            progressMap[i] = {
+              ...progressMap[i],
+              status: "error",
+              progress: 0,
+              errorDetail: isDup
+                ? "Arquivo já existe neste evento (nome duplicado)"
+                : "Erro ao salvar no banco",
+            };
             onProgress?.([...progressMap]);
             return;
           }
