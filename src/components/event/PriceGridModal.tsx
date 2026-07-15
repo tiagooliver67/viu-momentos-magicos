@@ -21,10 +21,16 @@ interface Props {
   clientShare?: number;
 }
 
-const EMPTY: PriceGrid = { name: "", photo_high_price: 14, photo_low_price: 14, video_price: 18.2 };
-
-const VIDEO_MULTIPLIER = 1.3;
-const round2 = (n: number) => Math.round(n * 100) / 100;
+const MIN_PHOTO_PRICE = 3;
+const MIN_VIDEO_PRICE = 10;
+const DEFAULT_PHOTO_PRICE = 15;
+const DEFAULT_VIDEO_PRICE = 15;
+const EMPTY: PriceGrid = {
+  name: "",
+  photo_high_price: DEFAULT_PHOTO_PRICE,
+  photo_low_price: DEFAULT_PHOTO_PRICE,
+  video_price: DEFAULT_VIDEO_PRICE,
+};
 
 export default function PriceGridModal({
   open,
@@ -37,11 +43,9 @@ export default function PriceGridModal({
   clientShare = 0,
 }: Props) {
   const [grid, setGrid] = useState<PriceGrid>(EMPTY);
-  const [videoTouched, setVideoTouched] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    setVideoTouched(false);
     if (grids.length > 0) setGrid({ ...grids[0] });
     else setGrid({ ...EMPTY, name: "Padrão" });
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -61,24 +65,20 @@ export default function PriceGridModal({
 
   const canSave =
     grid.name.trim().length > 0 &&
-    grid.photo_high_price >= 0 &&
-    grid.video_price >= 0;
+    grid.photo_high_price >= MIN_PHOTO_PRICE &&
+    grid.video_price >= MIN_VIDEO_PRICE;
 
   const handleHighChange = (v: number) => {
     setGrid((g) => ({
       ...g,
       photo_high_price: v,
       photo_low_price: v, // mirror para compat com dados antigos
-      video_price: videoTouched ? g.video_price : round2(v * VIDEO_MULTIPLIER),
     }));
   };
 
   const handleVideoChange = (v: number) => {
-    setVideoTouched(true);
     setGrid((g) => ({ ...g, video_price: v }));
   };
-
-  const suggestedVideo = round2((grid.photo_high_price || 0) * VIDEO_MULTIPLIER);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
@@ -159,9 +159,10 @@ export default function PriceGridModal({
           {/* Foto Original */}
           <PriceField
             label="Foto Original (Alta resolução)"
-            description="Arquivo completo, sem marca d'água — ideal para impressão."
+            description={`Arquivo completo, sem marca d'água — ideal para impressão. Valor mínimo: R$ ${MIN_PHOTO_PRICE.toFixed(2).replace(".", ",")}.`}
             value={grid.photo_high_price}
             onChange={handleHighChange}
+            min={MIN_PHOTO_PRICE}
             photographerShare={photographerShare}
             clientShare={clientShare}
           />
@@ -169,9 +170,10 @@ export default function PriceGridModal({
           {/* Vídeo */}
           <PriceField
             label="Download do vídeo"
-            description={`Arquivo de vídeo entregue na resolução original. Sugerido: R$ ${suggestedVideo.toFixed(2)} (30% acima da foto).`}
+            description={`Arquivo de vídeo entregue na resolução original. Valor mínimo: R$ ${MIN_VIDEO_PRICE.toFixed(2).replace(".", ",")}. Sugerido: R$ ${DEFAULT_VIDEO_PRICE.toFixed(2).replace(".", ",")}.`}
             value={grid.video_price}
             onChange={handleVideoChange}
+            min={MIN_VIDEO_PRICE}
             photographerShare={photographerShare}
             clientShare={clientShare}
           />
