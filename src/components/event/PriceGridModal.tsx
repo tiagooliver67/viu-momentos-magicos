@@ -21,10 +21,16 @@ interface Props {
   clientShare?: number;
 }
 
-const EMPTY: PriceGrid = { name: "", photo_high_price: 14, photo_low_price: 14, video_price: 18.2 };
-
-const VIDEO_MULTIPLIER = 1.3;
-const round2 = (n: number) => Math.round(n * 100) / 100;
+const MIN_PHOTO_PRICE = 3;
+const MIN_VIDEO_PRICE = 10;
+const DEFAULT_PHOTO_PRICE = 15;
+const DEFAULT_VIDEO_PRICE = 15;
+const EMPTY: PriceGrid = {
+  name: "",
+  photo_high_price: DEFAULT_PHOTO_PRICE,
+  photo_low_price: DEFAULT_PHOTO_PRICE,
+  video_price: DEFAULT_VIDEO_PRICE,
+};
 
 export default function PriceGridModal({
   open,
@@ -37,11 +43,9 @@ export default function PriceGridModal({
   clientShare = 0,
 }: Props) {
   const [grid, setGrid] = useState<PriceGrid>(EMPTY);
-  const [videoTouched, setVideoTouched] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    setVideoTouched(false);
     if (grids.length > 0) setGrid({ ...grids[0] });
     else setGrid({ ...EMPTY, name: "Padrão" });
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -61,24 +65,20 @@ export default function PriceGridModal({
 
   const canSave =
     grid.name.trim().length > 0 &&
-    grid.photo_high_price >= 0 &&
-    grid.video_price >= 0;
+    grid.photo_high_price >= MIN_PHOTO_PRICE &&
+    grid.video_price >= MIN_VIDEO_PRICE;
 
   const handleHighChange = (v: number) => {
     setGrid((g) => ({
       ...g,
       photo_high_price: v,
       photo_low_price: v, // mirror para compat com dados antigos
-      video_price: videoTouched ? g.video_price : round2(v * VIDEO_MULTIPLIER),
     }));
   };
 
   const handleVideoChange = (v: number) => {
-    setVideoTouched(true);
     setGrid((g) => ({ ...g, video_price: v }));
   };
-
-  const suggestedVideo = round2((grid.photo_high_price || 0) * VIDEO_MULTIPLIER);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
@@ -159,9 +159,10 @@ export default function PriceGridModal({
           {/* Foto Original */}
           <PriceField
             label="Foto Original (Alta resolução)"
-            description="Arquivo completo, sem marca d'água — ideal para impressão."
+            description={`Arquivo completo, sem marca d'água — ideal para impressão. Valor mínimo: R$ ${MIN_PHOTO_PRICE.toFixed(2).replace(".", ",")}.`}
             value={grid.photo_high_price}
             onChange={handleHighChange}
+            min={MIN_PHOTO_PRICE}
             photographerShare={photographerShare}
             clientShare={clientShare}
           />
@@ -169,9 +170,10 @@ export default function PriceGridModal({
           {/* Vídeo */}
           <PriceField
             label="Download do vídeo"
-            description={`Arquivo de vídeo entregue na resolução original. Sugerido: R$ ${suggestedVideo.toFixed(2)} (30% acima da foto).`}
+            description={`Arquivo de vídeo entregue na resolução original. Valor mínimo: R$ ${MIN_VIDEO_PRICE.toFixed(2).replace(".", ",")}. Sugerido: R$ ${DEFAULT_VIDEO_PRICE.toFixed(2).replace(".", ",")}.`}
             value={grid.video_price}
             onChange={handleVideoChange}
+            min={MIN_VIDEO_PRICE}
             photographerShare={photographerShare}
             clientShare={clientShare}
           />
@@ -231,12 +233,14 @@ interface PriceFieldProps {
   badge?: string;
   value: number;
   onChange: (v: number) => void;
+  min?: number;
   photographerShare: number;
   clientShare: number;
 }
 
-function PriceField({ label, description, badge, value, onChange, photographerShare, clientShare }: PriceFieldProps) {
+function PriceField({ label, description, badge, value, onChange, min = 0, photographerShare, clientShare }: PriceFieldProps) {
   const b = computeBreakdown(value || 0, photographerShare, clientShare);
+  const belowMin = value < min;
   return (
     <div className="rounded-xl border border-border p-4 bg-background">
       <div className="flex items-start justify-between gap-2 mb-1">
@@ -259,12 +263,17 @@ function PriceField({ label, description, badge, value, onChange, photographerSh
         <input
           type="number"
           step="0.01"
-          min={0}
+          min={min}
           value={value}
           onChange={(e) => onChange(+e.target.value)}
-          className="flex-1 px-3 py-2 rounded-lg bg-card border border-border text-foreground text-sm focus:border-primary outline-none"
+          className={`flex-1 px-3 py-2 rounded-lg bg-card border text-foreground text-sm focus:border-primary outline-none ${belowMin ? "border-destructive" : "border-border"}`}
         />
       </div>
+      {belowMin && (
+        <p className="text-[11px] text-destructive mt-1.5">
+          Valor mínimo: R$ {min.toFixed(2).replace(".", ",")}.
+        </p>
+      )}
 
       {/* Preview da divisão */}
       <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
