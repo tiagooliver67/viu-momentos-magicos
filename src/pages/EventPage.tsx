@@ -1051,12 +1051,17 @@ const EventPage = () => {
                   <Film className="w-5 h-5 text-primary" />
                   <span className="text-sm">Vídeo original</span>
                 </div>
-                <span className="text-primary font-bold">R$ {videoPrice.toFixed(2)}</span>
+                {hasVideoPricing ? (
+                  <span className="text-primary font-bold">R$ {videoPrice!.toFixed(2)}</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Preço não configurado</span>
+                )}
               </div>
 
               <button
                 onClick={() => handleAddVideoToCart(selectedVideo)}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                disabled={!hasVideoPricing}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="w-5 h-5" />
                 + Adicionar ao carrinho
