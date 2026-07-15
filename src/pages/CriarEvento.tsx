@@ -290,7 +290,7 @@ const CriarEvento = () => {
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Simulação financeira</h3>
                     <p className="text-[11px] text-muted-foreground">
-                      Este valor será usado como preço da foto na grade padrão do evento. Mínimo R$ 3,00. O vídeo é sugerido em R$ 15,00 e pode ser editado depois na grade.
+                      Este valor será usado como preço da foto na grade padrão do evento. Mínimo R$ 3,00.{" "}
                     </p>
                   </div>
 
