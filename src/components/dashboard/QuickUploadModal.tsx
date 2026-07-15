@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import UploadModal from "@/components/event/UploadModal";
-import { useS3Upload } from "@/hooks/useS3Upload";
+import { useUploadWithDupCheck } from "@/hooks/useUploadWithDupCheck";
+import DuplicateFilesModal from "@/components/event/DuplicateFilesModal";
 import { toast } from "sonner";
 import { getCoverUrl } from "@/lib/eventCover";
 
@@ -16,23 +17,24 @@ interface Props {
 }
 
 function UploadForEvent({ eventId, eventName, type, onDone }: { eventId: string; eventName: string; type: "photos" | "videos"; onDone: () => void }) {
-  const uploader = useS3Upload({ eventId, type: type === "photos" ? "fotos" : "videos" });
+  const upload = useUploadWithDupCheck({ eventId, type: type === "photos" ? "fotos" : "videos" });
   return (
-    <UploadModal
-      open
-      onClose={onDone}
-      isUploading={uploader.isPending}
-      type={type}
-      onUpload={(files) => {
-        uploader.mutate(files as any, {
-          onSuccess: () => {
-            toast.success(`Enviado para ${eventName}`);
-            onDone();
-          },
-          onError: (e: any) => toast.error(e?.message || "Falha no envio"),
-        });
-      }}
-    />
+    <>
+      <UploadModal
+        open
+        onClose={onDone}
+        isUploading={upload.uploader.isPending || upload.hashing.active}
+        type={type}
+        onUpload={async (files) => {
+          try {
+            await upload.start(files as File[]);
+          } catch (e: any) {
+            toast.error(e?.message || "Falha no envio");
+          }
+        }}
+      />
+      <DuplicateFilesModal {...upload.dupModal} />
+    </>
   );
 }
 
