@@ -279,8 +279,12 @@ const EventPage = () => {
     enabled: !!event?.organizer_id,
   });
 
-  const highPrice = priceGrid?.photo_high_price ?? 15;
-  const videoPrice = priceGrid?.video_price ?? 15.99;
+  const highPrice: number | null =
+    typeof priceGrid?.photo_high_price === "number" ? priceGrid.photo_high_price : null;
+  const videoPrice: number | null =
+    typeof priceGrid?.video_price === "number" ? priceGrid.video_price : null;
+  const hasPricing = highPrice !== null && highPrice > 0;
+  const hasVideoPricing = videoPrice !== null && videoPrice > 0;
   const allPhotos = photos || [];
 
   // --- FASE 1: Busca por número de peito ---
@@ -502,25 +506,33 @@ const EventPage = () => {
   }
 
   const handleAddToCart = (photo: any, _res?: "high" | "low") => {
+    if (!hasPricing) {
+      toast.error("Preços ainda não configurados pelo fotógrafo para este evento.");
+      return;
+    }
     addItem({
       photoId: photo.id,
       photoUrl: getPhotoUrl(photo),
       eventId: id,
       eventName: event.name,
       resolution: "high",
-      price: highPrice,
+      price: highPrice!,
     });
     toast.success("Foto adicionada ao carrinho!");
   };
 
   const handleAddVideoToCart = (video: any) => {
+    if (!hasVideoPricing) {
+      toast.error("Preço do vídeo ainda não configurado pelo fotógrafo.");
+      return;
+    }
     addItem({
       videoId: video.id,
       photoUrl: videoPosterUrls?.[video.id] || "",
       eventId: id,
       eventName: event.name,
       resolution: "high",
-      price: videoPrice,
+      price: videoPrice!,
     });
     toast.success("Vídeo adicionado ao carrinho!");
   };
