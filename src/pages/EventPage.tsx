@@ -279,8 +279,12 @@ const EventPage = () => {
     enabled: !!event?.organizer_id,
   });
 
-  const highPrice = priceGrid?.photo_high_price ?? 15;
-  const videoPrice = priceGrid?.video_price ?? 15.99;
+  const highPrice: number | null =
+    typeof priceGrid?.photo_high_price === "number" ? priceGrid.photo_high_price : null;
+  const videoPrice: number | null =
+    typeof priceGrid?.video_price === "number" ? priceGrid.video_price : null;
+  const hasPricing = highPrice !== null && highPrice > 0;
+  const hasVideoPricing = videoPrice !== null && videoPrice > 0;
   const allPhotos = photos || [];
 
   // --- FASE 1: Busca por número de peito ---
@@ -502,25 +506,33 @@ const EventPage = () => {
   }
 
   const handleAddToCart = (photo: any, _res?: "high" | "low") => {
+    if (!hasPricing) {
+      toast.error("Preços ainda não configurados pelo fotógrafo para este evento.");
+      return;
+    }
     addItem({
       photoId: photo.id,
       photoUrl: getPhotoUrl(photo),
       eventId: id,
       eventName: event.name,
       resolution: "high",
-      price: highPrice,
+      price: highPrice!,
     });
     toast.success("Foto adicionada ao carrinho!");
   };
 
   const handleAddVideoToCart = (video: any) => {
+    if (!hasVideoPricing) {
+      toast.error("Preço do vídeo ainda não configurado pelo fotógrafo.");
+      return;
+    }
     addItem({
       videoId: video.id,
       photoUrl: videoPosterUrls?.[video.id] || "",
       eventId: id,
       eventName: event.name,
       resolution: "high",
-      price: videoPrice,
+      price: videoPrice!,
     });
     toast.success("Vídeo adicionado ao carrinho!");
   };
@@ -807,9 +819,11 @@ const EventPage = () => {
                           </div>
                         </div>
                         <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-bold text-white bg-primary/90 px-1.5 py-0.5 rounded shadow-md">
-                            R$ {videoPrice.toFixed(2)}
-                          </span>
+                          {hasVideoPricing && (
+                            <span className="text-[11px] font-bold text-white bg-primary/90 px-1.5 py-0.5 rounded shadow-md">
+                              R$ {videoPrice!.toFixed(2)}
+                            </span>
+                          )}
                           {video.duration_seconds != null && (
                             <span className="text-[10px] text-white bg-black/60 px-1.5 py-0.5 rounded">
                               {Math.floor(video.duration_seconds / 60)}:{Math.round(video.duration_seconds % 60).toString().padStart(2, "0")}
@@ -947,12 +961,17 @@ const EventPage = () => {
 
               <div className="flex items-center justify-between p-4 rounded-xl border border-primary bg-primary/5">
                 <span className="text-sm font-medium">Foto original (Alta resolução)</span>
-                <span className="text-primary font-bold">R$ {highPrice.toFixed(2)}</span>
+                {hasPricing ? (
+                  <span className="text-primary font-bold">R$ {highPrice!.toFixed(2)}</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Preço não configurado</span>
+                )}
               </div>
 
               <button
                 onClick={() => handleAddToCart(selectedPhoto, "high")}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                disabled={!hasPricing}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="w-5 h-5" />
                 + Adicionar ao carrinho
@@ -1032,12 +1051,17 @@ const EventPage = () => {
                   <Film className="w-5 h-5 text-primary" />
                   <span className="text-sm">Vídeo original</span>
                 </div>
-                <span className="text-primary font-bold">R$ {videoPrice.toFixed(2)}</span>
+                {hasVideoPricing ? (
+                  <span className="text-primary font-bold">R$ {videoPrice!.toFixed(2)}</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Preço não configurado</span>
+                )}
               </div>
 
               <button
                 onClick={() => handleAddVideoToCart(selectedVideo)}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                disabled={!hasVideoPricing}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="w-5 h-5" />
                 + Adicionar ao carrinho
