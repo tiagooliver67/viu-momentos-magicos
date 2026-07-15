@@ -233,12 +233,14 @@ interface PriceFieldProps {
   badge?: string;
   value: number;
   onChange: (v: number) => void;
+  min?: number;
   photographerShare: number;
   clientShare: number;
 }
 
-function PriceField({ label, description, badge, value, onChange, photographerShare, clientShare }: PriceFieldProps) {
+function PriceField({ label, description, badge, value, onChange, min = 0, photographerShare, clientShare }: PriceFieldProps) {
   const b = computeBreakdown(value || 0, photographerShare, clientShare);
+  const belowMin = value < min;
   return (
     <div className="rounded-xl border border-border p-4 bg-background">
       <div className="flex items-start justify-between gap-2 mb-1">
@@ -261,12 +263,17 @@ function PriceField({ label, description, badge, value, onChange, photographerSh
         <input
           type="number"
           step="0.01"
-          min={0}
+          min={min}
           value={value}
           onChange={(e) => onChange(+e.target.value)}
-          className="flex-1 px-3 py-2 rounded-lg bg-card border border-border text-foreground text-sm focus:border-primary outline-none"
+          className={`flex-1 px-3 py-2 rounded-lg bg-card border text-foreground text-sm focus:border-primary outline-none ${belowMin ? "border-destructive" : "border-border"}`}
         />
       </div>
+      {belowMin && (
+        <p className="text-[11px] text-destructive mt-1.5">
+          Valor mínimo: R$ {min.toFixed(2).replace(".", ",")}.
+        </p>
+      )}
 
       {/* Preview da divisão */}
       <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
