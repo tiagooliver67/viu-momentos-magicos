@@ -201,10 +201,25 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       }
       if (validFiles.length === 0) throw new Error("Nenhum arquivo válido");
 
-      // Generate S3 paths
+      // Generate S3 paths.
+      // IMPORTANT: sanitizamos o nome usado na CHAVE S3 (não o file_name salvo no banco).
+      // Motivo: espaços, parênteses, acentos e outros caracteres não-ASCII fazem o AWS
+      // SigV4 assinar um canonical URI que o browser depois reenvia com encoding
+      // diferente no PUT → assinatura inválida → 403. O caso mais comum aparecia no
+      // "manter ambos" (arquivo renomeado como "foo (2).jpg"), mas o problema atinge
+      // qualquer upload cujo nome original já tivesse espaço/parêntese/acento.
+      // Preservamos apenas [A-Za-z0-9._-]; o resto vira "_". O nome original continua
+      // salvo em `file_name` para exibição na galeria.
+      const sanitizeForS3Key = (name: string) =>
+        name
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // remove acentos
+          .replace(/[^A-Za-z0-9._-]+/g, "_")
+          .replace(/_+/g, "_")
+          .replace(/^_+|_+$/g, "");
       const objects = validFiles.map(f => {
         const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-        return { path: `usuarios/${ownerId}/eventos/${eventId}/${type}/${uid}-${f.name}`, file: f, uid };
+        const safeName = sanitizeForS3Key(f.name) || "file";
+        return { path: `usuarios/${ownerId}/eventos/${eventId}/${type}/${uid}-${safeName}`, file: f, uid };
       });
 
       const progressMap: UploadProgress[] = objects.map(o => ({
