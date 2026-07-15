@@ -3,8 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
 import UploadModal from "@/components/event/UploadModal";
-import DuplicateFilesModal, { type DuplicateResolution } from "@/components/event/DuplicateFilesModal";
-import { detectDuplicates, uniqueName, renameFile, type DuplicateEntry } from "@/lib/duplicateDetection";
+import DuplicateFilesModal from "@/components/event/DuplicateFilesModal";
 import PriceGridModal from "@/components/event/PriceGridModal";
 import DiscountModal from "@/components/event/DiscountModal";
 import CouponModal from "@/components/event/CouponModal";
@@ -16,7 +15,7 @@ import VideoGallery from "@/components/event/VideoGallery";
 import PromoArtModal from "@/components/event/PromoArtModal";
 import CollaborationModal from "@/components/event/CollaborationModal";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
-import { useS3Upload } from "@/hooks/useS3Upload";
+import { useUploadWithDupCheck } from "@/hooks/useUploadWithDupCheck";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import { useAuth } from "@/contexts/AuthContext";
 import type { UploadFileProgress } from "@/components/event/PhotoGallery";
@@ -61,7 +60,7 @@ const EventDashboard = () => {
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
   const { site: photographerSite } = usePhotographerSite();
-  const s3UploadPhotos = useS3Upload({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
+  const photosUpload = useUploadWithDupCheck({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
       fileName: f.fileName,
       progress: f.progress,
@@ -71,7 +70,7 @@ const EventDashboard = () => {
       setTimeout(() => setPhotoUploadProgress([]), 5000);
     }
   }});
-  const s3UploadVideos = useS3Upload({ eventId: id || "", type: "videos", onProgress: (files) => {
+  const videosUpload = useUploadWithDupCheck({ eventId: id || "", type: "videos", onProgress: (files) => {
     setVideoUploadProgress(files.map(f => ({
       fileName: f.fileName,
       progress: f.progress,
@@ -81,6 +80,8 @@ const EventDashboard = () => {
       setTimeout(() => setVideoUploadProgress([]), 5000);
     }
   }});
+  const s3UploadPhotos = photosUpload.uploader;
+  const s3UploadVideos = videosUpload.uploader;
   const ordersQuery = useEventOrders(id);
   const { coupons, createCoupon, toggleCoupon } = useEventCoupons(id);
   const { grids, savePriceGrid, deletePriceGrid } = useEventPriceGrid(id);
@@ -102,100 +103,14 @@ const EventDashboard = () => {
   const [showSchedule, setShowSchedule] = useState(false);
   const { profile } = useAuth();
 
-  // Duplicate detection state (shared for photos + videos)
-  const [dupState, setDupState] = useState<{
-    type: "photos" | "videos";
-    duplicates: DuplicateEntry[];
-    fresh: File[];
-  } | null>(null);
-
-  const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos") => {
-    const list = type === "photos" ? photos : videos;
-    const existing = (list || []).map((r: any) => ({
-      id: r.id,
-      file_name: r.file_name,
-      file_size: typeof r.file_size === "number" ? r.file_size : null,
-    }));
-    const { fresh, duplicates } = detectDuplicates(files, existing);
-
-    if (duplicates.length === 0) {
-      if (type === "photos") { s3UploadPhotos.mutate(fresh); setShowUploadPhotos(false); }
-      else                   { s3UploadVideos.mutate(fresh); setShowUploadVideos(false); }
-      return;
+  const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
+    if (type === "photos") {
+      setShowUploadPhotos(false);
+      await photosUpload.start(files, album ?? null);
+    } else {
+      setShowUploadVideos(false);
+      await videosUpload.start(files);
     }
-
-    // Close the upload picker and open the resolver modal
-    if (type === "photos") setShowUploadPhotos(false);
-    else setShowUploadVideos(false);
-    setDupState({ type, duplicates, fresh });
-  };
-
-  const handleDupResolution = async (choice: DuplicateResolution) => {
-    if (!dupState) return;
-    const { type, duplicates, fresh } = dupState;
-    const existingList = type === "photos" ? photos : videos;
-    const existingNames = new Set(
-      (existingList || [])
-        .map((r: any) => (r.file_name || "").toLowerCase())
-        .filter(Boolean),
-    );
-    // Also include fresh selections so keep-both doesn't collide within this batch.
-    for (const f of fresh) existingNames.add(f.name.toLowerCase());
-
-    let toUpload: File[] = [...fresh];
-
-    if (choice === "ignore") {
-      // fresh only
-    } else if (choice === "keep-both") {
-      for (const d of duplicates) {
-        const newName = uniqueName(d.file.name, existingNames);
-        existingNames.add(newName.toLowerCase());
-        toUpload.push(renameFile(d.file, newName));
-      }
-    } else if (choice === "replace") {
-      // Delete existing rows then upload the new files with their original names.
-      try {
-        const idsToRemove = duplicates.map(d => d.existing.id);
-        const table = type === "photos" ? "event_photos" : "event_videos";
-        const { error } = await supabase.from(table).delete().in("id", idsToRemove);
-        if (error) throw error;
-        toUpload.push(...duplicates.map(d => d.file));
-      } catch (err: any) {
-        toast.error("Falha ao substituir arquivos: " + (err.message || err));
-        setDupState(null);
-        return;
-      }
-    } else if (choice === "update") {
-      // Smart update: skip identical, replace different-content, always send new.
-      const toDelete: string[] = [];
-      for (const d of duplicates) {
-        if (d.identical) continue; // skip
-        toDelete.push(d.existing.id);
-        toUpload.push(d.file);
-      }
-      if (toDelete.length > 0) {
-        try {
-          const table = type === "photos" ? "event_photos" : "event_videos";
-          const { error } = await supabase.from(table).delete().in("id", toDelete);
-          if (error) throw error;
-        } catch (err: any) {
-          toast.error("Falha ao atualizar arquivos: " + (err.message || err));
-          setDupState(null);
-          return;
-        }
-      }
-    }
-
-    setDupState(null);
-
-    if (toUpload.length === 0) {
-      toast.info("Nenhum arquivo novo para enviar.");
-      queryClient.invalidateQueries({ queryKey: [type === "photos" ? "event-photos" : "event-videos", id] });
-      return;
-    }
-
-    if (type === "photos") s3UploadPhotos.mutate(toUpload);
-    else                   s3UploadVideos.mutate(toUpload);
   };
 
   const orders = ordersQuery.data || [];
@@ -558,14 +473,8 @@ const EventDashboard = () => {
         {/* ======= MODALS ======= */}
         <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => runUploadWithDupCheck(files, "photos")} isUploading={s3UploadPhotos.isPending} type="photos" />
         <UploadModal open={showUploadVideos} onClose={() => setShowUploadVideos(false)} onUpload={(files) => runUploadWithDupCheck(files, "videos")} isUploading={s3UploadVideos.isPending} type="videos" />
-        <DuplicateFilesModal
-          open={!!dupState}
-          onClose={() => setDupState(null)}
-          onConfirm={handleDupResolution}
-          type={dupState?.type ?? "photos"}
-          duplicates={dupState?.duplicates ?? []}
-          freshCount={dupState?.fresh.length ?? 0}
-        />
+        <DuplicateFilesModal {...photosUpload.dupModal} />
+        <DuplicateFilesModal {...videosUpload.dupModal} />
         <PriceGridModal
           open={showPriceGrid}
           onClose={() => setShowPriceGrid(false)}
@@ -607,7 +516,7 @@ const EventDashboard = () => {
           onDelete={(pid) => deletePhoto.mutate(pid)}
           isDeleting={deletePhoto.isPending}
           totalPhotos={photos.length}
-          onUploadFiles={(files, album) => s3UploadPhotos.mutate({ files, album })}
+          onUploadFiles={(files, album) => runUploadWithDupCheck(files, "photos", album)}
           isUploading={s3UploadPhotos.isPending}
           uploadProgress={photoUploadProgress}
           coverUrl={event?.cover_url}
@@ -640,7 +549,7 @@ const EventDashboard = () => {
           onDelete={(vid) => deleteVideo.mutate(vid)}
           isDeleting={deleteVideo.isPending}
           totalVideos={videos.length}
-          onUploadFiles={(files) => s3UploadVideos.mutate(files)}
+          onUploadFiles={(files) => runUploadWithDupCheck(files, "videos")}
           isUploading={s3UploadVideos.isPending}
           uploadProgress={videoUploadProgress}
           onBulkDelete={async (ids) => {
