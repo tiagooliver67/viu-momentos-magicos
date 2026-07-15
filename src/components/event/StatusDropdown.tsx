@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, CalendarClock } from "lucide-react";
 
 const statusConfig = {
-  ativo:    { label: "ATIVO",    bg: "bg-lime/90",        text: "text-black" },
+  ativo:    { label: "ATIVO",    bg: "bg-success",        text: "text-white" },
   agendado: { label: "AGENDADO", bg: "bg-blue-500/90",    text: "text-white" },
   em_breve: { label: "EM BREVE", bg: "bg-yellow-400/90",  text: "text-black" },
   inativo: { label: "INATIVO",   bg: "bg-red-500/90",     text: "text-white" },
@@ -37,13 +37,13 @@ export default function StatusDropdown({
       <button
         onClick={() => !disabled && setOpen(!open)}
         className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${cfg.bg} ${cfg.text} text-xs font-bold min-h-[36px] transition-shadow ${
-          isActive ? "ring-2 ring-lime/70 ring-offset-2 ring-offset-background shadow-[0_0_0_4px_rgba(163,230,53,0.15)]" : ""
+          isActive ? "ring-2 ring-success/70 ring-offset-2 ring-offset-background shadow-[0_0_16px_rgba(34,197,94,0.45)]" : ""
         }`}
       >
         {isActive && (
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-black/70 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-black" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white/80 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
           </span>
         )}
         {cfg.label} <ChevronDown className="w-3 h-3" />
