@@ -162,7 +162,9 @@ const FotoPage = () => {
     refetchOnWindowFocus: false,
   });
 
-  const highPrice = priceGrid?.photo_high_price ?? 15;
+  const highPrice: number | null =
+    typeof priceGrid?.photo_high_price === "number" ? priceGrid.photo_high_price : null;
+  const hasPricing = highPrice !== null && highPrice > 0;
 
   const handleCopyLink = () => {
     const url = `${window.location.origin}/foto/${photoId}`;
@@ -174,13 +176,17 @@ const FotoPage = () => {
 
   const handleAddToCart = () => {
     if (!photo || !event) return;
+    if (!hasPricing) {
+      toast.error("Preços ainda não configurados pelo fotógrafo para este evento.");
+      return;
+    }
     addItem({
       photoId: photo.id,
       photoUrl: photoSignedUrl || "",
       eventId: event.id,
       eventName: event.name,
       resolution: "high",
-      price: highPrice,
+      price: highPrice!,
     });
     toast.success("Foto adicionada ao carrinho!");
   };
@@ -315,12 +321,17 @@ const FotoPage = () => {
 
                 <div className="flex items-center justify-between p-4 rounded-xl border border-primary bg-primary/5">
                   <span className="text-sm font-medium">Foto original (Alta resolução)</span>
-                  <span className="text-primary font-bold">R$ {highPrice.toFixed(2)}</span>
+                  {hasPricing ? (
+                    <span className="text-primary font-bold">R$ {highPrice!.toFixed(2)}</span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Preço não configurado</span>
+                  )}
                 </div>
 
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                  disabled={!hasPricing}
+                  className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-all flex items-center justify-center gap-2 min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   Comprar esta foto
