@@ -159,7 +159,7 @@ export default function PriceGridModal({
           {/* Foto Original */}
           <PriceField
             label="Foto Original (Alta resolução)"
-            description={`Arquivo completo, sem marca d'água — ideal para impressão. Valor mínimo: R$ ${MIN_PHOTO_PRICE.toFixed(2).replace(".", ",")}.`}
+            description={`Arquivo sem marca d'água  -  Valor mínimo: R$ ${MIN_PHOTO_PRICE.toFixed(2).replace(".", ",")}.\u00A0Sugerido: R$ 10,00.`}
             value={grid.photo_high_price}
             onChange={handleHighChange}
             min={MIN_PHOTO_PRICE}
