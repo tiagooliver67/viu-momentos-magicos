@@ -1336,6 +1336,30 @@ export type Database = {
         }
         Relationships: []
       }
+      log_cleanup_runs: {
+        Row: {
+          error: string | null
+          finished_at: string | null
+          id: string
+          results: Json
+          started_at: string
+        }
+        Insert: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          results?: Json
+          started_at?: string
+        }
+        Update: {
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          results?: Json
+          started_at?: string
+        }
+        Relationships: []
+      }
       marketing_automation_settings: {
         Row: {
           auto_approve: boolean
@@ -2997,6 +3021,7 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_old_logs: { Args: never; Returns: Json }
       ensure_face_collection: {
         Args: { _event_id: string }
         Returns: {
