@@ -286,44 +286,27 @@ export default function VideoGallery({
           </div>
         </div>
 
-        <div className="glass-card p-4 sm:p-6">
-          <div
-            onDragOver={e => e.preventDefault()}
+        <div className="mb-6">
+          <VideoUploadPanel
+            isUploading={!!isUploading}
+            uploadProgress={uploadProgress}
+            fileByName={fileByNameRef.current}
+            onPickFiles={() => document.getElementById("video-upload-input")?.click()}
             onDrop={handleDrop}
-            onClick={() => !isUploading && document.getElementById("video-upload-input")?.click()}
-            className={`border-2 border-dashed rounded-xl p-10 sm:p-16 text-center transition-colors mb-6 ${
-              isUploading ? "border-primary/30 bg-primary/5 cursor-not-allowed" : "border-border hover:border-primary/50 cursor-pointer"
-            }`}
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
-                <p className="text-sm text-foreground font-medium">Enviando {uploadProgress.length} vídeo(s)... {overallProgress}%</p>
-                <Progress value={overallProgress} className="h-2 mt-3 max-w-xs mx-auto" />
-              </>
-            ) : (
-              <>
-                <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-foreground">Arraste ou selecione seus vídeos para começar o envio</p>
-                <p className="text-xs text-muted-foreground mt-2">MP4 ou MOV • Até 90s de duração • Máximo 5GB por arquivo</p>
-              </>
-            )}
-            <input
-              id="video-upload-input"
-              type="file"
-              multiple
-              accept=".mp4,.mov,video/mp4,video/quicktime"
-              onChange={handleSelect}
-              className="hidden"
-              disabled={isUploading}
-            />
-          </div>
+          />
+          <input
+            id="video-upload-input"
+            type="file"
+            multiple
+            accept=".mp4,.mov,video/mp4,video/quicktime"
+            onChange={handleSelect}
+            className="hidden"
+          />
+          {/* fileMapVersion consumed so re-renders happen when new files stash */}
+          <span className="hidden">{fileMapVersion}</span>
+        </div>
 
-          {uploadProgress.length > 0 && (
-            <div className="mb-6">
-              <p className="text-sm font-medium text-foreground mb-3">{getUploadSummary()}</p>
-            </div>
-          )}
+        <div className="glass-card p-4 sm:p-6">
 
           {selectedIds.size > 0 && (
             <div className="sticky top-0 z-10 mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-primary text-primary-foreground shadow-lg">
