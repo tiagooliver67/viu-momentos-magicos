@@ -183,14 +183,20 @@ export default function VideoGallery({
     e.preventDefault();
     if (isUploading) return;
     const dropped = validateFiles(Array.from(e.dataTransfer.files));
-    if (dropped.length > 0) onUploadFiles?.(dropped);
+    if (dropped.length > 0) {
+      stashFiles(dropped);
+      onUploadFiles?.(dropped);
+    }
   };
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isUploading) return;
     if (e.target.files) {
       const files = validateFiles(Array.from(e.target.files));
-      if (files.length > 0) onUploadFiles?.(files);
+      if (files.length > 0) {
+        stashFiles(files);
+        onUploadFiles?.(files);
+      }
       e.target.value = "";
     }
   };
