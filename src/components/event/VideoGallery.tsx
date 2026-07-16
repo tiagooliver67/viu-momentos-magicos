@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   X, Trash2, Upload, Loader2, AlertCircle, CheckCircle2, Clock, Play,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Film, Info,
@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
 import { IS_LAMBDA_PIPELINE_ACTIVE, isStoragePath, getVideoDerivativeCdnUrl } from "@/lib/cdnConfig";
+import VideoUploadPanel from "./VideoUploadPanel";
 import {
   AlertDialog,
   AlertDialogAction,
