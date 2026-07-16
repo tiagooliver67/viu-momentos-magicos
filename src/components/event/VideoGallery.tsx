@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   X, Trash2, Upload, Loader2, AlertCircle, CheckCircle2, Clock, Play,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Film, Info,
@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
 import { IS_LAMBDA_PIPELINE_ACTIVE, isStoragePath, getVideoDerivativeCdnUrl } from "@/lib/cdnConfig";
+import VideoUploadPanel from "./VideoUploadPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -110,6 +111,13 @@ export default function VideoGallery({
   const [player, setPlayer] = useState<EventVideo | null>(null);
   const [infoVideo, setInfoVideo] = useState<EventVideo | null>(null);
   const [posterErrors, setPosterErrors] = useState<Record<string, boolean>>({});
+  const fileByNameRef = useRef<Map<string, File>>(new Map());
+  const [fileMapVersion, setFileMapVersion] = useState(0);
+
+  const stashFiles = (files: File[]) => {
+    for (const f of files) fileByNameRef.current.set(f.name, f);
+    setFileMapVersion((v) => v + 1);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -175,14 +183,20 @@ export default function VideoGallery({
     e.preventDefault();
     if (isUploading) return;
     const dropped = validateFiles(Array.from(e.dataTransfer.files));
-    if (dropped.length > 0) onUploadFiles?.(dropped);
+    if (dropped.length > 0) {
+      stashFiles(dropped);
+      onUploadFiles?.(dropped);
+    }
   };
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isUploading) return;
     if (e.target.files) {
       const files = validateFiles(Array.from(e.target.files));
-      if (files.length > 0) onUploadFiles?.(files);
+      if (files.length > 0) {
+        stashFiles(files);
+        onUploadFiles?.(files);
+      }
       e.target.value = "";
     }
   };
@@ -272,44 +286,27 @@ export default function VideoGallery({
           </div>
         </div>
 
-        <div className="glass-card p-4 sm:p-6">
-          <div
-            onDragOver={e => e.preventDefault()}
+        <div className="mb-6">
+          <VideoUploadPanel
+            isUploading={!!isUploading}
+            uploadProgress={uploadProgress}
+            fileByName={fileByNameRef.current}
+            onPickFiles={() => document.getElementById("video-upload-input")?.click()}
             onDrop={handleDrop}
-            onClick={() => !isUploading && document.getElementById("video-upload-input")?.click()}
-            className={`border-2 border-dashed rounded-xl p-10 sm:p-16 text-center transition-colors mb-6 ${
-              isUploading ? "border-primary/30 bg-primary/5 cursor-not-allowed" : "border-border hover:border-primary/50 cursor-pointer"
-            }`}
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
-                <p className="text-sm text-foreground font-medium">Enviando {uploadProgress.length} vídeo(s)... {overallProgress}%</p>
-                <Progress value={overallProgress} className="h-2 mt-3 max-w-xs mx-auto" />
-              </>
-            ) : (
-              <>
-                <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-foreground">Arraste ou selecione seus vídeos para começar o envio</p>
-                <p className="text-xs text-muted-foreground mt-2">MP4 ou MOV • Até 90s de duração • Máximo 5GB por arquivo</p>
-              </>
-            )}
-            <input
-              id="video-upload-input"
-              type="file"
-              multiple
-              accept=".mp4,.mov,video/mp4,video/quicktime"
-              onChange={handleSelect}
-              className="hidden"
-              disabled={isUploading}
-            />
-          </div>
+          />
+          <input
+            id="video-upload-input"
+            type="file"
+            multiple
+            accept=".mp4,.mov,video/mp4,video/quicktime"
+            onChange={handleSelect}
+            className="hidden"
+          />
+          {/* fileMapVersion consumed so re-renders happen when new files stash */}
+          <span className="hidden">{fileMapVersion}</span>
+        </div>
 
-          {uploadProgress.length > 0 && (
-            <div className="mb-6">
-              <p className="text-sm font-medium text-foreground mb-3">{getUploadSummary()}</p>
-            </div>
-          )}
+        <div className="glass-card p-4 sm:p-6">
 
           {selectedIds.size > 0 && (
             <div className="sticky top-0 z-10 mb-3 flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-primary text-primary-foreground shadow-lg">
