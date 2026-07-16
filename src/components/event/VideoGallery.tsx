@@ -111,6 +111,13 @@ export default function VideoGallery({
   const [player, setPlayer] = useState<EventVideo | null>(null);
   const [infoVideo, setInfoVideo] = useState<EventVideo | null>(null);
   const [posterErrors, setPosterErrors] = useState<Record<string, boolean>>({});
+  const fileByNameRef = useRef<Map<string, File>>(new Map());
+  const [fileMapVersion, setFileMapVersion] = useState(0);
+
+  const stashFiles = (files: File[]) => {
+    for (const f of files) fileByNameRef.current.set(f.name, f);
+    setFileMapVersion((v) => v + 1);
+  };
 
   useEffect(() => {
     if (!open) return;
