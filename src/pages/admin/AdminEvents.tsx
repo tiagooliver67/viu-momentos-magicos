@@ -3,6 +3,7 @@ import { Search, MapPin, Loader2, Eye, EyeOff, Trash2, ScanText } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { IndexingProgressCard } from "@/components/admin/IndexingProgressCard";
+import { DlqStatusCard } from "@/components/admin/DlqStatusCard";
 
 interface EventData {
   id: string;
@@ -112,6 +113,8 @@ const AdminEvents = () => {
         <h1 className="text-2xl font-bold">Eventos</h1>
         <p className="text-sm text-muted-foreground">{events.length} eventos cadastrados</p>
       </div>
+
+      <DlqStatusCard />
 
       <div className="flex gap-2 flex-wrap">
         {[{ key: "all", label: "Todos" }, { key: "ativo", label: "Ativos" }, { key: "em_breve", label: "Em Breve" }, { key: "inativo", label: "Inativos" }].map((t) => (
