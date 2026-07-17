@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 export default function TermosDeUso() {
   return (
     <div className="min-h-screen bg-background">
       <nav className="border-b border-border px-4 h-14 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur z-50">
-        <Link to="/" className="text-xl font-black tracking-tight">
-          <span className="text-primary">VIU</span>
-          <span className="text-foreground">FOTO</span>
+        <Link to="/" className="flex items-center">
+          <AnimatedLogo />
         </Link>
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">← Voltar</Link>
       </nav>
