@@ -29,6 +29,7 @@ import {
   Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
   ExternalLink, MessageCircle
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const quickActions = [
   { label: "Editar", icon: Edit, key: "edit" },
@@ -245,172 +246,205 @@ const EventDashboard = () => {
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
       <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto">
-        {/* Header */}
-        <p className="text-xs text-primary font-bold mb-1">DASHBOARD EVENTO</p>
-        <p className="text-xs text-muted-foreground mb-4">{event.id.slice(0, 8)} - {event.name}</p>
+        {/* Breadcrumb */}
+        <div className="mb-4">
+          <p className="text-[11px] text-primary font-bold tracking-wider">DASHBOARD DO EVENTO</p>
+          <p className="text-xs text-muted-foreground">{event.id.slice(0, 8)} · {event.name}</p>
+        </div>
 
-        {/* Event Info Card */}
-        <div className="glass-card p-4 sm:p-6 mb-6">
-          <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-            {/* Cover */}
-            <div
-              onClick={() => coverInputRef.current?.click()}
-              className="w-full md:w-52 h-36 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden relative"
-            >
-              {event.cover_url ? (
-                <img src={getCoverUrl(event.cover_url, 1200) ?? undefined} alt="Capa" decoding="async" className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex flex-col items-center gap-1">
-                  <Image className="w-10 h-10 text-muted-foreground" />
-                  <span className="text-[10px] text-muted-foreground">Clique para adicionar capa</span>
-                </div>
-              )}
-              <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
-            </div>
-
-            {/* Event details */}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-primary font-bold">{event.id.slice(0, 8).toUpperCase()}</p>
-              <h1 className="text-lg sm:text-xl font-bold text-foreground mb-1 break-words">{event.name}</h1>
-              <p className="text-xs text-muted-foreground mb-3">
-                {new Date(event.event_date).toLocaleDateString("pt-BR")} - {event.location}
-              </p>
+        {/* Hero Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="relative overflow-hidden rounded-2xl bg-card border border-border shadow-sm mb-6"
+        >
+          {/* Banner */}
+          <div
+            onClick={() => coverInputRef.current?.click()}
+            className="relative h-40 sm:h-48 w-full cursor-pointer group bg-gradient-to-br from-primary/90 via-primary to-primary/70"
+          >
+            {event.cover_url && (
+              <img
+                src={getCoverUrl(event.cover_url, 1600) ?? undefined}
+                alt="Capa"
+                decoding="async"
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
+            <div className="absolute top-4 right-4 z-10">
               <StatusDropdown
                 status={event.status}
                 publishAt={(event as any).publish_at}
                 onChange={(s) => {
-                  if (s === "agendado") {
-                    setShowSchedule(true);
-                    return;
-                  }
+                  if (s === "agendado") { setShowSchedule(true); return; }
                   updateEvent.mutate({ status: s, publish_at: null } as any);
                 }}
                 disabled={updateEvent.isPending}
               />
-              {/* Prominent action buttons */}
-              <div className="flex flex-wrap gap-2 mt-3">
-                <button
-                  onClick={handleShareLink}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all min-h-[40px]"
-                >
-                  <Share2 className="w-4 h-4" />
-                  Compartilhar evento
-                </button>
-                <button
-                  onClick={handleOpenGallery}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-all min-h-[40px]"
-                >
-                  <Eye className="w-4 h-4" />
-                  Ver galeria
-                </button>
-                <button
-                  onClick={handleShareWhatsApp}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-secondary/50 transition-all min-h-[40px]"
-                >
-                  <MessageCircle className="w-4 h-4 text-green-500" />
-                  WhatsApp
-                </button>
-              </div>
             </div>
+            <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold tracking-widest text-white/70">#{event.id.slice(0, 8).toUpperCase()}</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-white truncate drop-shadow">{event.name}</h1>
+                <p className="text-xs text-white/80 mt-0.5">
+                  {new Date(event.event_date).toLocaleDateString("pt-BR")} · {event.location}
+                </p>
+              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); coverInputRef.current?.click(); }}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-xs font-medium transition-colors"
+              >
+                <Image className="w-3.5 h-3.5" /> Trocar capa
+              </button>
+            </div>
+            <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" />
           </div>
 
-          {/* Quick actions grid — dedicated row to avoid overlap */}
-          <div className="mt-5 pt-5 border-t border-border/60">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Ações rápidas</p>
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-7 gap-1.5">
-              {quickActions.map((a) => (
-                <button
+          {/* CTA row */}
+          <div className="px-5 py-4 flex flex-wrap gap-2 border-b border-border/60">
+            <button
+              onClick={handleShareLink}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm hover:shadow"
+            >
+              <Share2 className="w-4 h-4" /> Compartilhar evento
+            </button>
+            <button
+              onClick={handleOpenGallery}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:border-primary/40 hover:text-primary transition-all"
+            >
+              <Eye className="w-4 h-4" /> Ver galeria
+            </button>
+            <button
+              onClick={handleShareWhatsApp}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-secondary/50 transition-all"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-500" /> WhatsApp
+            </button>
+          </div>
+
+          {/* Quick Actions grid */}
+          <div className="p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Ações rápidas</p>
+            <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+              {quickActions.map((a, idx) => (
+                <motion.button
                   key={a.key}
                   onClick={() => handleAction(a.key)}
-                  className="flex flex-col items-center justify-start gap-1.5 p-2.5 rounded-lg hover:bg-secondary/60 transition-colors text-center"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25, delay: idx * 0.02 }}
+                  className="group flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-background border border-border hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 transition-all"
                 >
-                  <a.icon className="w-4 h-4 text-primary flex-shrink-0" />
-                  <span className="text-[10px] text-muted-foreground leading-tight">{a.label}</span>
-                </button>
+                  <div className="w-9 h-9 rounded-lg bg-secondary/60 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
+                    <a.icon className="w-4.5 h-4.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground leading-tight text-center">{a.label}</span>
+                </motion.button>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Pricing + Search + Revenue */}
+        {/* Three main cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="glass-card p-4 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setShowPriceGrid(true)}>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                <h3 className="text-sm font-bold text-foreground">GRADE DE PREÇO</h3>
+          <button
+            onClick={() => setShowPriceGrid(true)}
+            className="text-left rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <DollarSign className="w-4.5 h-4.5 text-primary" />
+                </div>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Grade de Preço</h3>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Foto original</span>
-              <span className="text-foreground font-medium">{grid?.photo_high_price?.toFixed(2).replace(".", ",") || "12,00"}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Vídeo</span>
-              <span className="text-foreground font-medium">{grid?.video_price?.toFixed(2).replace(".", ",") || "—"}</span>
-            </div>
-            <div className="mt-3 border-t border-border pt-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-foreground">PACOTES E DESCONTOS</h3>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Foto original</span>
+                <span className="text-foreground font-semibold">R$ {grid?.photo_high_price?.toFixed(2).replace(".", ",") || "—"}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Vídeo</span>
+                <span className="text-foreground font-semibold">R$ {grid?.video_price?.toFixed(2).replace(".", ",") || "—"}</span>
               </div>
             </div>
-          </div>
-
-          <div className="glass-card p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <BarChart3 className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-bold text-foreground">TIPO DE BUSCA</h3>
+            <div
+              onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}
+              className="mt-4 pt-3 border-t border-border/70 flex items-center justify-between text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+            >
+              <span>Pacotes e Descontos</span>
+              <ChevronRight className="w-4 h-4" />
             </div>
-            <p className="text-sm text-foreground">{event.search_type?.join(", ") || "—"}</p>
-            <div className="flex items-center gap-2 mt-3">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-bold text-foreground">ORGANIZADOR</h3>
+          </button>
+
+          <div className="rounded-2xl bg-card border border-border p-5 shadow-sm">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <BarChart3 className="w-4.5 h-4.5 text-primary" />
+              </div>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Tipo de Busca</h3>
             </div>
-            <p className="text-sm text-foreground">Você</p>
-          </div>
-
-          <div className="rounded-xl bg-lime/90 p-5 text-center">
-            <h3 className="text-sm font-bold text-black mb-1">FATURAMENTO DO EVENTO</h3>
-            <p className="text-4xl font-black text-black">{totalRevenue.toFixed(2).replace(".", ",")}</p>
-            <p className="text-sm text-black/70 mt-1">Sua Comissão: {(totalRevenue * 0.9).toFixed(2).replace(".", ",")}</p>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="glass-card p-4">
-            <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div><p className="text-xl font-bold text-foreground">{paidOrders.length}</p><p className="text-xs text-muted-foreground">PEDIDOS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{avgTicket.toFixed(2).replace(".", ",")}</p><p className="text-xs text-muted-foreground">TICKET MÉDIO</p></div>
-              <div><p className="text-xl font-bold text-foreground">{photosSold}</p><p className="text-xs text-muted-foreground">FOTOS VENDIDAS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{paidOrders.length > 0 ? (photosSold / paidOrders.length).toFixed(2) : "0.00"}</p><p className="text-xs text-muted-foreground">FOTOS POR PEDIDO</p></div>
-              <div><p className="text-xl font-bold text-foreground">0</p><p className="text-xs text-muted-foreground">VÍDEOS VENDIDOS</p></div>
-              <div><p className="text-xl font-bold text-foreground">0.00</p><p className="text-xs text-muted-foreground">VÍDEOS POR PEDIDO</p></div>
+            <div className="flex flex-wrap gap-1.5">
+              {(event.search_type && event.search_type.length > 0 ? event.search_type : ["—"]).map((t) => (
+                <span key={t} className="inline-flex px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold capitalize">
+                  {t}
+                </span>
+              ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/70">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                <h4 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Organizador</h4>
+              </div>
+              <p className="text-sm text-foreground font-medium">Você</p>
             </div>
           </div>
 
-          <div className="glass-card p-4">
-            <div className="grid grid-cols-2 gap-y-3 text-sm">
-              <div><p className="text-xl font-bold text-foreground">{photos.length}</p><p className="text-xs text-muted-foreground">TOTAL DE FOTOS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{videos.length}</p><p className="text-xs text-muted-foreground">TOTAL DE VÍDEOS</p></div>
-              <div><p className="text-xl font-bold text-foreground">{photos.filter(p => p.identified).length}</p><p className="text-xs text-muted-foreground">IDENTIFICADAS</p></div>
-              <div><p className="text-xl font-bold text-foreground">0</p><p className="text-xs text-muted-foreground">VISITANTES</p></div>
-              <div className="col-span-2"><p className="text-xl font-bold text-foreground">{photos.filter(p => !p.identified).length}</p><p className="text-xs text-muted-foreground">SEM IDENTIFICAÇÃO</p></div>
-            </div>
-          </div>
-
-          <div className="glass-card p-4 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-3xl mb-1">👀</p>
-              <p className="text-xs text-muted-foreground">DE VISITANTES QUE<br />COMPRARAM</p>
-              <p className="text-xl font-bold text-foreground mt-1">{paidOrders.length > 0 ? "33%" : "0%"}</p>
+          <div className="relative rounded-2xl p-5 shadow-lg overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
+            <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
+            <div className="relative">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-white/85">Faturamento do Evento</p>
+                <DollarSign className="w-4 h-4 text-white/70" />
+              </div>
+              <p className="text-3xl sm:text-4xl font-black tracking-tight">
+                R$ {totalRevenue.toFixed(2).replace(".", ",")}
+              </p>
+              <p className="text-xs text-white/85 mt-1">
+                Sua comissão: R$ {(totalRevenue * 0.9).toFixed(2).replace(".", ",")}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* KPI Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          {[
+            { label: "Pedidos", value: String(paidOrders.length), sub: `${photosSold} fotos vendidas` },
+            { label: "Ticket Médio", value: `R$ ${avgTicket.toFixed(2).replace(".", ",")}`, sub: `${paidOrders.length > 0 ? (photosSold / paidOrders.length).toFixed(2) : "0.00"} fotos/pedido` },
+            { label: "Total de Fotos", value: String(photos.length), sub: `${photos.filter(p => p.identified).length} identificadas · ${photos.filter(p => !p.identified).length} sem ID` },
+            { label: "Conversão", value: paidOrders.length > 0 ? "33%" : "0%", sub: "de visitantes que compraram" },
+          ].map((k, i) => (
+            <motion.div
+              key={k.label}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.06 }}
+              className="rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md transition-all"
+            >
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{k.label}</p>
+              <p className="text-2xl font-bold text-foreground tracking-tight">{k.value}</p>
+              <p className="text-[11px] text-muted-foreground mt-1.5 truncate">{k.sub}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Secondary actions row */}
         <div className="flex flex-wrap gap-2 mb-6">
           {[
             { label: "Fotos Vendidas", action: () => setShowGallery(true) },
@@ -419,7 +453,11 @@ const EventDashboard = () => {
             { label: "Convidar Fotógrafos", action: () => toast.info("Em breve!") },
             { label: "Enviar Mensagem", action: () => toast.info("Em breve!") },
           ].map((btn) => (
-            <button key={btn.label} onClick={btn.action} className="px-4 py-2 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-colors min-h-[44px]">
+            <button
+              key={btn.label}
+              onClick={btn.action}
+              className="px-4 py-2 rounded-full border border-border bg-card text-foreground text-xs font-medium hover:border-primary/40 hover:text-primary transition-all"
+            >
               {btn.label}
             </button>
           ))}
@@ -453,22 +491,49 @@ const EventDashboard = () => {
         )}
 
         {/* Progress Steps */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 py-6">
-          {[
+        {(() => {
+          const steps = [
             { label: "Infos do Evento", done: true },
             { label: "Enviar Fotos", done: photos.length > 0 },
             { label: "Identificar Fotos", done: photos.some(p => p.identified) },
             { label: "Ativar Evento", done: event.status === "ativo" },
             { label: "Vender", done: orders.length > 0 },
-          ].map((step, i) => (
-            <div key={step.label} className="flex flex-col items-center gap-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step.done ? "bg-lime" : "bg-secondary"}`}>
-                {step.done ? <Check className="w-5 h-5 text-black" /> : <span className="text-sm text-muted-foreground">{i + 1}</span>}
+          ];
+          const doneCount = steps.filter(s => s.done).length;
+          const progressPct = Math.max(0, Math.min(100, ((doneCount - 1) / (steps.length - 1)) * 100));
+          return (
+            <div className="rounded-2xl bg-card border border-border shadow-sm p-6 mb-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-sm font-bold text-foreground">Progresso do Evento</h3>
+                <span className="text-xs text-muted-foreground font-medium">{doneCount} de {steps.length}</span>
               </div>
-              <span className={`text-[10px] sm:text-xs font-medium text-center ${step.done ? "text-lime" : "text-muted-foreground"}`}>{step.label}</span>
+              <div className="relative flex items-start justify-between">
+                <div className="absolute left-4 right-4 top-4 h-0.5 bg-border -z-0" />
+                <div
+                  className="absolute left-4 top-4 h-0.5 bg-primary -z-0 transition-all duration-700"
+                  style={{ width: `calc((100% - 2rem) * ${progressPct / 100})` }}
+                />
+                {steps.map((step, i) => {
+                  const isCurrent = !step.done && steps.slice(0, i).every(s => s.done);
+                  return (
+                    <div key={step.label} className="relative z-10 flex flex-col items-center gap-2 flex-1">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ring-4 ring-card transition-all
+                          ${step.done ? "bg-primary text-primary-foreground" : isCurrent ? "bg-primary text-primary-foreground animate-pulse" : "bg-secondary text-muted-foreground"}`}
+                      >
+                        {step.done ? <Check className="w-4 h-4" /> : <span className="text-xs font-bold">{i + 1}</span>}
+                      </div>
+                      <span className={`text-[10px] sm:text-[11px] font-semibold text-center leading-tight
+                        ${step.done ? "text-foreground" : isCurrent ? "text-primary" : "text-muted-foreground"}`}>
+                        {step.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          ))}
-        </div>
+          );
+        })()}
 
         {/* ======= MODALS ======= */}
         <UploadModal open={showUploadPhotos} onClose={() => setShowUploadPhotos(false)} onUpload={(files) => runUploadWithDupCheck(files, "photos")} isUploading={s3UploadPhotos.isPending} type="photos" />
