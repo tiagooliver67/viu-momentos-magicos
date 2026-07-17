@@ -21,7 +21,7 @@ interface Props {
   collabNote: string | null;
 }
 
-const PLATFORM_FEE = 12; // ViuFoto
+const PLATFORM_FEE = 10; // ViuFoto
 
 export default function CollaborationModal({ open, onClose, eventId, ownerCommissionPct, collabNote }: Props) {
   const qc = useQueryClient();
