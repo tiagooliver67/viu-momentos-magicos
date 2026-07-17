@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AnimatedLogo from "@/components/AnimatedLogo";
 import {
   BarChart3, Users, Calendar, DollarSign, Shield, Headphones, BookOpen,
   TrendingUp, Settings, Bug, Search, Bell, Sun, Moon, Menu, X,
@@ -54,10 +55,9 @@ const AdminLayout = () => {
       <aside className={`hidden lg:flex flex-col ${collapsed ? "w-[72px]" : "w-64"} min-h-screen bg-card/80 backdrop-blur-xl border-r border-border transition-all duration-300 relative`}>
         <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between"} p-4 border-b border-border`}>
           {!collapsed && (
-            <Link to="/admin" className="text-xl font-black">
-              <span className="text-primary">VIU</span>
-              <span className="text-foreground">FOTO</span>
-              <span className="text-xs ml-1 text-muted-foreground font-normal">Admin</span>
+            <Link to="/admin" className="flex items-center gap-2">
+              <AnimatedLogo />
+              <span className="text-xs text-muted-foreground font-normal">Admin</span>
             </Link>
           )}
           <button onClick={() => setCollapsed(!collapsed)} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
@@ -110,9 +110,7 @@ const AdminLayout = () => {
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <aside className="relative w-72 h-full bg-card border-r border-border overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-border">
-              <span className="text-xl font-black">
-                <span className="text-primary">VIU</span>FOTO
-              </span>
+              <AnimatedLogo />
               <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-lg hover:bg-secondary">
                 <X className="w-5 h-5" />
               </button>
