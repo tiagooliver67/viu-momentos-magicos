@@ -3,7 +3,7 @@ import { Search, Menu, X, User, LogOut, Settings, LayoutDashboard, Sun, Moon } f
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import viufotoLogo from "@/assets/viufoto-logo.png.asset.json";
+import AnimatedLogo from "@/components/AnimatedLogo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,16 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-/* Logomarca oficial ViuFoto */
-const AnimatedLogo = () => (
-  <img
-    src={viufotoLogo.url}
-    alt="ViuFoto"
-    className="h-6 sm:h-7 w-auto animate-fade-in"
-    draggable={false}
-  />
-);
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
