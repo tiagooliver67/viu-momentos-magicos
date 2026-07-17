@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 const menuItemsBase = [
   { label: "Eventos", icon: Calendar, path: "/dashboard", roles: ["photographer", "organizer"] },
@@ -75,10 +76,7 @@ const DashboardSidebar = () => {
     <>
       {showLogo && (
         <Link to="/" className="flex items-center gap-2 mb-8 px-3">
-          <span className="text-2xl font-black">
-            <span className="text-primary">VIU</span>
-            <span className="text-foreground">FOTO</span>
-          </span>
+          <AnimatedLogo className="h-7" />
         </Link>
       )}
 
@@ -115,9 +113,8 @@ const DashboardSidebar = () => {
     <>
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-background/90 backdrop-blur-xl border-b border-border flex items-center justify-between px-4">
-        <Link to="/" className="text-xl font-black">
-          <span className="text-primary">VIU</span>
-          <span className="text-foreground">FOTO</span>
+        <Link to="/" className="flex items-center">
+          <AnimatedLogo />
         </Link>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -133,9 +130,8 @@ const DashboardSidebar = () => {
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <aside className="relative w-72 h-full bg-sidebar border-r border-sidebar-border p-4 flex flex-col overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <Link to="/" onClick={() => setMobileOpen(false)} className="text-xl font-black">
-                <span className="text-primary">VIU</span>
-                <span className="text-foreground">FOTO</span>
+              <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center">
+                <AnimatedLogo />
               </Link>
               <button onClick={() => setMobileOpen(false)} className="p-2 rounded-lg hover:bg-secondary min-w-[44px] min-h-[44px] flex items-center justify-center">
                 <X className="w-5 h-5" />
