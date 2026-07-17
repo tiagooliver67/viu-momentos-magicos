@@ -4,6 +4,7 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle, Info, Wallet, Users, Split } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import CityAutocomplete, { type CityValue } from "@/components/event/CityAutocomplete";
 
 const steps = ["Monetização", "Informações", "Busca", "Visibilidade", "Resumo"];
 
@@ -51,6 +52,7 @@ const CriarEvento = () => {
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
   const [eventLocation, setEventLocation] = useState("");
+  const [eventCity, setEventCity] = useState<CityValue | null>(null);
   const [eventCategory, setEventCategory] = useState("");
   const [selectedSearchTypes, setSelectedSearchTypes] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<boolean | null>(null);
@@ -61,11 +63,7 @@ const CriarEvento = () => {
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const getLocationSuggestions = (input: string) => {
-    if (input.length < 2) return [];
-    const key = Object.keys(locationSuggestions).find((k) => input.toLowerCase().startsWith(k));
-    return key ? locationSuggestions[key] : [];
-  };
+  // (autocomplete de cidade agora vive no componente CityAutocomplete)
 
   const filteredCategories = categories.filter((c) =>
     c.toLowerCase().includes((categorySearch || eventCategory).toLowerCase())
@@ -95,7 +93,7 @@ const CriarEvento = () => {
       if (!eventName.trim()) newErrors.eventName = "Nome do evento é obrigatório";
       if (!eventDate) newErrors.eventDate = "Data é obrigatória";
       if (!eventTime) newErrors.eventTime = "Horário é obrigatório";
-      if (!eventLocation.trim()) newErrors.eventLocation = "Local é obrigatório";
+      if (!eventCity) newErrors.eventLocation = "Selecione uma cidade da lista de sugestões";
       if (!eventCategory) newErrors.eventCategory = "Categoria é obrigatória";
     }
 
