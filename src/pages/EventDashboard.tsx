@@ -382,7 +382,11 @@ const EventDashboard = () => {
             </div>
           </button>
 
-          <div className="rounded-2xl bg-card border border-border p-5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setShowEdit(true)}
+            className="text-left rounded-2xl bg-card border border-border p-5 shadow-sm hover:border-primary/40 hover:shadow-md transition-all"
+          >
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-primary" />
@@ -403,7 +407,11 @@ const EventDashboard = () => {
               </div>
               <p className="text-sm text-foreground font-medium">Você</p>
             </div>
-          </div>
+            <div className="mt-3 flex items-center justify-between text-sm font-semibold text-primary">
+              <span>Editar tipo de busca</span>
+              <ChevronRight className="w-4 h-4" />
+            </div>
+          </button>
 
           <div className="relative rounded-2xl p-5 shadow-lg overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
             <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
