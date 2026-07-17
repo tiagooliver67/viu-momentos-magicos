@@ -385,36 +385,14 @@ const CriarEvento = () => {
               </div>
             </div>
 
-            <div className="relative">
-              <label className="block text-sm font-medium text-foreground mb-1.5">Local do evento *</label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Digite a cidade do evento"
-                  value={eventLocation}
-                  onChange={(e) => { setEventLocation(e.target.value); setShowLocationSuggestions(true); setErrors((p) => ({ ...p, eventLocation: "" })); }}
-                  onFocus={() => setShowLocationSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-secondary border text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition-colors text-sm min-h-[48px] ${errors.eventLocation ? "border-red-500" : "border-border"}`}
-                />
-              </div>
-              {showLocationSuggestions && getLocationSuggestions(eventLocation).length > 0 && (
-                <div className="absolute z-20 w-full mt-1 rounded-lg bg-secondary border border-border shadow-xl overflow-hidden">
-                  {getLocationSuggestions(eventLocation).map((loc) => (
-                    <button
-                      key={loc}
-                      onMouseDown={() => { setEventLocation(loc); setShowLocationSuggestions(false); }}
-                      className="w-full text-left px-4 py-3 text-sm text-foreground hover:bg-primary/10 transition-colors flex items-center gap-2"
-                    >
-                      <MapPin className="w-3 h-3 text-primary" />
-                      {loc}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {errors.eventLocation && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{errors.eventLocation}</p>}
-            </div>
+            <CityAutocomplete
+              value={eventLocation}
+              confirmed={eventCity}
+              onChange={(t) => { setEventLocation(t); setErrors((p) => ({ ...p, eventLocation: "" })); }}
+              onSelect={(v) => { setEventCity(v); setEventLocation(v.label); setErrors((p) => ({ ...p, eventLocation: "" })); }}
+              onClear={() => setEventCity(null)}
+              error={errors.eventLocation}
+            />
 
             <div className="relative">
               <label className="block text-sm font-medium text-foreground mb-1.5">Categoria *</label>
