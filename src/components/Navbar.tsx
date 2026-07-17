@@ -3,6 +3,7 @@ import { Search, Menu, X, User, LogOut, Settings, LayoutDashboard, Sun, Moon } f
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import viufotoLogo from "@/assets/viufoto-logo.png.asset.json";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,32 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-/* 🔥 COMPONENTE DO LOGO ANIMADO */
-const AnimatedLogo = () => {
-  const [showSecond, setShowSecond] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSecond(true);
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div className="flex items-center text-xl sm:text-2xl font-black tracking-tight">
-      <span className="text-primary animate-fade-in">VIU</span>
-
-      <span
-        className={`ml-1 text-foreground transition-all duration-500 ${
-          showSecond ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
-        }`}
-      >
-        FOTO
-      </span>
-    </div>
-  );
-};
+/* Logomarca oficial ViuFoto */
+const AnimatedLogo = () => (
+  <img
+    src={viufotoLogo.url}
+    alt="ViuFoto"
+    className="h-6 sm:h-7 w-auto animate-fade-in"
+    draggable={false}
+  />
+);
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
