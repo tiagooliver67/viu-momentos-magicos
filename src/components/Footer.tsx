@@ -45,7 +45,7 @@ const Footer = () => (
 
       <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border">
         <div className="flex items-center gap-2 mb-4 md:mb-0">
-          <span className="text-xl font-black"><span className="text-primary">VIU</span>FOTO</span>
+          <img src="/__l5e/assets-v1/bd9d1a9c-c356-4e66-aee1-85f9deaec7f0/viufoto-logo.png" alt="ViuFoto" className="h-6 w-auto" draggable={false} />
           <span className="text-xs text-muted-foreground">© 2026 Todos os direitos reservados</span>
         </div>
         <div className="flex items-center gap-4">
