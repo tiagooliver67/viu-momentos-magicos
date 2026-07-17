@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Loader2, ShoppingCart, Camera, Flag, User } from "lucide-react";
 import { toast } from "sonner";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 const ESTADOS_BR = [
   "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG",
@@ -113,9 +114,8 @@ export default function Cadastro() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <nav className="border-b border-border px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="text-xl font-black tracking-tight">
-          <span className="text-primary">VIU</span>
-          <span className="text-foreground">FOTO</span>
+        <Link to="/" className="flex items-center">
+          <AnimatedLogo />
         </Link>
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">← Voltar</Link>
       </nav>
