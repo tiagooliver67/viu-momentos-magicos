@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, ScanFace, Image as ImageIcon, Eye, Camera } from "lucide-react";
 
 interface EventData {
   name: string;
@@ -12,6 +12,13 @@ interface EventData {
 }
 
 const categories = ["Futebol", "Futsal", "Vôlei", "Basquete", "Corrida", "Ciclismo", "Natação", "Crossfit", "Judô", "MMA", "Tênis", "Outros"];
+
+const searchTypes = [
+  { key: "facial", label: "Reconhecimento Facial", icon: ScanFace, desc: "IA identifica rostos" },
+  { key: "album", label: "Álbum", icon: ImageIcon, desc: "Organize por pastas" },
+  { key: "numero", label: "Número de Peito", icon: Eye, desc: "OCR lê números" },
+  { key: "sem", label: "Sem busca", icon: Camera, desc: "Galeria simples" },
+];
 
 interface Props {
   open: boolean;
@@ -33,6 +40,16 @@ export default function EditEventModal({ open, onClose, onSave, initial, isSavin
   if (!open) return null;
 
   const set = (key: keyof EventData, val: any) => setForm(prev => ({ ...prev, [key]: val }));
+
+  const toggleSearchType = (key: string) => {
+    const cur = form.search_type || [];
+    if (key === "sem") {
+      set("search_type", cur.includes("sem") ? [] : ["sem"]);
+      return;
+    }
+    const next = cur.includes(key) ? cur.filter(k => k !== key) : [...cur.filter(k => k !== "sem"), key];
+    set("search_type", next);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
@@ -66,6 +83,29 @@ export default function EditEventModal({ open, onClose, onSave, initial, isSavin
             <select value={form.category} onChange={e => set("category", e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm">
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground">Tipo de busca</label>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              {searchTypes.map(opt => {
+                const active = (form.search_type || []).includes(opt.key);
+                const Icon = opt.icon;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => toggleSearchType(opt.key)}
+                    className={`text-left p-3 rounded-lg border transition-all ${active ? "border-primary bg-primary/10" : "border-border bg-secondary hover:border-primary/40"}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className={`w-4 h-4 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className={`text-xs font-semibold ${active ? "text-primary" : "text-foreground"}`}>{opt.label}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">{opt.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
           <div>
             <label className="text-xs text-muted-foreground">Visibilidade</label>
