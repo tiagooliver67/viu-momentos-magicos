@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -62,9 +63,8 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <nav className="border-b border-border px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="text-xl font-black tracking-tight">
-          <span className="text-primary">VIU</span>
-          <span className="text-foreground">FOTO</span>
+        <Link to="/" className="flex items-center">
+          <AnimatedLogo />
         </Link>
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">← Voltar</Link>
       </nav>
