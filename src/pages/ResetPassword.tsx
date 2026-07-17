@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -47,8 +48,8 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <nav className="border-b border-border px-4 h-14 flex items-center">
-        <Link to="/" className="text-xl font-black tracking-tight">
-          <span className="text-primary">VIU</span><span className="text-foreground">FOTO</span>
+        <Link to="/" className="flex items-center">
+          <AnimatedLogo />
         </Link>
       </nav>
       <div className="flex-1 flex items-center justify-center px-4 py-12">
