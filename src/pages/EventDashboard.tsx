@@ -339,7 +339,7 @@ const EventDashboard = () => {
                   className="group flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-background border border-border hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 transition-all"
                 >
                   <div className="w-9 h-9 rounded-lg bg-secondary/60 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
-                    <a.icon className="w-4.5 h-4.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    <a.icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
                   <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground leading-tight text-center">{a.label}</span>
                 </motion.button>
@@ -357,7 +357,7 @@ const EventDashboard = () => {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <DollarSign className="w-4.5 h-4.5 text-primary" />
+                  <DollarSign className="w-4 h-4 text-primary" />
                 </div>
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Grade de Preço</h3>
               </div>
@@ -385,7 +385,7 @@ const EventDashboard = () => {
           <div className="rounded-2xl bg-card border border-border p-5 shadow-sm">
             <div className="flex items-center gap-2.5 mb-3">
               <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <BarChart3 className="w-4.5 h-4.5 text-primary" />
+                <BarChart3 className="w-4 h-4 text-primary" />
               </div>
               <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Tipo de Busca</h3>
             </div>
