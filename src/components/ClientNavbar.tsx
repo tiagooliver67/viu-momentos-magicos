@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import viufotoLogo from "@/assets/viufoto-logo.png.asset.json";
+import AnimatedLogo from "@/components/AnimatedLogo";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,15 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const AnimatedLogo = () => (
-  <img
-    src={viufotoLogo.url}
-    alt="ViuFoto"
-    className="h-6 sm:h-7 w-auto animate-fade-in"
-    draggable={false}
-  />
-);
 
 const ClientNavbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
