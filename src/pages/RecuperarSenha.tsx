@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 export default function RecuperarSenha() {
   const [email, setEmail] = useState("");
@@ -26,8 +27,8 @@ export default function RecuperarSenha() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <nav className="border-b border-border px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="text-xl font-black tracking-tight">
-          <span className="text-primary">VIU</span><span className="text-foreground">FOTO</span>
+        <Link to="/" className="flex items-center">
+          <AnimatedLogo />
         </Link>
         <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">← Voltar ao login</Link>
       </nav>
