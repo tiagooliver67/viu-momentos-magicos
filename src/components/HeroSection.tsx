@@ -83,16 +83,17 @@ const HeroSection = () => {
         const resolve = (p?: string | null) =>
           p ? cdnMap[p] || signedMap[p] || null : null;
         const media: SlideMedia[] = rows
-          .map((r) => {
+          .map((r): SlideMedia | null => {
             const url = resolve(r.image_path);
             if (!url) return null;
+            const poster = resolve(r.poster_path);
             return {
               url,
-              type: (r.media_type === "video" ? "video" : "image") as "image" | "video",
-              poster: resolve(r.poster_path) || undefined,
+              type: r.media_type === "video" ? "video" : "image",
+              ...(poster ? { poster } : {}),
             };
           })
-          .filter((m): m is SlideMedia => !!m);
+          .filter((m): m is SlideMedia => m !== null);
         setSlides(media);
       }
     })();
