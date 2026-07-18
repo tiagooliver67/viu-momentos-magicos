@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { resizeImage } from "@/lib/imageResize";
 import { cdnUrl } from "@/lib/cdnConfig";
-import { Loader2, Upload, Trash2, ArrowUp, ArrowDown, Save, Image as ImageIcon } from "lucide-react";
+import { Loader2, Upload, Trash2, ArrowUp, ArrowDown, Save, Image as ImageIcon, Video as VideoIcon, FileImage } from "lucide-react";
 
 interface HeroSettings {
   id: string;
@@ -22,6 +22,8 @@ interface HeroSlide {
   image_path: string;
   sort_order: number;
   active: boolean;
+  media_type?: "image" | "video";
+  poster_path?: string | null;
 }
 
 const TRANSITIONS = [
@@ -36,6 +38,7 @@ const AdminHero = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [posterUploadingId, setPosterUploadingId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -71,6 +74,38 @@ const AdminHero = () => {
     else toast.success("Configurações salvas! Alterações refletidas no site.");
   };
 
+  const MAX_VIDEO_BYTES = 10 * 1024 * 1024; // 10 MB
+  const MAX_VIDEO_SECONDS = 15;
+
+  const probeVideoDuration = (file: File): Promise<number> =>
+    new Promise((resolve) => {
+      const url = URL.createObjectURL(file);
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.src = url;
+      v.onloadedmetadata = () => {
+        URL.revokeObjectURL(url);
+        resolve(v.duration || 0);
+      };
+      v.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(0);
+      };
+    });
+
+  const uploadToS3 = async (path: string, body: Blob) => {
+    const { data, error } = await supabase.functions.invoke("s3-presign", {
+      body: { action: "sign_upload", object_path: path },
+    });
+    if (error || !data?.url) throw new Error(error?.message || "Falha ao gerar URL");
+    const putRes = await fetch(data.url, {
+      method: data.method || "PUT",
+      headers: { "Content-Type": body.type },
+      body,
+    });
+    if (!putRes.ok) throw new Error(`S3 status ${putRes.status}`);
+  };
+
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setUploading(true);
@@ -78,40 +113,72 @@ const AdminHero = () => {
       const arr = Array.from(files);
       let nextOrder = (slides[slides.length - 1]?.sort_order ?? -1) + 1;
       for (const file of arr) {
-        // Resize to max 1920px WebP for optimal LCP
-        const blob = await resizeImage(file, 1920, 0.85);
-        const ext = blob.type === "image/webp" ? "webp" : "jpg";
+        const isVideo = file.type.startsWith("video/");
         const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const path = `hero/${uid}.${ext}`;
 
-        // Get presigned URL
-        const { data, error } = await supabase.functions.invoke("s3-presign", {
-          body: { action: "sign_upload", object_path: path },
-        });
-        if (error || !data?.url) throw new Error(error?.message || "Falha ao gerar URL");
-
-        // Upload to S3
-        const putRes = await fetch(data.url, {
-          method: data.method || "PUT",
-          headers: { "Content-Type": blob.type },
-          body: blob,
-        });
-        if (!putRes.ok) throw new Error(`S3 status ${putRes.status}`);
-
-        // Insert row
-        const { error: insErr } = await supabase.from("hero_slides").insert({
-          image_path: path,
-          sort_order: nextOrder++,
-          active: true,
-        });
-        if (insErr) throw insErr;
+        if (isVideo) {
+          if (file.size > MAX_VIDEO_BYTES) {
+            toast.error(`"${file.name}" excede 10 MB. Comprima o vídeo antes de enviar.`);
+            continue;
+          }
+          const duration = await probeVideoDuration(file);
+          if (duration && duration > MAX_VIDEO_SECONDS + 0.5) {
+            toast.error(`"${file.name}" tem ${Math.round(duration)}s. Máximo permitido: ${MAX_VIDEO_SECONDS}s.`);
+            continue;
+          }
+          const ext = file.name.split(".").pop()?.toLowerCase() || "mp4";
+          const path = `hero/${uid}.${ext}`;
+          await uploadToS3(path, file);
+          const { error: insErr } = await supabase.from("hero_slides").insert({
+            image_path: path,
+            media_type: "video",
+            sort_order: nextOrder++,
+            active: true,
+          } as any);
+          if (insErr) throw insErr;
+        } else {
+          const blob = await resizeImage(file, 1920, 0.85);
+          const ext = blob.type === "image/webp" ? "webp" : "jpg";
+          const path = `hero/${uid}.${ext}`;
+          await uploadToS3(path, blob);
+          const { error: insErr } = await supabase.from("hero_slides").insert({
+            image_path: path,
+            media_type: "image",
+            sort_order: nextOrder++,
+            active: true,
+          } as any);
+          if (insErr) throw insErr;
+        }
       }
-      toast.success(`${arr.length} imagem(ns) enviada(s)`);
+      toast.success(`${arr.length} arquivo(s) enviado(s)`);
       await load();
     } catch (e: any) {
       toast.error("Erro no upload: " + (e?.message || e));
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handlePosterUpload = async (slide: HeroSlide, file: File | null) => {
+    if (!file) return;
+    setPosterUploadingId(slide.id);
+    try {
+      const blob = await resizeImage(file, 1920, 0.85);
+      const ext = blob.type === "image/webp" ? "webp" : "jpg";
+      const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const path = `hero/poster-${uid}.${ext}`;
+      await uploadToS3(path, blob);
+      const { error } = await supabase
+        .from("hero_slides")
+        .update({ poster_path: path } as any)
+        .eq("id", slide.id);
+      if (error) throw error;
+      toast.success("Poster atualizado");
+      await load();
+    } catch (e: any) {
+      toast.error("Erro no poster: " + (e?.message || e));
+    } finally {
+      setPosterUploadingId(null);
     }
   };
 
@@ -286,7 +353,7 @@ const AdminHero = () => {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h3 className="font-semibold flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-primary" />
-            Imagens de fundo ({slides.length})
+            Mídia de fundo — fotos e vídeos ({slides.length})
           </h3>
           <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity">
             {uploading ? (
@@ -294,11 +361,11 @@ const AdminHero = () => {
             ) : (
               <Upload className="w-4 h-4" />
             )}
-            {uploading ? "Enviando..." : "Adicionar imagens"}
+            {uploading ? "Enviando..." : "Adicionar mídia"}
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm"
               className="hidden"
               disabled={uploading}
               onChange={(e) => handleFiles(e.target.files)}
@@ -308,12 +375,14 @@ const AdminHero = () => {
 
         {slides.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">
-            Nenhuma imagem cadastrada. Adicione fotos para começar o slider.
+            Nenhuma mídia cadastrada. Adicione fotos ou vídeos para começar o slider.
           </p>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {slides.map((s, i) => {
               const url = cdnUrl(s.image_path);
+              const posterUrl = s.poster_path ? cdnUrl(s.poster_path) : null;
+              const isVideo = s.media_type === "video";
               return (
                 <div
                   key={s.id}
@@ -322,17 +391,33 @@ const AdminHero = () => {
                   } bg-secondary/30`}
                 >
                   <div className="aspect-video bg-black/30">
-                    {url && (
+                    {url && isVideo ? (
+                      <video
+                        src={url}
+                        poster={posterUrl || undefined}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : url ? (
                       <img
                         src={url}
                         alt={`Slide ${i + 1}`}
                         loading="lazy"
                         className="w-full h-full object-cover"
                       />
-                    )}
+                    ) : null}
                   </div>
-                  <div className="absolute top-1 left-1 px-2 py-0.5 rounded bg-black/70 text-white text-xs font-bold">
-                    #{i + 1}
+                  <div className="absolute top-1 left-1 flex gap-1">
+                    <span className="px-2 py-0.5 rounded bg-black/70 text-white text-xs font-bold">
+                      #{i + 1}
+                    </span>
+                    {isVideo && (
+                      <span className="px-2 py-0.5 rounded bg-primary text-primary-foreground text-[10px] font-bold inline-flex items-center gap-1">
+                        <VideoIcon className="w-3 h-3" /> VÍDEO
+                      </span>
+                    )}
                   </div>
                   <div className="absolute inset-x-0 bottom-0 p-2 flex items-center justify-between gap-1 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="flex gap-1">
@@ -359,6 +444,25 @@ const AdminHero = () => {
                       >
                         {s.active ? "ON" : "OFF"}
                       </button>
+                      {isVideo && (
+                        <label
+                          className="p-1.5 rounded bg-white/20 hover:bg-white/30 text-white cursor-pointer"
+                          title="Definir poster (thumbnail)"
+                        >
+                          {posterUploadingId === s.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <FileImage className="w-3.5 h-3.5" />
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={posterUploadingId === s.id}
+                            onChange={(e) => handlePosterUpload(s, e.target.files?.[0] || null)}
+                          />
+                        </label>
+                      )}
                     </div>
                     <button
                       onClick={() => removeSlide(s.id)}
@@ -374,7 +478,7 @@ const AdminHero = () => {
           </div>
         )}
         <p className="text-xs text-muted-foreground">
-          Imagens são otimizadas (WebP, máx. 1920px) e servidas pela CDN CloudFront para LCP rápido.
+          Imagens são otimizadas (WebP, máx. 1920px). Vídeos: MP4/WebM, até 15s e 10 MB, sem áudio (autoplay é sempre mudo). Servidos via CDN CloudFront.
         </p>
       </div>
 

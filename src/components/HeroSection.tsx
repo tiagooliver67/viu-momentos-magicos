@@ -7,6 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { cdnUrl } from "@/lib/cdnConfig";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 
+type SlideMedia = {
+  url: string;
+  type: "image" | "video";
+  poster?: string;
+};
+
 interface HeroSettings {
   title: string;
   highlight: string;
@@ -34,7 +40,7 @@ const HeroSection = () => {
   const [searchMode, setSearchMode] = useState<"text" | "face">("text");
   const [mounted, setMounted] = useState(false);
   const [settings, setSettings] = useState<HeroSettings>(DEFAULT_SETTINGS);
-  const [slides, setSlides] = useState<string[]>([]);
+  const [slides, setSlides] = useState<SlideMedia[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
@@ -50,16 +56,22 @@ const HeroSection = () => {
         supabase.from("hero_settings").select("*").limit(1).maybeSingle(),
         supabase
           .from("hero_slides")
-          .select("image_path")
+          .select("image_path, media_type, poster_path")
           .eq("active", true)
           .order("sort_order", { ascending: true }),
       ]);
       if (cancelled) return;
       if (s.data) setSettings(s.data as any);
       if (sl.data) {
-        const paths = sl.data.map((row: any) => row.image_path as string);
-        const cdnUrls = paths.map((p) => cdnUrl(p));
-        const needsSigning = paths.filter((_, i) => !cdnUrls[i]);
+        const rows = sl.data as any[];
+        const allPaths: string[] = [];
+        rows.forEach((r) => {
+          if (r.image_path) allPaths.push(r.image_path);
+          if (r.poster_path) allPaths.push(r.poster_path);
+        });
+        const cdnMap: Record<string, string | null> = {};
+        allPaths.forEach((p) => (cdnMap[p] = cdnUrl(p)));
+        const needsSigning = allPaths.filter((p) => !cdnMap[p]);
         let signedMap: Record<string, string> = {};
         if (needsSigning.length > 0) {
           try {
@@ -68,10 +80,21 @@ const HeroSection = () => {
             console.warn("[Hero] Falha ao assinar URLs dos slides:", e);
           }
         }
-        const urls = paths
-          .map((p, i) => cdnUrls[i] || signedMap[p] || null)
-          .filter((u): u is string => !!u);
-        setSlides(urls);
+        const resolve = (p?: string | null) =>
+          p ? cdnMap[p] || signedMap[p] || null : null;
+        const media: SlideMedia[] = rows
+          .map((r): SlideMedia | null => {
+            const url = resolve(r.image_path);
+            if (!url) return null;
+            const poster = resolve(r.poster_path);
+            return {
+              url,
+              type: r.media_type === "video" ? "video" : "image",
+              ...(poster ? { poster } : {}),
+            };
+          })
+          .filter((m): m is SlideMedia => m !== null);
+        setSlides(media);
       }
     })();
     return () => {
@@ -95,7 +118,45 @@ const HeroSection = () => {
   };
 
   const transitionMs = settings.transition_duration_ms;
-  const slidesToRender = slides.length > 0 ? slides : [heroRunners];
+  const slidesToRender: SlideMedia[] =
+    slides.length > 0 ? slides : [{ url: heroRunners, type: "image" }];
+
+  const renderMedia = (m: SlideMedia, i: number, isActive: boolean, opts?: { eager?: boolean }) => {
+    if (m.type === "video") {
+      return (
+        <video
+          key={m.url + i}
+          src={m.url}
+          poster={m.poster}
+          autoPlay
+          muted
+          loop={slidesToRender.length === 1}
+          playsInline
+          preload="metadata"
+          onEnded={() => {
+            if (slidesToRender.length > 1) {
+              setCurrentSlide((c) => (c + 1) % slidesToRender.length);
+            }
+          }}
+          className="absolute inset-0 w-full h-full object-cover transition-opacity ease-out"
+          style={{ transitionDuration: `${transitionMs}ms`, opacity: isActive ? 1 : 0 }}
+        />
+      );
+    }
+    return (
+      <img
+        key={m.url + i}
+        src={m.url}
+        alt="Atletas em corrida"
+        loading={opts?.eager ? "eager" : "lazy"}
+        fetchPriority={opts?.eager ? "high" : "low"}
+        className="absolute inset-0 w-full h-full object-cover transition-opacity ease-out"
+        style={{ transitionDuration: `${transitionMs}ms`, opacity: isActive ? 1 : 0 }}
+        width={1920}
+        height={1080}
+      />
+    );
+  };
 
   return (
     <section className="relative bg-background overflow-visible">
@@ -106,21 +167,9 @@ const HeroSection = () => {
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
         className="hidden lg:block absolute top-0 right-0 bottom-0 w-[58%] z-0"
       >
-        {slidesToRender.map((src, i) => {
+        {slidesToRender.map((m, i) => {
           const isActive = i === currentSlide % slidesToRender.length;
-          return (
-            <img
-              key={src + i}
-              src={src}
-              alt="Atletas em corrida"
-              loading={i === 0 ? "eager" : "lazy"}
-              fetchPriority={i === 0 ? "high" : "low"}
-              className="absolute inset-0 w-full h-full object-cover transition-opacity ease-out"
-              style={{ transitionDuration: `${transitionMs}ms`, opacity: isActive ? 1 : 0 }}
-              width={1920}
-              height={1080}
-            />
-          );
+          return renderMedia(m, i, isActive, { eager: i === 0 });
         })}
         {/* Soft fade from background on the left edge to blend with text */}
         <div
@@ -251,20 +300,9 @@ const HeroSection = () => {
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
             className="relative h-[340px] sm:h-[440px] rounded-3xl overflow-hidden lg:hidden"
           >
-            {slidesToRender.map((src, i) => {
+            {slidesToRender.map((m, i) => {
               const isActive = i === currentSlide % slidesToRender.length;
-              return (
-                <img
-                  key={src + i}
-                  src={src}
-                  alt="Atletas em corrida"
-                  loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover transition-opacity ease-out"
-                  style={{ transitionDuration: `${transitionMs}ms`, opacity: isActive ? 1 : 0 }}
-                  width={1920}
-                  height={1080}
-                />
-              );
+              return renderMedia(m, i, isActive);
             })}
             <motion.div
               initial={{ opacity: 0, y: 14 }}
