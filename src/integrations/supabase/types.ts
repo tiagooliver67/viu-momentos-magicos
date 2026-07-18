@@ -1261,6 +1261,8 @@ export type Database = {
           created_at: string
           id: string
           image_path: string
+          media_type: string
+          poster_path: string | null
           sort_order: number
         }
         Insert: {
@@ -1268,6 +1270,8 @@ export type Database = {
           created_at?: string
           id?: string
           image_path: string
+          media_type?: string
+          poster_path?: string | null
           sort_order?: number
         }
         Update: {
@@ -1275,6 +1279,8 @@ export type Database = {
           created_at?: string
           id?: string
           image_path?: string
+          media_type?: string
+          poster_path?: string | null
           sort_order?: number
         }
         Relationships: []
