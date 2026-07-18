@@ -353,7 +353,7 @@ const AdminHero = () => {
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h3 className="font-semibold flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-primary" />
-            Imagens de fundo ({slides.length})
+            Mídia de fundo — fotos e vídeos ({slides.length})
           </h3>
           <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold cursor-pointer hover:opacity-90 transition-opacity">
             {uploading ? (
@@ -361,11 +361,11 @@ const AdminHero = () => {
             ) : (
               <Upload className="w-4 h-4" />
             )}
-            {uploading ? "Enviando..." : "Adicionar imagens"}
+            {uploading ? "Enviando..." : "Adicionar mídia"}
             <input
               type="file"
               multiple
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm"
               className="hidden"
               disabled={uploading}
               onChange={(e) => handleFiles(e.target.files)}
