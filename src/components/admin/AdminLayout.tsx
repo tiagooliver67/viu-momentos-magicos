@@ -23,6 +23,7 @@ const navItems = [
   { label: "Storage S3", icon: HardDrive, path: "/admin/storage" },
   { label: "Suporte", icon: Headphones, path: "/admin/suporte" },
   { label: "Analytics", icon: TrendingUp, path: "/admin/analytics" },
+  { label: "Funil de Busca", icon: Search, path: "/admin/funil-busca" },
   { label: "Configurações", icon: Settings, path: "/admin/configuracoes" },
   { label: "Hero Section", icon: ImageIcon, path: "/admin/hero" },
   { label: "Blog", icon: BookOpen, path: "/admin/blog" },
