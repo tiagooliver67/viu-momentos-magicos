@@ -424,7 +424,15 @@ const EventPage = () => {
     if (fotoParam) {
       if (!selectedPhoto || selectedPhoto.id !== fotoParam) {
         const found = photoList.find((p: any) => p.id === fotoParam);
-        if (found) setSelectedPhoto(found);
+        if (found) {
+          setSelectedPhoto(found);
+          trackFunnelEvent({
+            event_type: "photo_viewed",
+            event_id: id ?? null,
+            photo_id: found.id,
+            dedupeKey: `${id}:${found.id}`,
+          });
+        }
       }
     } else if (selectedPhoto) {
       setSelectedPhoto(null);
