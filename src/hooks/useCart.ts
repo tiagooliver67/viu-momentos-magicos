@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
+import { trackFunnelEvent } from "@/lib/searchTracking";
 
 interface CartItem {
   id: string;
@@ -76,7 +77,21 @@ export function useCart() {
         ? prev.find(i => i.videoId === item.videoId)
         : prev.find(i => i.photoId === item.photoId && !i.videoId && i.resolution === item.resolution);
       if (exists) return prev;
-      return [...prev, { ...item, id: crypto.randomUUID() }];
+      const newItem = { ...item, id: crypto.randomUUID() };
+      // Track funnel event (fire-and-forget)
+      trackFunnelEvent({
+        event_type: "add_to_cart",
+        event_id: item.eventId ?? null,
+        photo_id: item.photoId ?? null,
+        metadata: {
+          resolution: item.resolution,
+          price: item.price,
+          is_video: !!item.videoId,
+          video_id: item.videoId ?? null,
+        },
+        dedupeKey: `${item.photoId || item.videoId}:${item.resolution}`,
+      });
+      return [...prev, newItem];
     });
   }, []);
 

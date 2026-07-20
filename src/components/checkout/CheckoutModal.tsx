@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { pickDiscount, normalizeRules } from "@/lib/progressiveDiscount";
+import { trackFunnelEvent } from "@/lib/searchTracking";
 
 // Validate Brazilian CPF (11 digits with check digits) — accepts CNPJ (14 digits) loosely as well
 function isValidCpfCnpj(value: string): boolean {
@@ -94,10 +95,21 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
   // Check if payment is confirmed
   useEffect(() => {
     if (isPaid && step === "pix") {
+      trackFunnelEvent({
+        event_type: "purchase_completed",
+        event_id: eventId,
+        order_id: pixData?.orderId ?? null,
+        metadata: {
+          total: finalTotal,
+          items_count: items.length,
+          discount_pct: discountPct,
+        },
+        dedupeKey: pixData?.orderId || `${eventId}:${finalTotal}`,
+      });
       setStep("success");
       clearCart();
     }
-  }, [isPaid, step, clearCart]);
+  }, [isPaid, step, clearCart, eventId, pixData?.orderId, finalTotal, items.length, discountPct]);
 
   if (!open) return null;
 
@@ -148,6 +160,17 @@ const CheckoutModal = ({ open, onClose, eventId }: CheckoutModalProps) => {
           resolution: i.resolution,
         })),
         total: finalTotal,
+      });
+      trackFunnelEvent({
+        event_type: "checkout_started",
+        event_id: eventId,
+        metadata: {
+          total: finalTotal,
+          items_count: items.length,
+          photo_count: photoCount,
+          discount_pct: discountPct,
+        },
+        dedupeKey: `${eventId}:${finalTotal}:${items.length}`,
       });
       setStep("pix");
     } catch (err: any) {

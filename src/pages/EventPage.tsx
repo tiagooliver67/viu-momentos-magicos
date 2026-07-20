@@ -19,6 +19,7 @@ import FaceSearchModal from "@/components/event/FaceSearchModal";
 import GalleryTabs, { type GalleryTab } from "@/components/event/GalleryTabs";
 import { getCoverUrl } from "@/lib/eventCover";
 import { useMarketingTracker } from "@/hooks/useMarketingTracker";
+import { trackFunnelEvent } from "@/lib/searchTracking";
 import {
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
@@ -307,6 +308,20 @@ const EventPage = () => {
     staleTime: 60_000,
   });
 
+  // Track bib search results (fires once per query resolution)
+  useEffect(() => {
+    if (!id || !isValidBibQuery || bibSearching || !bibMatchIds) return;
+    trackFunnelEvent({
+      event_type: "search_performed",
+      search_kind: "bib",
+      event_id: id,
+      has_results: bibMatchIds.size > 0,
+      results_count: bibMatchIds.size,
+      metadata: { query: trimmedBib },
+      dedupeKey: `bib:${id}:${trimmedBib}`,
+    });
+  }, [id, isValidBibQuery, bibSearching, bibMatchIds, trimmedBib]);
+
   const photoList = useMemo(() => {
     // Busca facial tem prioridade — atravessa pastas
     if (faceMatchIds && faceMatchIds.size > 0) {
@@ -423,7 +438,15 @@ const EventPage = () => {
     if (fotoParam) {
       if (!selectedPhoto || selectedPhoto.id !== fotoParam) {
         const found = photoList.find((p: any) => p.id === fotoParam);
-        if (found) setSelectedPhoto(found);
+        if (found) {
+          setSelectedPhoto(found);
+          trackFunnelEvent({
+            event_type: "photo_viewed",
+            event_id: id ?? null,
+            photo_id: found.id,
+            dedupeKey: `${id}:${found.id}`,
+          });
+        }
       }
     } else if (selectedPhoto) {
       setSelectedPhoto(null);
@@ -1110,6 +1133,14 @@ const EventPage = () => {
             setFaceSimilarityById(m);
             setSelectedFolder(null);
             setSearchBib("");
+            trackFunnelEvent({
+              event_type: "search_performed",
+              search_kind: "facial",
+              event_id: id,
+              has_results: ids.length > 0,
+              results_count: ids.length,
+              dedupeKey: `face:${id}:${Date.now()}`,
+            });
           }}
         />
       )}

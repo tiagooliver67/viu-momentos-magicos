@@ -52,6 +52,7 @@ import AdminFinance from "./pages/admin/AdminFinance";
 import AdminModeration from "./pages/admin/AdminModeration";
 import AdminSupport from "./pages/admin/AdminSupport";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminSearchAnalytics from "./pages/admin/AdminSearchAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminPayments from "./pages/admin/AdminPayments";
@@ -154,6 +155,7 @@ const App = () => (
                 <Route path="inscricoes/:id" element={<AdminInscricaoDetail />} />
                 <Route path="suporte" element={<AdminSupport />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
+                <Route path="funil-busca" element={<AdminSearchAnalytics />} />
                 <Route path="configuracoes" element={<AdminSettings />} />
                 <Route path="hero" element={<AdminHero />} />
                 <Route path="fotos" element={<AdminPhotos />} />
