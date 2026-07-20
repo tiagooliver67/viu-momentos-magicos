@@ -308,6 +308,20 @@ const EventPage = () => {
     staleTime: 60_000,
   });
 
+  // Track bib search results (fires once per query resolution)
+  useEffect(() => {
+    if (!id || !isValidBibQuery || bibSearching || !bibMatchIds) return;
+    trackFunnelEvent({
+      event_type: "search_performed",
+      search_kind: "bib",
+      event_id: id,
+      has_results: bibMatchIds.size > 0,
+      results_count: bibMatchIds.size,
+      metadata: { query: trimmedBib },
+      dedupeKey: `bib:${id}:${trimmedBib}`,
+    });
+  }, [id, isValidBibQuery, bibSearching, bibMatchIds, trimmedBib]);
+
   const photoList = useMemo(() => {
     // Busca facial tem prioridade — atravessa pastas
     if (faceMatchIds && faceMatchIds.size > 0) {
