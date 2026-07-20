@@ -73,18 +73,20 @@ export async function trackFunnelEvent(args: TrackArgs): Promise<void> {
     const session_id = getSessionId();
     const user_id = await getUserId();
     // Fire-and-forget: no await on error surfaces
-    await supabase.from("search_events").insert({
+    const payload: Record<string, unknown> = {
       event_type: args.event_type,
-      search_kind: args.search_kind ?? null,
-      event_id: args.event_id ?? null,
-      photo_id: args.photo_id ?? null,
-      order_id: args.order_id ?? null,
-      has_results: args.has_results ?? null,
-      results_count: args.results_count ?? null,
       session_id,
-      user_id,
       metadata: args.metadata ?? {},
-    });
+    };
+    if (args.search_kind != null) payload.search_kind = args.search_kind;
+    if (args.event_id != null) payload.event_id = args.event_id;
+    if (args.photo_id != null) payload.photo_id = args.photo_id;
+    if (args.order_id != null) payload.order_id = args.order_id;
+    if (args.has_results != null) payload.has_results = args.has_results;
+    if (args.results_count != null) payload.results_count = args.results_count;
+    if (user_id) payload.user_id = user_id;
+    // Cast: the generated types may not include the enum union yet.
+    await (supabase.from("search_events") as any).insert(payload);
   } catch (err) {
     // Never let tracking break UX
     if (import.meta.env.DEV) console.warn("[trackFunnelEvent]", err);
