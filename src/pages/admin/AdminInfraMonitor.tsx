@@ -30,15 +30,18 @@ const ring = (pct: number) => {
   return "text-lime";
 };
 
-const Gauge = ({ label, value, pct, hint }: { label: string; value: string; pct: number; hint?: string }) => {
+const Gauge = ({ label, value, pct, hint, tooltip }: { label: string; value: string; pct: number; hint?: string; tooltip?: { what: string; risk: string; action: string } }) => {
   const radius = 42;
   const circ = 2 * Math.PI * radius;
   const clamped = Math.max(0, Math.min(100, pct));
   const dash = (clamped / 100) * circ;
   const color = ring(clamped);
   return (
-    <div className="glass-card p-5 flex flex-col items-center text-center">
-      <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">{label}</p>
+    <div className="glass-card p-5 flex flex-col items-center text-center relative group">
+      <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+        {label}
+        {tooltip && <span className="w-3.5 h-3.5 rounded-full border border-muted-foreground/40 text-[9px] leading-none flex items-center justify-center text-muted-foreground cursor-help">?</span>}
+      </p>
       <div className="relative w-28 h-28">
         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
           <circle cx="50" cy="50" r={radius} stroke="hsl(var(--border))" strokeWidth="8" fill="none" />
@@ -57,6 +60,16 @@ const Gauge = ({ label, value, pct, hint }: { label: string; value: string; pct:
         </div>
       </div>
       {hint && <p className="text-[11px] text-muted-foreground mt-2">{hint}</p>}
+      {tooltip && (
+        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 w-72 opacity-0 group-hover:opacity-100 transition-opacity z-20 bg-popover border border-border rounded-lg p-3 shadow-lg text-left">
+          <p className="text-[11px] font-semibold text-foreground mb-1">O que é</p>
+          <p className="text-[11px] text-muted-foreground mb-2">{tooltip.what}</p>
+          <p className="text-[11px] font-semibold text-destructive mb-1">Se chegar a 100%</p>
+          <p className="text-[11px] text-muted-foreground mb-2">{tooltip.risk}</p>
+          <p className="text-[11px] font-semibold text-lime mb-1">O que fazer</p>
+          <p className="text-[11px] text-muted-foreground">{tooltip.action}</p>
+        </div>
+      )}
     </div>
   );
 };
@@ -74,7 +87,7 @@ const DISK_ALLOWANCE_GB = 8;
 
 const AdminInfraMonitor = () => {
   const [history, setHistory] = useState<Series[]>([]);
-  const [interval, setIntervalMs] = useState(10_000);
+  const [interval, setIntervalMs] = useState(30_000);
 
   const { data, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery<Snapshot>({
     queryKey: ["admin-infra-metrics"],
@@ -128,10 +141,10 @@ const AdminInfraMonitor = () => {
             onChange={(e) => setIntervalMs(Number(e.target.value))}
             className="text-xs px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 border border-border"
           >
-            <option value={5000}>5s</option>
-            <option value={10000}>10s</option>
-            <option value={30000}>30s</option>
-            <option value={60000}>60s</option>
+            <option value={10000}>10s (intensivo)</option>
+            <option value={30000}>30s (recomendado)</option>
+            <option value={60000}>1min</option>
+            <option value={300000}>5min (econômico)</option>
           </select>
           <button
             onClick={() => refetch()}
@@ -175,24 +188,44 @@ const AdminInfraMonitor = () => {
               value={`${data.connections.total}/${data.connections.max}`}
               pct={data.connections.saturation_pct}
               hint={`${data.connections.active} ativas · ${data.connections.idle} idle`}
+              tooltip={{
+                what: "Nº de conexões abertas no Postgres vs. o limite da instância. Cada usuário/edge function consome slots.",
+                risk: "Novas requisições falham com 'too many connections'. Login, checkout e uploads param até liberar slots.",
+                action: "Investigar 'idle in transaction' (leaks). Se persistir, aumentar o tamanho da instância (compute).",
+              }}
             />
             <Gauge
               label="Disco (banco)"
               value={data.storage.db_pretty}
               pct={diskPct}
               hint={`de ${DISK_ALLOWANCE_GB} GB alocados`}
+              tooltip={{
+                what: "Espaço usado pelo Postgres (tabelas, índices, WAL). Não inclui fotos/vídeos, que ficam no S3.",
+                risk: "Postgres entra em modo read-only. Nenhuma escrita passa: nem pedidos, nem uploads de metadados, nem logs.",
+                action: "Rodar limpeza de logs antigos, purgar tabelas grandes (ver Top 10 abaixo) ou aumentar o disco do banco.",
+              }}
             />
             <Gauge
               label="Cache hit"
               value={`${data.activity.cache_hit_pct ?? 0}%`}
               pct={data.activity.cache_hit_pct ?? 0}
               hint="quanto mais alto, menos I/O"
+              tooltip={{
+                what: "% de leituras servidas da RAM em vez do disco. Ideal ≥ 99%. Mede eficiência de memória do banco.",
+                risk: "100% é ótimo aqui — quanto MAIOR, melhor. O risco é o inverso: cair abaixo de 95% deixa tudo lento.",
+                action: "Se estiver baixo: revisar índices faltantes, queries pesadas ou aumentar RAM (upgrade de compute).",
+              }}
             />
             <Gauge
               label="RAM (proxy)"
               value={`${Math.min(100, Math.round((data.connections.saturation_pct + (100 - (data.activity.cache_hit_pct ?? 100))) / 2))}%`}
               pct={Math.min(100, (data.connections.saturation_pct + (100 - (data.activity.cache_hit_pct ?? 100))) / 2)}
               hint="conexões + cache miss"
+              tooltip={{
+                what: "Estimativa indireta de pressão de memória (Lovable Cloud não expõe RAM crua). Combina conexões + cache miss.",
+                risk: "OOM kill: o Postgres reinicia sozinho, derrubando conexões ativas e cortando o app por alguns segundos.",
+                action: "Se ficar >80% por muito tempo, aumentar o tamanho da instância (compute) para mais RAM.",
+              }}
             />
           </div>
 
