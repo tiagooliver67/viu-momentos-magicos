@@ -2593,6 +2593,59 @@ export type Database = {
           },
         ]
       }
+      search_events: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          event_type: Database["public"]["Enums"]["search_event_type"]
+          has_results: boolean | null
+          id: string
+          metadata: Json
+          order_id: string | null
+          photo_id: string | null
+          results_count: number | null
+          search_kind: Database["public"]["Enums"]["search_kind"] | null
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          event_type: Database["public"]["Enums"]["search_event_type"]
+          has_results?: boolean | null
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          photo_id?: string | null
+          results_count?: number | null
+          search_kind?: Database["public"]["Enums"]["search_kind"] | null
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          event_type?: Database["public"]["Enums"]["search_event_type"]
+          has_results?: boolean | null
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          photo_id?: string | null
+          results_count?: number | null
+          search_kind?: Database["public"]["Enums"]["search_kind"] | null
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_events_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           admin_response: string | null
@@ -3115,6 +3168,13 @@ export type Database = {
         | "encerrado"
         | "cancelado"
       registration_payment_status: "pendente" | "pago" | "cancelado"
+      search_event_type:
+        | "search_performed"
+        | "photo_viewed"
+        | "add_to_cart"
+        | "checkout_started"
+        | "purchase_completed"
+      search_kind: "facial" | "bib" | "album" | "none"
       video_processing_status: "pending" | "processing" | "ready" | "failed"
     }
     CompositeTypes: {
@@ -3266,6 +3326,14 @@ export const Constants = {
         "cancelado",
       ],
       registration_payment_status: ["pendente", "pago", "cancelado"],
+      search_event_type: [
+        "search_performed",
+        "photo_viewed",
+        "add_to_cart",
+        "checkout_started",
+        "purchase_completed",
+      ],
+      search_kind: ["facial", "bib", "album", "none"],
       video_processing_status: ["pending", "processing", "ready", "failed"],
     },
   },
