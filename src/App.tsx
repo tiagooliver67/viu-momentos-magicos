@@ -62,6 +62,7 @@ import AdminInscricaoDetail from "./pages/admin/AdminInscricaoDetail";
 import AdminHero from "./pages/admin/AdminHero";
 import AdminPhotos from "./pages/admin/AdminPhotos";
 import AdminHealth from "./pages/admin/AdminHealth";
+import AdminInfraMonitor from "./pages/admin/AdminInfraMonitor";
 import AdminPhotoDiagnostics from "./pages/admin/AdminPhotoDiagnostics";
 import InscricoesList from "./pages/inscricoes/InscricoesList";
 import InscricaoForm from "./pages/inscricoes/InscricaoForm";
@@ -160,6 +161,7 @@ const App = () => (
                 <Route path="hero" element={<AdminHero />} />
                 <Route path="fotos" element={<AdminPhotos />} />
                 <Route path="saude" element={<AdminHealth />} />
+                <Route path="infra" element={<AdminInfraMonitor />} />
                 <Route path="foto/:photoId" element={<AdminPhotoDiagnostics />} />
                 <Route path="logs" element={<AdminLogs />} />
                 <Route path="blog" element={<BlogAdm />} />
