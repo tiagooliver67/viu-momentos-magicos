@@ -3121,6 +3121,7 @@ export type Database = {
         Returns: boolean
       }
       increment_blog_views: { Args: { _slug: string }; Returns: undefined }
+      infra_metrics_snapshot: { Args: never; Returns: Json }
       is_event_eligible: { Args: { _event_id: string }; Returns: boolean }
       is_event_organizer: { Args: { _event_id: string }; Returns: boolean }
       is_event_photographer: { Args: { _event_id: string }; Returns: boolean }

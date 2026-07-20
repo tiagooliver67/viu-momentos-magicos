@@ -8,7 +8,7 @@ import {
   BarChart3, Users, Calendar, DollarSign, Shield, Headphones, BookOpen,
   TrendingUp, Settings, Bug, Search, Bell, Sun, Moon, Menu, X,
   ChevronLeft, LogOut, Camera, CreditCard, HardDrive, ClipboardList, Image as ImageIcon,
-  Activity, Trophy, Handshake, ShieldAlert
+  Activity, Trophy, Handshake, ShieldAlert, Gauge
 } from "lucide-react";
 
 const navItems = [
@@ -31,6 +31,7 @@ const navItems = [
   { label: "Parceiros", icon: Handshake, path: "/admin/parceiros" },
   { label: "Antifraude", icon: ShieldAlert, path: "/admin/antifraude" },
   { label: "Saúde do Sistema", icon: Activity, path: "/admin/saude" },
+  { label: "Monitor Infra", icon: Gauge, path: "/admin/infra" },
   { label: "Testes & Logs", icon: Bug, path: "/admin/logs" },
 ];
 
