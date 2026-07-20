@@ -1133,6 +1133,14 @@ const EventPage = () => {
             setFaceSimilarityById(m);
             setSelectedFolder(null);
             setSearchBib("");
+            trackFunnelEvent({
+              event_type: "search_performed",
+              search_kind: "facial",
+              event_id: id,
+              has_results: ids.length > 0,
+              results_count: ids.length,
+              dedupeKey: `face:${id}:${Date.now()}`,
+            });
           }}
         />
       )}
