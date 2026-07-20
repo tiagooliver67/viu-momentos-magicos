@@ -19,6 +19,7 @@ import FaceSearchModal from "@/components/event/FaceSearchModal";
 import GalleryTabs, { type GalleryTab } from "@/components/event/GalleryTabs";
 import { getCoverUrl } from "@/lib/eventCover";
 import { useMarketingTracker } from "@/hooks/useMarketingTracker";
+import { trackFunnelEvent } from "@/lib/searchTracking";
 import {
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
