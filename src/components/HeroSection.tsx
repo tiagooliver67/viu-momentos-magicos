@@ -224,8 +224,8 @@ const HeroSection = () => {
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
               className="text-base sm:text-lg text-muted-foreground max-w-md mb-8"
             >
-              Encontre suas fotos de eventos esportivos em segundos com nossa
-              inteligência de busca facial e número de peito.
+              Mostre seu rosto ou digite seu número de peito. Nossa inteligência
+              artificial encontra todas as suas fotos automaticamente e entrega em alta resolução.
             </motion.p>
 
             <motion.form
@@ -280,7 +280,8 @@ const HeroSection = () => {
                   Buscar
                 </button>
               </div>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-3 ml-1">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-3 ml-1 whitespace-pre-line">
+                Grátis para buscar e visualizar -  você só paga o que quiser baixar.{"\n\n"}
                 Não sabe o nome do evento?{" "}
                 <button
                   type="button"
