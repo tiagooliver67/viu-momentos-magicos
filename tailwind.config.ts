@@ -46,6 +46,11 @@ export default {
           DEFAULT: "hsl(var(--lime))",
           foreground: "hsl(var(--lime-foreground))",
         },
+        cta: {
+          DEFAULT: "hsl(var(--cta))",
+          foreground: "hsl(var(--cta-foreground))",
+          dark: "hsl(var(--cta-dark))",
+        },
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",

@@ -48,6 +48,11 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
+    /* CTA Accent — Lime Neon #A3E635 (ação primária: Começar, Enviar, Assinar) */
+    --cta: 74 78% 55%;
+    --cta-foreground: 90 70% 10%;
+    --cta-dark: 83 85% 35%;
+
     --border: 240 10% 92%;
     --input: 240 10% 92%;
     --ring: 256 76% 57%;
@@ -100,6 +105,10 @@
     --lime-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+
+    --cta: 74 78% 55%;
+    --cta-foreground: 90 70% 10%;
+    --cta-dark: 83 85% 35%;
 
     --border: 240 10% 18%;
     --input: 240 10% 18%;

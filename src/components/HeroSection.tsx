@@ -275,7 +275,7 @@ const HeroSection = () => {
                 />
                 <button
                   type="submit"
-                  className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm min-h-[44px] shrink-0 hover:bg-primary/90 transition-colors shadow-[0_8px_20px_-6px_hsl(var(--primary)/0.45)]"
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-cta text-cta-foreground font-bold text-sm min-h-[44px] shrink-0 hover:bg-cta-dark hover:text-cta-foreground transition-colors shadow-[0_8px_20px_-6px_hsl(var(--cta)/0.55)]"
                 >
                   Buscar
                 </button>

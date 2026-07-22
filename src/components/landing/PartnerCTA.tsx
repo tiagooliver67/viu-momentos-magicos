@@ -79,7 +79,7 @@ const PartnerCTA = () => {
                 </p>
                 <Link
                   to={card.to}
-                  className="inline-flex items-center justify-center gap-2 self-start px-6 py-3 min-h-[44px] rounded-xl bg-primary text-primary-foreground font-bold text-sm sm:text-base hover:bg-primary/90 transition-all hover:shadow-[0_8px_24px_-6px_hsl(var(--primary)/0.5)]"
+                  className="inline-flex items-center justify-center gap-2 self-start px-6 py-3 min-h-[44px] rounded-xl bg-cta text-cta-foreground font-bold text-sm sm:text-base hover:bg-cta-dark transition-all hover:shadow-[0_8px_24px_-6px_hsl(var(--cta)/0.55)]"
                 >
                   {card.cta}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
