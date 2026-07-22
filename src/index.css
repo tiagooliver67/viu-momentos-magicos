@@ -48,10 +48,10 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    /* CTA Accent — Lime Neon #A3E635 (ação primária: Começar, Enviar, Assinar) */
-    --cta: 74 78% 55%;
-    --cta-foreground: 90 70% 10%;
-    --cta-dark: 83 85% 35%;
+    /* CTA Accent — Verde Esmeralda Vibrante oklch(0.55 0.2 135) (ação primária: Começar, Enviar, Assinar) */
+    --cta: 98 100% 27%;
+    --cta-foreground: 0 0% 100%;
+    --cta-dark: 98 100% 22%;
 
     --border: 240 10% 92%;
     --input: 240 10% 92%;
@@ -106,9 +106,9 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --cta: 74 78% 55%;
-    --cta-foreground: 90 70% 10%;
-    --cta-dark: 83 85% 35%;
+    --cta: 98 100% 27%;
+    --cta-foreground: 0 0% 100%;
+    --cta-dark: 98 100% 22%;
 
     --border: 240 10% 18%;
     --input: 240 10% 18%;
