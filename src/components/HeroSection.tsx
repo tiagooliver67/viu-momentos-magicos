@@ -281,7 +281,7 @@ const HeroSection = () => {
                 </button>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground mt-3 ml-1 whitespace-pre-line">
-                Grátis para buscar e visualizar -  você só paga o que quiser baixar.{"\n\n"}
+                Grátis para buscar e visualizar - você só paga o que quiser baixar.{"\n"}
                 Não sabe o nome do evento?{" "}
                 <button
                   type="button"
