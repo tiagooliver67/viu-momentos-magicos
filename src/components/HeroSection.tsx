@@ -212,7 +212,22 @@ const HeroSection = () => {
               className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.02] tracking-tight mb-5"
               style={{ color: settings.title_color }}
             >
-              {settings.title}{" "}
+              {(() => {
+                const words = (settings.title || "").split(/\s+/).filter(Boolean);
+                return words.map((w, i) => (
+                  <span key={i}>
+                    {w}
+                    {i < words.length - 1 ? (
+                      <>
+                        {i === 2 ? <br className="sm:hidden" aria-hidden /> : null}
+                        {" "}
+                      </>
+                    ) : null}
+                  </span>
+                ));
+              })()}
+              <br className="sm:hidden" aria-hidden />
+              <span className="hidden sm:inline"> </span>
               <span style={{ color: settings.highlight_color }}>
                 {settings.highlight}
               </span>
