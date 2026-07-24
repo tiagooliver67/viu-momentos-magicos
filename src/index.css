@@ -295,6 +295,9 @@
   }
 
   /* ==================== ANIMAÇÃO LOGO ==================== */
+  .dark-theme .viufoto-logo-light { display: none; }
+  .dark-theme .viufoto-logo-dark { display: block; }
+
   @keyframes fade-in {
     from {
       opacity: 0;

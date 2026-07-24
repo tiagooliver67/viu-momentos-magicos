@@ -1,57 +1,31 @@
-import { useEffect, useState } from "react";
-import viufotoLogo from "@/assets/viufoto-logo.png.asset.json";
-import viufotoPlay from "@/assets/viufoto-play.png.asset.json";
-
-const SESSION_KEY = "viufoto:logo-pulsed";
+import viufotoLogoLight from "@/assets/viufoto-logo-light.png.asset.json";
+import viufotoLogoDark from "@/assets/viufoto-logo-dark.png.asset.json";
 
 interface AnimatedLogoProps {
   className?: string;
 }
 
 /**
- * Logomarca oficial da ViuFoto com pulse discreto no play (Play Pulse).
- * A animação roda apenas uma vez por sessão de navegação (sessionStorage).
+ * Logomarca oficial da ViuFoto.
+ * Swap automático entre versão para fundo claro (padrão) e fundo escuro (.dark-theme),
+ * controlado por CSS em src/index.css.
  */
 const AnimatedLogo = ({ className = "h-6 sm:h-7" }: AnimatedLogoProps) => {
-  const [shouldPulse, setShouldPulse] = useState(false);
-
-  useEffect(() => {
-    try {
-      if (!sessionStorage.getItem(SESSION_KEY)) {
-        setShouldPulse(true);
-        sessionStorage.setItem(SESSION_KEY, "1");
-      }
-    } catch {
-      // sessionStorage indisponível — não anima para evitar loop
-    }
-  }, []);
-
   return (
-    <div className={`relative inline-block ${className}`} aria-label="ViuFoto">
+    <span className={`relative inline-block ${className}`} aria-label="ViuFoto">
       <img
-        src={viufotoLogo.url}
+        src={viufotoLogoLight.url}
         alt="ViuFoto"
-        className="h-full w-auto block select-none animate-fade-in"
         draggable={false}
+        className="viufoto-logo-light h-full w-auto block select-none animate-fade-in"
       />
-      {/* Overlay do play alinhado ao símbolo dentro do wordmark (bbox: 42.4%-50.8% x 33.5%-84.8%) */}
       <img
-        src={viufotoPlay.url}
-        alt=""
-        aria-hidden="true"
+        src={viufotoLogoDark.url}
+        alt="ViuFoto"
         draggable={false}
-        className={`absolute pointer-events-none select-none ${
-          shouldPulse ? "animate-logo-play-pulse" : "opacity-0"
-        }`}
-        style={{
-          left: "42.4%",
-          top: "33.5%",
-          width: "8.4%",
-          height: "51.3%",
-          transformOrigin: "center",
-        }}
+        className="viufoto-logo-dark h-full w-auto hidden select-none animate-fade-in"
       />
-    </div>
+    </span>
   );
 };
 
