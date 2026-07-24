@@ -1,0 +1,17 @@
+{
+  "name": "ViuFoto",
+  "short_name": "ViuFoto",
+  "description": "Encontre suas fotos de eventos esportivos com IA de busca facial e número de peito.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8F8FC",
+  "theme_color": "#673DE6",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
