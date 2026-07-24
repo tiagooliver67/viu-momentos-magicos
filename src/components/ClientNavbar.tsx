@@ -161,14 +161,6 @@ const ClientNavbar = () => {
 
           {/* Mobile Toggle */}
           <div className="md:hidden flex items-center gap-2">
-            <Link to="/favoritos" className="relative p-2 text-muted-foreground hover:text-foreground">
-              <Heart className="w-5 h-5" />
-              {favCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center px-0.5">
-                  {favCount}
-                </span>
-              )}
-            </Link>
             <button
               className="p-2 text-foreground min-w-[44px] min-h-[44px] flex items-center justify-center"
               onClick={() => setMobileOpen(!mobileOpen)}
