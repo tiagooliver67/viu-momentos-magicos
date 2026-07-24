@@ -4,6 +4,15 @@
 @tailwind utilities;
 
 @layer base {
+  /* Reserve space for the mobile bottom nav on small screens */
+  @media (max-width: 767px) {
+    body {
+      padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+@layer base {
   :root {
     /* ==================== TEMA CLEAN (padrão) ==================== */
     /* Main Background #F8F8FC */

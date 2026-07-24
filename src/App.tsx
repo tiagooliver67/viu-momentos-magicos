@@ -72,6 +72,7 @@ import Parceiros from "./pages/Parceiros";
 import ReferralCapture from "./pages/ReferralCapture";
 import MeuNivel from "./pages/MeuNivel";
 import DashboardSidebar from "./components/DashboardSidebar";
+import BottomNav from "./components/BottomNav";
 import AdminLevels from "./pages/admin/AdminLevels";
 import AdminParceiros from "./pages/admin/AdminParceiros";
 import AdminAntifraude from "./pages/admin/AdminAntifraude";
@@ -172,6 +173,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             </PageTransition>
+            <BottomNav />
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>
