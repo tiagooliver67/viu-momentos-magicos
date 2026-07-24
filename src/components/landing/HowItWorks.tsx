@@ -42,7 +42,7 @@ const HowItWorks = () => {
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-5 md:gap-3 items-stretch max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1fr] gap-3 md:gap-3 items-stretch max-w-6xl mx-auto">
           {steps.map((s, idx) => {
             const Icon = s.icon;
             return (
@@ -52,18 +52,29 @@ const HowItWorks = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: idx * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                  className="bg-card border border-border rounded-2xl p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-card border border-border rounded-2xl p-4 sm:p-7 shadow-sm hover:shadow-md transition-shadow flex md:block items-center gap-4"
                 >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-9 h-9 rounded-full bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center">
+                  {/* Mobile: icon tile with number badge on the left */}
+                  <div className="relative shrink-0 md:hidden">
+                    <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center">
+                      <Icon className="w-6 h-6 text-primary" strokeWidth={2} />
+                    </div>
+                    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-primary text-primary-foreground font-bold text-[11px] flex items-center justify-center ring-2 ring-background">
                       {s.n}
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-foreground">{s.title}</h3>
                   </div>
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-4">
-                    <Icon className="w-5 h-5 text-primary" strokeWidth={2} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2 md:mb-4">
+                      <div className="hidden md:flex w-9 h-9 rounded-full bg-primary text-primary-foreground font-bold text-sm items-center justify-center">
+                        {s.n}
+                      </div>
+                      <h3 className="text-base sm:text-lg font-bold text-foreground">{s.title}</h3>
+                    </div>
+                    <div className="hidden md:flex w-12 h-12 rounded-xl bg-primary/10 border border-primary/15 items-center justify-center mb-4">
+                      <Icon className="w-5 h-5 text-primary" strokeWidth={2} />
+                    </div>
+                    <p className="text-[13px] sm:text-sm text-muted-foreground leading-relaxed">{s.description}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
                 </motion.div>
                 {idx < steps.length - 1 && (
                   <div className="hidden md:flex items-center justify-center text-primary">
