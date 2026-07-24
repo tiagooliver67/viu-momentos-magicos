@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Instagram, Facebook, Youtube } from "lucide-react";
+import AnimatedLogo from "@/components/AnimatedLogo";
 
 const Footer = () => (
   <footer className="bg-card border-t border-border mt-20">
@@ -45,7 +46,7 @@ const Footer = () => (
 
       <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border">
         <div className="flex items-center gap-2 mb-4 md:mb-0">
-          <img src="/__l5e/assets-v1/bd9d1a9c-c356-4e66-aee1-85f9deaec7f0/viufoto-logo.png" alt="ViuFoto" className="h-6 w-auto" draggable={false} />
+          <AnimatedLogo className="h-6" />
           <span className="text-xs text-muted-foreground">© 2026 Todos os direitos reservados</span>
         </div>
         <div className="flex items-center gap-4">
