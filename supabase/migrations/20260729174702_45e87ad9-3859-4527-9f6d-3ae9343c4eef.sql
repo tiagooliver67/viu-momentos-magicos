@@ -1,0 +1,1 @@
+GRANT SELECT (referral_code) ON public.photographer_sites TO anon, authenticated;

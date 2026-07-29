@@ -131,16 +131,30 @@ export default function InscricaoDetail() {
   };
 
   const exportExcel = async () => {
-    const XLSX = await import("xlsx");
-    const ws = XLSX.utils.json_to_sheet(regs.map((r) => ({
-      Nome: r.full_name, Email: r.email, Telefone: r.phone, Cidade: r.city ?? "",
-      "Data Nasc.": r.birth_date ?? "", Categoria: r.category ?? "", Camiseta: r.shirt_size ?? "",
-      Pagamento: r.payment_status, "Check-in": r.checkin_status,
-      "Inscrito em": new Date(r.created_at).toLocaleString("pt-BR"),
-    })));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Inscritos");
-    XLSX.writeFile(wb, `inscritos-${event?.slug}.xlsx`);
+    // Geração local de planilha (SpreadsheetML) — sem dependências externas.
+    const headers = [
+      "Nome", "Email", "Telefone", "Cidade", "Data Nasc.", "Categoria",
+      "Camiseta", "Pagamento", "Check-in", "Inscrito em",
+    ];
+    const rows = regs.map((r) => [
+      r.full_name, r.email, r.phone, r.city ?? "", r.birth_date ?? "",
+      r.category ?? "", r.shirt_size ?? "", r.payment_status, r.checkin_status,
+      new Date(r.created_at).toLocaleString("pt-BR"),
+    ]);
+    const esc = (v: unknown) =>
+      String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const cell = (v: unknown) => `<Cell><Data ss:Type="String">${esc(v)}</Data></Cell>`;
+    const row = (cells: unknown[]) => `<Row>${cells.map(cell).join("")}</Row>`;
+    const xml =
+      `<?xml version="1.0"?>\n<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">` +
+      `<Worksheet ss:Name="Inscritos"><Table>${row(headers)}${rows.map(row).join("")}</Table></Worksheet></Workbook>`;
+    const blob = new Blob([xml], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `inscritos-${event?.slug}.xls`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const exportPDF = async () => {
