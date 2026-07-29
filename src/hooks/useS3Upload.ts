@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { resizeImageWithWatermark } from "@/lib/imageResize";
+import { resizeImageWithWatermark, resizeImageWithLayers } from "@/lib/imageResize";
+import type { WatermarkLayerDb } from "@/lib/watermarkLayers";
 import { IS_LAMBDA_PIPELINE_ACTIVE } from "@/lib/cdnConfig";
 
 interface UploadProgress {
@@ -260,6 +261,26 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       // Watermark source for baking
       const wmSrc = watermarkUrl || DEFAULT_WATERMARK;
 
+      // Config de marca d'água do evento (mesma fonte usada pela Lambda).
+      // Consultada UMA vez por lote para manter o fallback client-side
+      // consistente com o que o pipeline de produção gera.
+      let eventLayers: WatermarkLayerDb[] | null = null;
+      if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
+        try {
+          const { data: wmCfg } = await supabase
+            .from("watermark_configs" as any)
+            .select("layers")
+            .eq("event_id", eventId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const raw = (wmCfg as any)?.layers;
+          if (Array.isArray(raw) && raw.length > 0) eventLayers = raw as WatermarkLayerDb[];
+        } catch (cfgErr) {
+          console.warn("[S3Upload] Falha ao carregar watermark_configs:", cfgErr);
+        }
+      }
+
       const results: any[] = [];
 
       // Process a single file end-to-end (resize → upload original → upload variants → DB insert)
@@ -283,10 +304,15 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
 
           if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
             try {
-              [thumbBlob, mediumBlob] = await Promise.all([
-                resizeImageWithWatermark(obj.file, 400, wmSrc, 0.75),
-                resizeImageWithWatermark(obj.file, 1200, wmSrc, 0.82),
-              ]);
+              [thumbBlob, mediumBlob] = eventLayers
+                ? await Promise.all([
+                    resizeImageWithLayers(obj.file, 400, eventLayers, 0.75),
+                    resizeImageWithLayers(obj.file, 1200, eventLayers, 0.82),
+                  ])
+                : await Promise.all([
+                    resizeImageWithWatermark(obj.file, 400, wmSrc, 0.75),
+                    resizeImageWithWatermark(obj.file, 1200, wmSrc, 0.82),
+                  ]);
             } catch (resizeErr) {
               console.warn("[S3Upload] Resize with watermark failed:", resizeErr);
             }
