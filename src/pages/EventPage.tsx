@@ -23,7 +23,6 @@ import { getCoverUrl } from "@/lib/eventCover";
 import { useMarketingTracker } from "@/hooks/useMarketingTracker";
 import { trackFunnelEvent } from "@/lib/searchTracking";
 import {
-import { shareBaseUrl } from "@/lib/shareUrl";
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
   getThumbCdnUrl,
@@ -31,6 +30,7 @@ import { shareBaseUrl } from "@/lib/shareUrl";
   getVideoDerivativeCdnUrl,
   IS_LAMBDA_PIPELINE_ACTIVE,
 } from "@/lib/cdnConfig";
+import { shareBaseUrl } from "@/lib/shareUrl";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
