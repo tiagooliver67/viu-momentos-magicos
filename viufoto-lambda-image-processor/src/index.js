@@ -33,9 +33,10 @@ const getCached = (map, key) => {
 function extractEventId(key) {
   if (typeof key !== "string") return "default";
   const parts = key.split("/");
-  if (parts[0] === "eventos" && parts[1]) return parts[1];
-  // Compatibilidade com o layout antigo "usuarios/{id}/..."
-  if (parts[0] === "usuarios" && parts[1]) return parts[1];
+  // Layout atual: "usuarios/{ownerId}/eventos/{eventId}/fotos/..."
+  // Layout curto:  "eventos/{eventId}/fotos/..."
+  const idx = parts.indexOf("eventos");
+  if (idx !== -1 && parts[idx + 1]) return parts[idx + 1];
   return "default";
 }
 
