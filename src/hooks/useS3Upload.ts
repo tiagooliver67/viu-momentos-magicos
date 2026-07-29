@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { resizeImageWithWatermark } from "@/lib/imageResize";
+import { resizeImageWithWatermark, resizeImageWithLayers } from "@/lib/imageResize";
+import type { WatermarkLayerDb } from "@/lib/watermarkLayers";
 import { IS_LAMBDA_PIPELINE_ACTIVE } from "@/lib/cdnConfig";
 
 interface UploadProgress {
