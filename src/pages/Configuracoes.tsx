@@ -6,6 +6,7 @@ import {
   Save, Eye, EyeOff, Plus, Trash2, QrCode, Share2, Shield, LogOut, Copy, Check,
   Upload, ChevronRight, Lock, Bell, Mail, Phone, Loader2
 } from "lucide-react";
+import TabMarcaDagua from "@/components/settings/TabMarcaDagua";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 const settingsTabs = [
   { id: "conta", label: "Minha conta", icon: User },
   { id: "site", label: "Meu site", icon: Globe },
+  { id: "marca", label: "Marca d'água e proteção", icon: Shield },
   { id: "carteira", label: "Carteira", icon: Wallet },
   { id: "dispositivos", label: "Dispositivos", icon: Smartphone },
 ];
@@ -541,6 +543,7 @@ const TabDispositivos = () => (
 const tabComponents: Record<string, React.FC> = {
   conta: TabConta,
   site: TabSite,
+  marca: TabMarcaDagua,
   carteira: TabCarteira,
   dispositivos: TabDispositivos,
 };
