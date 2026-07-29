@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { Save, Upload, Check, ShieldCheck, Droplets } from "lucide-react";
+import { Save, Upload, Check, ShieldCheck, Droplets, Plus, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import BlurProtectionOverlay, { type BlurPattern } from "@/components/BlurProtectionOverlay";
 import samplePhoto from "@/assets/blur-preview-sample.jpg";
+import CreateWatermarkModal from "./CreateWatermarkModal";
+import WatermarkLayersPreview from "./WatermarkLayersPreview";
+import { useWatermarkTemplates } from "@/hooks/useWatermarkTemplates";
+import type { WatermarkLayer } from "@/lib/watermarkLayers";
 
 const patterns: { id: BlurPattern; label: string; desc: string }[] = [
   { id: "diagonal", label: "Diagonal", desc: "Revela metade da imagem na diagonal" },
@@ -29,8 +33,10 @@ const PatternGlyph = ({ id, active }: { id: BlurPattern; active: boolean }) => {
 
 const TabMarcaDagua = () => {
   const { site, isLoading, upsertSite, uploadAsset } = usePhotographerSite();
+  const { templates, createTemplate, deleteTemplate } = useWatermarkTemplates();
   const [subTab, setSubTab] = useState<"marca" | "protecao">("marca");
   const [form, setForm] = useState<Record<string, any>>({});
+  const [creatorOpen, setCreatorOpen] = useState(false);
 
   const val = (k: string, fallback?: any) => (k in form ? form[k] : ((site as any)?.[k] ?? fallback));
   const set = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }));
@@ -103,6 +109,68 @@ const TabMarcaDagua = () => {
                 Use PNG com fundo transparente. A marca d'água é aplicada no servidor sobre as versões
                 de visualização das suas fotos e vídeos.
               </p>
+            </div>
+          </div>
+
+          {/* Minhas marcas d'água */}
+          <div className="pt-4 border-t border-border space-y-3">
+            <div>
+              <h3 className="text-base font-bold">Minhas marcas d'água</h3>
+              <p className="text-sm text-muted-foreground">Modelos criados por você.</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <button
+                onClick={() => setCreatorOpen(true)}
+                className="rounded-2xl border border-dashed border-border bg-secondary/30 p-6 flex flex-col items-center justify-center gap-2 min-h-[220px] hover:border-primary hover:bg-primary/5 transition-colors"
+              >
+                <span className="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <Plus className="w-5 h-5" />
+                </span>
+                <span className="text-sm font-semibold">Criar marca d'água</span>
+                <span className="text-xs text-muted-foreground text-center max-w-[200px]">
+                  Envie seu logo ou crie uma assinatura personalizada.
+                </span>
+              </button>
+
+              {templates.map(t => (
+                <div key={t.id} className="rounded-2xl border border-border bg-card overflow-hidden">
+                  <WatermarkLayersPreview layers={t.layers} photoUrl={samplePhoto} className="rounded-none" />
+                  <div className="p-3 flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate">{t.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t.layers.length} camada{t.layers.length > 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => {
+                          const first = t.layers.find(l => l.imageUrl);
+                          if (!first?.imageUrl) return toast.error("Esta marca d'água não tem imagem.");
+                          set("watermark_url", first.imageUrl);
+                          upsertSite.mutate({ watermark_url: first.imageUrl });
+                        }}
+                        className="px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 min-h-[36px]"
+                      >
+                        Aplicar
+                      </button>
+                      <button
+                        onClick={() => deleteTemplate.mutate(t.id)}
+                        className="p-2 rounded-lg text-destructive hover:bg-destructive/10"
+                        aria-label="Excluir marca d'água"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-start gap-2 rounded-xl bg-secondary/40 p-3 text-xs text-muted-foreground">
+              <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              Alterar a marca d'água afetará apenas novos uploads.
             </div>
           </div>
         </div>
@@ -211,6 +279,16 @@ const TabMarcaDagua = () => {
           <Save className="w-4 h-4" /> Salvar
         </button>
       </div>
+
+      <CreateWatermarkModal
+        open={creatorOpen}
+        onClose={() => setCreatorOpen(false)}
+        uploadAsset={uploadAsset}
+        isSaving={createTemplate.isPending}
+        onCreate={async (name: string, layers: WatermarkLayer[]) => {
+          await createTemplate.mutateAsync({ name, layers });
+        }}
+      />
     </div>
   );
 };
