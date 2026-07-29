@@ -1929,6 +1929,9 @@ export type Database = {
           avatar_url: string | null
           banner_url: string | null
           bio: string | null
+          blur_protection_devices: string
+          blur_protection_enabled: boolean
+          blur_protection_pattern: string
           cnpj: string | null
           contact_email: string | null
           contact_phone: string | null
@@ -1964,6 +1967,9 @@ export type Database = {
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
+          blur_protection_devices?: string
+          blur_protection_enabled?: boolean
+          blur_protection_pattern?: string
           cnpj?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -1999,6 +2005,9 @@ export type Database = {
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
+          blur_protection_devices?: string
+          blur_protection_enabled?: boolean
+          blur_protection_pattern?: string
           cnpj?: string | null
           contact_email?: string | null
           contact_phone?: string | null
