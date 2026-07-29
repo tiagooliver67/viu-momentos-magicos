@@ -3,6 +3,7 @@ import { Heart, Share2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { log, reportError } from "@/lib/logger";
+import BlurProtectionOverlay, { type BlurPattern } from "@/components/BlurProtectionOverlay";
 
 interface LazyPhotoCardProps {
   photoId: string;
@@ -14,6 +15,8 @@ interface LazyPhotoCardProps {
   /** When true, image loads eagerly with high fetch priority (above-the-fold) */
   priority?: boolean;
   unavailableLabel?: string;
+  /** Camada extra de proteção visual (desfoque revelado pelo gesto) */
+  blurProtection?: BlurPattern | null;
 }
 
 /**
@@ -29,6 +32,7 @@ const LazyPhotoCard = memo(({
   onClick,
   priority = false,
   unavailableLabel = "Miniatura indisponível",
+  blurProtection = null,
 }: LazyPhotoCardProps) => {
   const [isVisible, setIsVisible] = useState(priority);
   const [loaded, setLoaded] = useState(false);
@@ -75,13 +79,22 @@ const LazyPhotoCard = memo(({
     >
       {isVisible && currentSrc ? (
         <>
-          {!loaded && !hasError && <Skeleton className="absolute inset-0 rounded-none" />}
+          {!loaded && !hasError && !blurProtection && <Skeleton className="absolute inset-0 rounded-none" />}
           <div onClick={!hasError ? onClick : undefined} className="w-full h-full relative">
             {hasError ? (
               <div className="absolute inset-0 flex items-center justify-center bg-secondary/60 p-3 text-center">
                 <span className="text-xs font-medium text-muted-foreground">{unavailableLabel}</span>
               </div>
             ) : (
+              blurProtection ? (
+                <BlurProtectionOverlay
+                  pattern={blurProtection}
+                  imageUrl={currentSrc}
+                  className="w-full h-full"
+                  blurPx={12}
+                  showHint={false}
+                />
+              ) : (
               <img
                 src={currentSrc}
                 alt=""
@@ -112,6 +125,7 @@ const LazyPhotoCard = memo(({
                 }}
                 className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
               />
+              )
             )}
           </div>
 

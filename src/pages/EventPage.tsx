@@ -8,6 +8,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import LazyPhotoCard from "@/components/LazyPhotoCard";
+import BlurProtectionOverlay from "@/components/BlurProtectionOverlay";
+import { useBlurProtection } from "@/hooks/useBlurProtection";
 import { Skeleton } from "@/components/ui/skeleton";
 import PhotoTermsFooter from "@/components/PhotoTermsFooter";
 import { useCart } from "@/hooks/useCart";
@@ -272,7 +274,7 @@ const EventPage = () => {
       if (!event?.organizer_id) return null;
       const { data } = await supabase
         .from("photographer_sites_public" as any)
-        .select("watermark_url, display_name, slug, watermark_position, watermark_opacity, watermark_size")
+        .select("watermark_url, display_name, slug, watermark_position, watermark_opacity, watermark_size, blur_protection_enabled, blur_protection_pattern, blur_protection_devices")
         .eq("user_id", event.organizer_id)
         .maybeSingle();
       return data as any;
@@ -282,6 +284,7 @@ const EventPage = () => {
 
   const highPrice: number | null =
     typeof priceGrid?.photo_high_price === "number" ? priceGrid.photo_high_price : null;
+  const { blurActive, blurPattern } = useBlurProtection(photographerSite);
   const videoPrice: number | null =
     typeof priceGrid?.video_price === "number" ? priceGrid.video_price : null;
   const hasPricing = highPrice !== null && highPrice > 0;
@@ -758,6 +761,7 @@ const EventPage = () => {
                     onToggleFavorite={toggleFavorite}
                     onClick={() => setSelectedPhoto(photo)}
                     priority={idx < 10}
+                    blurProtection={blurActive ? blurPattern : null}
                   />
                   );
                 })}
@@ -911,11 +915,20 @@ const EventPage = () => {
                   );
                 }
                 return (
+                  blurActive ? (
+                    <BlurProtectionOverlay
+                      pattern={blurPattern}
+                      imageUrl={imgSrc}
+                      className="max-w-full max-h-[55dvh] sm:max-h-[calc(100vh-10vh)] rounded-lg shadow-2xl"
+                      imageClassName="max-w-full max-h-[55dvh] sm:max-h-[calc(100vh-10vh)] object-contain"
+                    />
+                  ) : (
                    <img
                      src={imgSrc}
                      alt=""
                      className="max-w-full max-h-[55dvh] sm:max-h-[calc(100vh-10vh)] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in-95 duration-200"
                    />
+                  )
                 );
               })()}
               {/* Prev / Next navigation */}
