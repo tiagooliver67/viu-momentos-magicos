@@ -79,7 +79,7 @@ const LazyPhotoCard = memo(({
     >
       {isVisible && currentSrc ? (
         <>
-          {!loaded && !hasError && <Skeleton className="absolute inset-0 rounded-none" />}
+          {!loaded && !hasError && !blurProtection && <Skeleton className="absolute inset-0 rounded-none" />}
           <div onClick={!hasError ? onClick : undefined} className="w-full h-full relative">
             {hasError ? (
               <div className="absolute inset-0 flex items-center justify-center bg-secondary/60 p-3 text-center">
