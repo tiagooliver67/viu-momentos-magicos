@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { QRCodeSVG } from "qrcode.react";
 import { formatDate, formatBRL, STATUS_LABEL, type RegistrationEvent, type EventRegistration, type RegistrationCategory } from "@/lib/inscricoes";
+import { shareBaseUrl } from "@/lib/shareUrl";
 
 export default function InscricaoDetail() {
   const { id } = useParams<{ id: string }>();
@@ -82,7 +83,7 @@ export default function InscricaoDetail() {
     return { total: regs.length, pagos, pendentes, presentes, arrecadacaoPrevista, arrecadacaoReal, topModalidade };
   }, [regs, categories]);
 
-  const publicUrl = event ? `${window.location.origin}/inscricao/${event.slug}` : "";
+  const publicUrl = event ? `${shareBaseUrl()}/inscricao/${event.slug}` : "";
 
   const filteredRegs = regs.filter((r) => {
     if (filterStatus !== "all" && r.payment_status !== filterStatus) return false;

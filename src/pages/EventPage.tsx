@@ -30,6 +30,7 @@ import {
   getVideoDerivativeCdnUrl,
   IS_LAMBDA_PIPELINE_ACTIVE,
 } from "@/lib/cdnConfig";
+import { shareBaseUrl } from "@/lib/shareUrl";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
@@ -966,7 +967,7 @@ const EventPage = () => {
                 </div>
                 <button
                   onClick={() => {
-                    const url = `${window.location.origin}/foto/${selectedPhoto.id}`;
+                    const url = `${shareBaseUrl()}/foto/${selectedPhoto.id}`;
                     navigator.clipboard.writeText(url);
                     toast.success("Link copiado!");
                   }}

@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { log, reportError } from "@/lib/logger";
 import BlurProtectionOverlay, { type BlurPattern } from "@/components/BlurProtectionOverlay";
+import { shareBaseUrl } from "@/lib/shareUrl";
 
 interface LazyPhotoCardProps {
   photoId: string;
@@ -134,7 +135,7 @@ const LazyPhotoCard = memo(({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                const url = `${window.location.origin}/foto/${photoId}`;
+                const url = `${shareBaseUrl()}/foto/${photoId}`;
                 navigator.clipboard.writeText(url);
                 toast.success("Link copiado!");
               }}

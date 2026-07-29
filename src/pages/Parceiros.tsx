@@ -12,6 +12,7 @@ import {
   Clock, CheckCircle2, AlertCircle, Wallet, Banknote
 } from "lucide-react";
 import { toast } from "sonner";
+import { shareBaseUrl } from "@/lib/shareUrl";
 
 const LEVEL_ORDER: Record<string, number> = { bronze: 1, prata: 2, ouro: 3, diamante: 4, embaixador: 5 };
 const MIN_PAYOUT = 50;
@@ -164,7 +165,7 @@ export default function Parceiros() {
   }
 
   // DASHBOARD
-  const referralUrl = referralCode ? `${window.location.origin}/r/${referralCode}` : "";
+  const referralUrl = referralCode ? `${shareBaseUrl()}/r/${referralCode}` : "";
   const commissionPct = rules.find((r) => r.level === level!.current_level)?.commission_pct ?? 1;
 
   const totalPending = earnings.filter((e: any) => e.status === "pending")
