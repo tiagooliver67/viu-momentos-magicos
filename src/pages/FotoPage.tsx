@@ -12,6 +12,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
 import { getThumbCdnUrl, getMediumCdnUrl, IS_LAMBDA_PIPELINE_ACTIVE, toThumbPath, toMediumPath } from "@/lib/cdnConfig";
 import { getPhotoCode } from "@/lib/photoCode";
+import { shareBaseUrl } from "@/lib/shareUrl";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
@@ -167,7 +168,7 @@ const FotoPage = () => {
   const hasPricing = highPrice !== null && highPrice > 0;
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/foto/${photoId}`;
+    const url = `${shareBaseUrl()}/foto/${photoId}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     toast.success("Link copiado!");
@@ -359,7 +360,7 @@ const FotoPage = () => {
                     {copied ? "Copiado!" : "Copiar link"}
                   </button>
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Olha essa foto! ${window.location.origin}/foto/${photoId}`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(`Olha essa foto! ${shareBaseUrl()}/foto/${photoId}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm transition-all"

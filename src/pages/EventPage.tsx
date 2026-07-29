@@ -23,6 +23,7 @@ import { getCoverUrl } from "@/lib/eventCover";
 import { useMarketingTracker } from "@/hooks/useMarketingTracker";
 import { trackFunnelEvent } from "@/lib/searchTracking";
 import {
+import { shareBaseUrl } from "@/lib/shareUrl";
   toThumbPath as cdnToThumbPath,
   toMediumPath as cdnToMediumPath,
   getThumbCdnUrl,
@@ -966,7 +967,7 @@ const EventPage = () => {
                 </div>
                 <button
                   onClick={() => {
-                    const url = `${window.location.origin}/foto/${selectedPhoto.id}`;
+                    const url = `${shareBaseUrl()}/foto/${selectedPhoto.id}`;
                     navigator.clipboard.writeText(url);
                     toast.success("Link copiado!");
                   }}

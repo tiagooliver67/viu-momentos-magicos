@@ -30,6 +30,7 @@ import {
   ExternalLink, MessageCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { shareBaseUrl } from "@/lib/shareUrl";
 
 const quickActions = [
   { label: "Editar", icon: Edit, key: "edit" },
@@ -201,14 +202,14 @@ const EventDashboard = () => {
   };
 
   const handleShareLink = () => {
-    const url = `${window.location.origin}/evento/${id}`;
+    const url = `${shareBaseUrl()}/evento/${id}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copiado! ✅");
     setShowActions(false);
   };
 
   const handleShareWhatsApp = () => {
-    const url = `${window.location.origin}/evento/${id}`;
+    const url = `${shareBaseUrl()}/evento/${id}`;
     const text = encodeURIComponent(`Confira as fotos do evento "${event?.name}":\n${url}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
