@@ -52,6 +52,8 @@ const CreateWatermarkModal = ({ open, onClose, onCreate, uploadAsset, isSaving }
   const [uploading, setUploading] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
   if (!open) return null;
 
@@ -103,12 +105,17 @@ const CreateWatermarkModal = ({ open, onClose, onCreate, uploadAsset, isSaving }
 
   const renameLayer = (id: string) => {
     const current = layers.find(l => l.id === id);
-    const next = window.prompt("Nome da camada", current?.name || "");
-    if (next && next.trim()) {
-      setLayers(prev => prev.map(l => (l.id === id ? { ...l, name: next.trim() } : l)));
-      touch();
-    }
+    setRenameValue(current?.name || "");
+    setRenameId(id);
     setMenuId(null);
+  };
+
+  const confirmRename = () => {
+    const next = renameValue.trim();
+    if (!next) return toast.error("Dê um nome para a camada.");
+    setLayers(prev => prev.map(l => (l.id === renameId ? { ...l, name: next } : l)));
+    setRenameId(null);
+    touch();
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -347,6 +354,34 @@ const CreateWatermarkModal = ({ open, onClose, onCreate, uploadAsset, isSaving }
       </div>
 
       {/* Confirmação de saída */}
+      {renameId && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-foreground/40" onClick={() => setRenameId(null)} />
+          <div className="relative w-full max-w-sm rounded-2xl bg-card p-5 shadow-xl space-y-3">
+            <h4 className="text-base font-bold">Renomear camada</h4>
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={e => setRenameValue(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") confirmRename();
+                if (e.key === "Escape") setRenameId(null);
+              }}
+              className="w-full h-11 px-3 rounded-xl border border-border bg-background text-sm"
+              placeholder="Nome da camada"
+            />
+            <div className="flex justify-end gap-3 pt-1">
+              <button onClick={() => setRenameId(null)} className="px-4 py-2.5 rounded-xl border border-border text-sm font-medium min-h-[44px]">
+                Cancelar
+              </button>
+              <button onClick={confirmRename} className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium min-h-[44px]">
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmClose && (
         <div className="absolute inset-0 z-10 flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-foreground/40" onClick={() => setConfirmClose(false)} />
