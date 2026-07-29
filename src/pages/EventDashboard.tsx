@@ -64,7 +64,8 @@ const EventDashboard = () => {
   const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
-  const { site: photographerSite } = usePhotographerSite();
+  const { site: photographerSite, uploadAsset } = usePhotographerSite();
+  const { createConfig } = useEventWatermarkConfigs(id);
   const photosUpload = useUploadWithDupCheck({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
       fileName: f.fileName,
@@ -671,6 +672,13 @@ const EventDashboard = () => {
             setShowSchedule(false);
             toast.success("Publicação agendada!");
           }}
+        />
+        <CreateWatermarkModal
+          open={showWatermark}
+          onClose={() => setShowWatermark(false)}
+          isSaving={createConfig.isPending}
+          uploadAsset={(file, path) => uploadAsset(file, `eventos/${event.id}/${path}`)}
+          onCreate={async (name, layers) => { await createConfig.mutateAsync({ name, layers }); }}
         />
 
         {/* Actions dropdown */}
