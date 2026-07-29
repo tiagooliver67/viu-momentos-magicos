@@ -1,0 +1,12 @@
+{
+  "name": "viufoto-image-processor",
+  "version": "2.0.0",
+  "main": "src/index.js",
+  "description": "Gera thumb/medium com marca d'agua (config por evento em watermark_configs, com fallback para a marca padrao).",
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.1063.0",
+    "@aws-sdk/client-s3": "^3.1063.0",
+    "sharp": "^0.33.5"
+  }
+}
