@@ -2981,6 +2981,9 @@ export type Database = {
           avatar_url: string | null
           banner_url: string | null
           bio: string | null
+          blur_protection_devices: string | null
+          blur_protection_enabled: boolean | null
+          blur_protection_pattern: string | null
           created_at: string | null
           display_name: string | null
           facebook: string | null
@@ -3011,6 +3014,9 @@ export type Database = {
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
+          blur_protection_devices?: string | null
+          blur_protection_enabled?: boolean | null
+          blur_protection_pattern?: string | null
           created_at?: string | null
           display_name?: string | null
           facebook?: string | null
@@ -3041,6 +3047,9 @@ export type Database = {
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
+          blur_protection_devices?: string | null
+          blur_protection_enabled?: boolean | null
+          blur_protection_pattern?: string | null
           created_at?: string | null
           display_name?: string | null
           facebook?: string | null
