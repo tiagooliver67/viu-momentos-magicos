@@ -2814,6 +2814,41 @@ export type Database = {
         }
         Relationships: []
       }
+      watermark_configs: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          layers: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          layers?: Json
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          layers?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watermark_configs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       watermark_templates: {
         Row: {
           created_at: string
