@@ -3,6 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Colunas legíveis pelo dono do site. Campos sensíveis (cnpj, assinatura interna
+// da bio IA) não são expostos via API — apenas server-side.
+const SITE_COLUMNS = [
+  "id", "user_id", "slug", "display_name", "bio", "avatar_url", "banner_url",
+  "watermark_url", "watermark_position", "watermark_opacity", "watermark_size",
+  "template", "primary_color", "secondary_color", "whatsapp", "instagram",
+  "facebook", "tiktok", "youtube", "linkedin", "twitter", "seo_title",
+  "seo_keywords", "allow_custom_links", "ai_bio", "ai_bio_generated_at",
+  "created_at", "updated_at", "blur_protection_enabled", "blur_protection_pattern",
+  "blur_protection_devices", "contact_email", "contact_phone", "referral_code",
+].join(", ");
+
 export function usePhotographerSite() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -13,7 +25,7 @@ export function usePhotographerSite() {
       if (!user?.id) return null;
       const { data, error } = await supabase
         .from("photographer_sites")
-        .select("*")
+        .select(SITE_COLUMNS)
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
@@ -36,7 +48,7 @@ export function usePhotographerSite() {
           .from("photographer_sites")
           .update(updates)
           .eq("user_id", user.id)
-          .select()
+          .select(SITE_COLUMNS)
           .single();
         if (error) throw error;
         return data;
@@ -44,7 +56,7 @@ export function usePhotographerSite() {
         const { data, error } = await supabase
           .from("photographer_sites")
           .insert({ user_id: user.id, ...updates })
-          .select()
+          .select(SITE_COLUMNS)
           .single();
         if (error) throw error;
         return data;
