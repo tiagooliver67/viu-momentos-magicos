@@ -66,22 +66,17 @@ const TabMarcaDagua = () => {
   const pattern = (val("blur_protection_pattern", "faixa") || "faixa") as BlurPattern;
 
   return (
-    <div className="glass-card p-5 sm:p-6 space-y-6">
-      <div>
-        <h2 className="text-lg font-bold">Marca d'água e proteção</h2>
-        <p className="text-sm text-muted-foreground">
-          Defina a marca d'água exibida sobre as fotos e vídeos e ative camadas extras de proteção visual.
-        </p>
-      </div>
-
-      {/* Sub tabs */}
-      <div className="flex gap-6 border-b border-border">
+    <div className="space-y-5 sm:space-y-6">
+      {/* Sub tabs — controle segmentado no padrão VIU FOTO */}
+      <div className="inline-flex p-1 rounded-2xl bg-secondary/60 border border-border gap-1">
         {([["marca", "Marca d'água", Droplets], ["protecao", "Proteção", ShieldCheck]] as const).map(([id, label, Icon]) => (
           <button
             key={id}
             onClick={() => setSubTab(id)}
-            className={`flex items-center gap-2 pb-3 -mb-px text-sm font-medium border-b-2 transition-colors ${
-              subTab === id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium min-h-[44px] transition-all ${
+              subTab === id
+                ? "bg-card text-primary shadow-sm font-semibold"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Icon className="w-4 h-4" /> {label}
@@ -90,9 +85,9 @@ const TabMarcaDagua = () => {
       </div>
 
       {subTab === "marca" && (
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           {/* Modelos do sistema */}
-          <div className="space-y-3">
+          <section className="glass-card p-5 sm:p-6 space-y-4">
             <div>
               <h3 className="text-base font-bold">Modelos do sistema</h3>
               <p className="text-sm text-muted-foreground">
@@ -150,10 +145,10 @@ const TabMarcaDagua = () => {
                 );
               })}
             </div>
-          </div>
+          </section>
 
           {/* Minhas marcas d'água */}
-          <div className="pt-5 border-t border-border space-y-3">
+          <section className="glass-card p-5 sm:p-6 space-y-4">
             <div>
               <h3 className="text-base font-bold">Minhas marcas d'água</h3>
               <p className="text-sm text-muted-foreground">Modelos criados por você.</p>
@@ -254,12 +249,12 @@ const TabMarcaDagua = () => {
               <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
               Alterar a marca d'água afetará apenas novos uploads.
             </div>
-          </div>
+          </section>
         </div>
       )}
 
       {subTab === "protecao" && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        <section className="glass-card p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           <div className="space-y-5">
             {/* Toggle */}
             <div className="flex items-start gap-3">
@@ -349,18 +344,23 @@ const TabMarcaDagua = () => {
               />
             </div>
           )}
-        </div>
+        </section>
       )}
 
-      <div className="pt-2">
-        <button
-          onClick={handleSave}
-          disabled={!dirty || upsertSite.isPending}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50 min-h-[44px]"
-        >
-          <Save className="w-4 h-4" /> Salvar
-        </button>
-      </div>
+      {subTab === "protecao" && (
+        <div className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card/95 backdrop-blur px-4 py-3 shadow-lg">
+          <p className="text-xs text-muted-foreground">
+            {dirty ? "Você tem alterações não salvas." : "Tudo salvo."}
+          </p>
+          <button
+            onClick={handleSave}
+            disabled={!dirty || upsertSite.isPending}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50 min-h-[44px] transition-all hover:bg-primary/90"
+          >
+            <Save className="w-4 h-4" /> Salvar
+          </button>
+        </div>
+      )}
 
       <Dialog open={!!preview} onOpenChange={o => !o && setPreview(null)}>
         <DialogContent className="max-w-lg">
