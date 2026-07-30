@@ -1,6 +1,6 @@
 import { usePhotographerLevel } from "@/hooks/usePhotographerLevel";
 import { LEVEL_ICONS, LEVEL_LABELS, type LevelKey } from "@/lib/levels";
-import { Trophy, Medal, Sparkles } from "lucide-react";
+import { Trophy, Medal, Sparkles, Crown, Gem, Award } from "lucide-react";
 
 interface Props { userId: string | undefined }
 
@@ -10,6 +10,14 @@ const LEVEL_GRADIENTS: Record<LevelKey, string> = {
   ouro: "from-yellow-500 to-amber-300",
   diamante: "from-cyan-400 to-blue-500",
   embaixador: "from-fuchsia-500 to-purple-600",
+};
+
+const LEVEL_ICON_COMPONENTS: Record<LevelKey, React.ElementType> = {
+  bronze: Award,
+  prata: Medal,
+  ouro: Trophy,
+  diamante: Gem,
+  embaixador: Crown,
 };
 
 export default function PhotographerLevelSection({ userId }: Props) {
@@ -23,6 +31,7 @@ export default function PhotographerLevelSection({ userId }: Props) {
 
   const visible = unlocked.slice(0, 4);
   const remaining = unlocked.length - visible.length;
+  const LevelIcon = LEVEL_ICON_COMPONENTS[level.current_level];
 
   return (
     <section className="container mx-auto px-4 py-6">
@@ -31,9 +40,9 @@ export default function PhotographerLevelSection({ userId }: Props) {
           {/* Level badge / credibility stamp */}
           <div className="flex items-center gap-4 min-w-0">
             <div
-              className={`flex-shrink-0 w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-br ${LEVEL_GRADIENTS[level.current_level]} flex items-center justify-center text-white text-3xl shadow-md`}
+              className={`flex-shrink-0 w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-br ${LEVEL_GRADIENTS[level.current_level]} flex items-center justify-center text-white shadow-md`}
             >
-              {LEVEL_ICONS[level.current_level]}
+              <LevelIcon className="w-7 h-7 sm:w-8 sm:h-8" strokeWidth={1.75} />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -99,3 +108,4 @@ export default function PhotographerLevelSection({ userId }: Props) {
     </section>
   );
 }
+
