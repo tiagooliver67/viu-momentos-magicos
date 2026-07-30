@@ -1,6 +1,7 @@
 import { CANONICAL_SITE_URL } from "@/lib/shareUrl";
 import darkAsset from "@/assets/viu-foto-watermark-dark.png.asset.json";
 import lightAsset from "@/assets/viu-foto-watermark-light.png.asset.json";
+import meshAsset from "@/assets/viu-foto-watermark-mesh.png.asset.json";
 import type { WatermarkLayer } from "@/lib/watermarkLayers";
 
 /** URL absoluta — usada nas camadas persistidas, pois o processamento
@@ -9,6 +10,8 @@ const abs = (url: string) => (url.startsWith("http") ? url : `${CANONICAL_SITE_U
 
 export const PRESET_LOGO_DARK = abs(darkAsset.url);
 export const PRESET_LOGO_LIGHT = abs(lightAsset.url);
+/** Ladrilho com o logo repetido e linhas diagonais conectando as marcas. */
+export const PRESET_MESH_TILE = abs(meshAsset.url);
 
 export interface WatermarkPreset {
   id: string;
@@ -42,20 +45,20 @@ export const SYSTEM_WATERMARK_PRESETS: WatermarkPreset[] = [
   },
   {
     id: "viufoto-mosaico",
-    name: "VIU FOTO · Mosaico",
-    description: "Logo repetido em diagonal por toda a foto. Proteção máxima.",
-    previewUrl: darkAsset.url,
+    name: "VIU FOTO · Malha",
+    description: "Logos repetidos por toda a foto, conectados por linhas diagonais. Proteção máxima.",
+    previewUrl: meshAsset.url,
     layers: [
       {
         id: "viufoto-mosaico-1",
-        name: "Mosaico VIU FOTO",
-        imageUrl: PRESET_LOGO_LIGHT,
+        name: "Malha VIU FOTO",
+        imageUrl: PRESET_MESH_TILE,
         mode: "repeat",
-        size: 16,
-        opacity: 32,
-        rotation: -30,
+        size: 45,
+        opacity: 70,
+        rotation: 0,
         position: "center",
-        spacing: 70,
+        spacing: 0,
       },
     ],
   },
