@@ -224,11 +224,11 @@ const EventPage = () => {
         .order("created_at");
       return ((data || []) as any[]).filter((v) => v.status === "ready");
     },
-    enabled: !!id,
+    enabled: !!id && !!event && !event.has_password,
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });
-  const videoList = videos || [];
+  const videoList = event?.has_password ? (protectedGallery?.videos || []) : (videos || []);
 
   // Resolve poster (grid thumbnail) URLs for videos
   const videoIds = useMemo(() => videoList.map((v: any) => v.id).sort().join(","), [videoList]);
@@ -311,7 +311,7 @@ const EventPage = () => {
     typeof priceGrid?.video_price === "number" ? priceGrid.video_price : null;
   const hasPricing = highPrice !== null && highPrice > 0;
   const hasVideoPricing = videoPrice !== null && videoPrice > 0;
-  const allPhotos = photos || [];
+  const allPhotos = event?.has_password ? (protectedGallery?.photos || []) : (photos || []);
 
   // --- FASE 1: Busca por número de peito ---
   const trimmedBib = searchBib.trim();
