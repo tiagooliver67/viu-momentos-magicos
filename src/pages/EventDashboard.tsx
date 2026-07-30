@@ -14,8 +14,6 @@ import PhotoGallery from "@/components/event/PhotoGallery";
 import VideoGallery from "@/components/event/VideoGallery";
 import PromoArtModal from "@/components/event/PromoArtModal";
 import CollaborationModal from "@/components/event/CollaborationModal";
-import CreateWatermarkModal from "@/components/settings/CreateWatermarkModal";
-import { useEventWatermarkConfigs } from "@/hooks/useEventWatermarkConfigs";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
 import { useUploadWithDupCheck } from "@/hooks/useUploadWithDupCheck";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
@@ -49,7 +47,6 @@ const quickActions = [
   { label: "Importar Pedidos", icon: FileDown, key: "import" },
   { label: "Convidar", icon: CameraIcon, key: "invite" },
   { label: "Galeria", icon: Eye, key: "gallery" },
-  { label: "Marca d'água", icon: Droplets, key: "watermark" },
   { label: "Ações", icon: MoreHorizontal, key: "actions" },
 ];
 
@@ -66,7 +63,6 @@ const EventDashboard = () => {
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
   const { site: photographerSite, uploadAsset } = usePhotographerSite();
-  const { createConfig } = useEventWatermarkConfigs(id);
   const photosUpload = useUploadWithDupCheck({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
       fileName: f.fileName,
@@ -693,15 +689,6 @@ const EventDashboard = () => {
             toast.success("Publicação agendada!");
           }}
         />
-        <CreateWatermarkModal
-          open={showWatermark}
-          onClose={() => setShowWatermark(false)}
-          isSaving={createConfig.isPending}
-          scopeLabel={`Somente para o evento: ${event.name}`}
-          uploadAsset={(file, path) => uploadAsset(file, `eventos/${event.id}/${path}`)}
-          onCreate={async (name, layers) => { await createConfig.mutateAsync({ name, layers }); }}
-        />
-
         {/* Actions dropdown */}
         {showActions && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowActions(false)}>
