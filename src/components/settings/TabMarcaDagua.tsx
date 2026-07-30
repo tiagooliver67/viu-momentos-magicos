@@ -96,7 +96,7 @@ const TabMarcaDagua = () => {
             <div>
               <h3 className="text-base font-bold">Modelos do sistema</h3>
               <p className="text-sm text-muted-foreground">
-                Modelos prontos da VIU FOTO. Um deles já vem ativo na sua conta.
+                Modelos prontos da VIU FOTO. Clique para visualizar em tamanho grande antes de aplicar.
               </p>
             </div>
 
@@ -107,12 +107,23 @@ const TabMarcaDagua = () => {
                   <button
                     key={p.id}
                     onClick={() =>
-                      setActive.mutate(
-                        { kind: "preset", presetId: p.id, layers: p.layers },
-                        { onSuccess: () => toast.success(`"${p.name}" é a sua marca d'água ativa.`) },
-                      )
+                      setPreview({
+                        name: p.name,
+                        description: p.description,
+                        layers: p.layers,
+                        active: selected,
+                        apply: () =>
+                          setActive.mutate(
+                            { kind: "preset", presetId: p.id, layers: p.layers },
+                            {
+                              onSuccess: () => {
+                                toast.success(`"${p.name}" é a sua marca d'água ativa.`);
+                                setPreview(null);
+                              },
+                            },
+                          ),
+                      })
                     }
-                    disabled={setActive.isPending}
                     className={`relative text-left rounded-2xl border-2 bg-card overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md ${
                       selected ? "border-primary shadow-md" : "border-border"
                     }`}
@@ -122,11 +133,12 @@ const TabMarcaDagua = () => {
                       <p className="text-sm font-semibold truncate">{p.name}</p>
                       <p className="text-xs text-muted-foreground">{p.description}</p>
                       <span
-                        className={`mt-2 inline-block text-xs font-medium ${
+                        className={`mt-2 inline-flex items-center gap-1 text-xs font-medium ${
                           selected ? "text-primary" : "text-muted-foreground"
                         }`}
                       >
-                        {selected ? "Ativo" : "Aplicar"}
+                        <Eye className="w-3.5 h-3.5" />
+                        {selected ? "Ativo · visualizar" : "Visualizar"}
                       </span>
                     </div>
                     {selected && (
