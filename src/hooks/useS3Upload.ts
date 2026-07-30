@@ -261,23 +261,25 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       // Watermark source for baking
       const wmSrc = watermarkUrl || DEFAULT_WATERMARK;
 
-      // Config de marca d'água do evento (mesma fonte usada pela Lambda).
-      // Consultada UMA vez por lote para manter o fallback client-side
+      // Modelo de marca d'água ATIVO da conta (mesma fonte usada pela Lambda).
+      // Consultado UMA vez por lote para manter o fallback client-side
       // consistente com o que o pipeline de produção gera.
       let eventLayers: WatermarkLayerDb[] | null = null;
       if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
         try {
-          const { data: wmCfg } = await supabase
-            .from("watermark_configs" as any)
-            .select("layers")
-            .eq("event_id", eventId)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          const raw = (wmCfg as any)?.layers;
-          if (Array.isArray(raw) && raw.length > 0) eventLayers = raw as WatermarkLayerDb[];
+          const { data: auth } = await supabase.auth.getUser();
+          const uid = auth?.user?.id;
+          if (uid) {
+            const { data: wmCfg } = await supabase
+              .from("account_watermark_settings" as any)
+              .select("layers")
+              .eq("user_id", uid)
+              .maybeSingle();
+            const raw = (wmCfg as any)?.layers;
+            if (Array.isArray(raw) && raw.length > 0) eventLayers = raw as WatermarkLayerDb[];
+          }
         } catch (cfgErr) {
-          console.warn("[S3Upload] Falha ao carregar watermark_configs:", cfgErr);
+          console.warn("[S3Upload] Falha ao carregar marca d'água da conta:", cfgErr);
         }
       }
 
