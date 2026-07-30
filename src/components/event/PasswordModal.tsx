@@ -5,12 +5,12 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSave: (password: string | null) => void;
-  currentPassword?: string | null;
+  hasPassword?: boolean;
   isSaving: boolean;
 }
 
-export default function PasswordModal({ open, onClose, onSave, currentPassword, isSaving }: Props) {
-  const [password, setPassword] = useState(currentPassword || "");
+export default function PasswordModal({ open, onClose, onSave, hasPassword, isSaving }: Props) {
+  const [password, setPassword] = useState("");
 
   if (!open) return null;
 
@@ -25,21 +25,25 @@ export default function PasswordModal({ open, onClose, onSave, currentPassword, 
           <button onClick={onClose}><X className="w-5 h-5 text-muted-foreground" /></button>
         </div>
 
-        <p className="text-xs text-muted-foreground mb-4">Defina uma senha para proteger o acesso ao evento. Deixe em branco para remover a senha.</p>
+        <p className="text-xs text-muted-foreground mb-4">
+          {hasPassword
+            ? "Este evento já está protegido por senha. Por segurança, a senha atual não é exibida — digite uma nova para substituí-la."
+            : "Defina uma senha (mínimo 4 caracteres) para proteger o acesso ao evento."}
+        </p>
 
         <input
-          type="text"
+          type="password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          placeholder="Senha do evento (opcional)"
+          placeholder={hasPassword ? "Nova senha" : "Senha do evento"}
           className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
         />
 
         <div className="flex gap-2 mt-4">
-          <button onClick={() => { onSave(null); }} className="flex-1 px-4 py-3 rounded-lg border border-border text-foreground text-sm font-medium min-h-[44px]">
+          <button onClick={() => { onSave(null); }} disabled={isSaving} className="flex-1 px-4 py-3 rounded-lg border border-border text-foreground text-sm font-medium min-h-[44px] disabled:opacity-50">
             Remover Senha
           </button>
-          <button onClick={() => onSave(password || null)} disabled={isSaving} className="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm min-h-[44px] disabled:opacity-50">
+          <button onClick={() => onSave(password || null)} disabled={isSaving || password.length < 4} className="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-sm min-h-[44px] disabled:opacity-50">
             {isSaving ? "Salvando..." : "Salvar"}
           </button>
         </div>
