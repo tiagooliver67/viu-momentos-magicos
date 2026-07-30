@@ -180,11 +180,6 @@ const TabConta = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold">Minha conta</h2>
-        <p className="text-sm text-muted-foreground">Gerencie seus dados pessoais e de acesso.</p>
-      </div>
-
       {/* Foto de perfil */}
       <div className="glass-card p-6">
         <h3 className="font-semibold mb-4 flex items-center gap-2"><User className="w-4 h-4 text-primary" /> Foto de perfil</h3>
