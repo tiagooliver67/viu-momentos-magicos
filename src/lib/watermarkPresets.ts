@@ -2,6 +2,7 @@ import { CANONICAL_SITE_URL } from "@/lib/shareUrl";
 import darkAsset from "@/assets/viu-foto-watermark-dark.png.asset.json";
 import lightAsset from "@/assets/viu-foto-watermark-light.png.asset.json";
 import meshAsset from "@/assets/viu-foto-watermark-mesh.png.asset.json";
+import shieldAsset from "@/assets/viu-foto-watermark-shield.png.asset.json";
 import type { WatermarkLayer } from "@/lib/watermarkLayers";
 
 /** URL absoluta — usada nas camadas persistidas, pois o processamento
@@ -12,6 +13,8 @@ export const PRESET_LOGO_DARK = abs(darkAsset.url);
 export const PRESET_LOGO_LIGHT = abs(lightAsset.url);
 /** Ladrilho com o logo repetido e linhas diagonais conectando as marcas. */
 export const PRESET_MESH_TILE = abs(meshAsset.url);
+/** Escudo central: logo ao centro, linhas verticais, logos laterais e hashtags. */
+export const PRESET_SHIELD = abs(shieldAsset.url);
 
 export interface WatermarkPreset {
   id: string;
@@ -26,20 +29,21 @@ export interface WatermarkPreset {
 export const SYSTEM_WATERMARK_PRESETS: WatermarkPreset[] = [
   {
     id: "viufoto-assinatura",
-    name: "VIU FOTO · Assinatura",
-    description: "Logo discreto no canto inferior direito. Boa visibilidade da foto.",
-    previewUrl: darkAsset.url,
+    name: "VIU FOTO · Escudo",
+    description:
+      "Logo ao centro com linhas verticais, logos suaves nas laterais e as hashtags #fotoprotegida / #protectedphoto.",
+    previewUrl: shieldAsset.url,
     layers: [
       {
         id: "viufoto-assinatura-1",
-        name: "Assinatura VIU FOTO",
-        imageUrl: PRESET_LOGO_LIGHT,
-        mode: "single",
-        size: 24,
-        opacity: 80,
+        name: "Escudo VIU FOTO",
+        imageUrl: PRESET_SHIELD,
+        mode: "fill",
+        size: 100,
+        opacity: 100,
         rotation: 0,
-        position: "bottom-right",
-        spacing: 40,
+        position: "center",
+        spacing: 0,
       },
     ],
   },
