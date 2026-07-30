@@ -130,9 +130,12 @@ const CreateWatermarkModal = ({ open, onClose, onCreate, uploadAsset, isSaving }
     try {
       const ext = file.name.split(".").pop();
       const url = await uploadAsset(file, `watermarks/${active.id}.${ext}`);
+      if (!url) throw new Error("Upload não retornou uma URL válida.");
       patchActive({ imageUrl: `${url}?v=${Date.now()}` });
+      toast.success("Imagem da camada enviada.");
     } catch (err: any) {
-      toast.error("Erro ao enviar imagem: " + err.message);
+      console.error("[watermark] upload falhou", err);
+      toast.error("Erro ao enviar imagem: " + (err?.message || "falha desconhecida"));
     } finally {
       setUploading(false);
     }
@@ -143,9 +146,14 @@ const CreateWatermarkModal = ({ open, onClose, onCreate, uploadAsset, isSaving }
   const handleCreate = async () => {
     if (!name.trim()) return toast.error("Dê um nome para a marca d'água.");
     if (!layers.some(l => l.imageUrl)) return toast.error("Envie a imagem de pelo menos uma camada.");
-    await onCreate(name.trim(), layers);
-    setDirty(false);
-    onClose();
+    try {
+      await onCreate(name.trim(), layers);
+      setDirty(false);
+      onClose();
+    } catch (err: any) {
+      console.error("[watermark] salvar falhou", err);
+      toast.error("Erro ao salvar marca d'água: " + (err?.message || "falha desconhecida"));
+    }
   };
 
   return createPortal(
