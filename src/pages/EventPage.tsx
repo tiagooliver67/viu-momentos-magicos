@@ -493,8 +493,8 @@ const EventPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPhoto?.id]);
 
-  // Password protection
-  if (event?.password && !unlocked) {
+  // Password protection (validada no servidor)
+  if (isLocked) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -511,16 +511,22 @@ const EventPage = () => {
               className="w-full bg-secondary/50 rounded-lg px-4 py-3 text-sm outline-none border border-border focus:border-primary"
             />
             <button
-              onClick={() => {
-                if (passwordInput === event.password) {
-                  setUnlocked(true);
+              disabled={verifying || !passwordInput}
+              onClick={async () => {
+                if (!id) return;
+                setVerifying(true);
+                const grant = await verifyEventPassword(id, passwordInput);
+                setVerifying(false);
+                if (grant) {
+                  setPasswordInput("");
+                  setAccessToken(grant.token);
                 } else {
                   toast.error("Senha incorreta");
                 }
               }}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold"
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold disabled:opacity-50"
             >
-              Acessar
+              {verifying ? "Verificando..." : "Acessar"}
             </button>
           </div>
         </div>
