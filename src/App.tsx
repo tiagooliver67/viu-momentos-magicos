@@ -78,8 +78,101 @@ import AdminParceiros from "./pages/admin/AdminParceiros";
 import AdminAntifraude from "./pages/admin/AdminAntifraude";
 import Sobre from "./pages/Sobre";
 import Marketing from "./pages/Marketing";
+import SubdomainSite from "./components/SubdomainSite";
+import { getTenantSlugFromHostname } from "@/lib/siteSlug";
 
 const queryClient = new QueryClient();
+
+const AppRoutes = () => {
+  const tenantSlug = getTenantSlugFromHostname();
+  if (tenantSlug) return <SubdomainSite slug={tenantSlug} />;
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/login/:role" element={<LoginRole />} />
+      <Route path="/cadastro" element={<Cadastro />} />
+      <Route path="/cadastro/fotografo" element={<CadastroFotografo />} />
+      <Route path="/cadastro/organizador" element={<CadastroOrganizador />} />
+      <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/evento/:id" element={<EventPage />} />
+      <Route path="/foto/:photoId" element={<FotoPage />} />
+      <Route path="/fotografo/:slug" element={<PhotographerPage />} />
+      <Route path="/fotografo/:slug/portfolio" element={<PhotographerPortfolioPage />} />
+      <Route path="/meus-pedidos" element={<MeusPedidos />} />
+      <Route path="/favoritos" element={<Favoritos />} />
+      <Route path="/buscar" element={<BuscarEventos />} />
+      <Route path="/viu-pass" element={<VIUPass />} />
+      <Route path="/virar-fotografo" element={<VirarFotografo />} />
+      <Route path="/para-organizadores" element={<ParaOrganizadores />} />
+      <Route path="/sobre" element={<Sobre />} />
+      <Route path="/termos-de-uso" element={<TermosDeUso />} />
+      <Route path="/ajuda" element={<Ajuda />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/blogadm" element={<Navigate to="/admin/blog" replace />} />
+      <Route path="/inscricao/:slug" element={<InscricaoPublic />} />
+      <Route path="/r/:code" element={<ReferralCapture />} />
+      <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
+      <Route path="/dashboard/financeiro" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Financeiro /></ProtectedRoute>} />
+      <Route path="/dashboard/marketing" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Marketing /></ProtectedRoute>} />
+      <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
+      <Route path="/dashboard/pedidos" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Pedidos /></ProtectedRoute>} />
+      <Route path="/dashboard/clientes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Clientes /></ProtectedRoute>} />
+      <Route path="/dashboard/oportunidades" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Oportunidades /></ProtectedRoute>} />
+      <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
+      <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
+      <Route path="/dashboard/parceiros" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Parceiros /></ProtectedRoute>} />
+      <Route path="/dashboard/nivel" element={
+        <ProtectedRoute requiredRoles={["photographer", "organizer"]}>
+          <div className="flex min-h-screen bg-background">
+            <DashboardSidebar />
+            <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto">
+              <MeuNivel />
+            </main>
+          </div>
+        </ProtectedRoute>
+      } />
+      <Route path="/dashboard/chamados" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Chamados /></ProtectedRoute>} />
+      <Route path="/dashboard/evento/:id" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><EventDashboard /></ProtectedRoute>} />
+      <Route path="/dashboard/inscricoes" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricoesList /></ProtectedRoute>} />
+      <Route path="/dashboard/inscricoes/novo" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoForm /></ProtectedRoute>} />
+      <Route path="/dashboard/inscricoes/:id" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoDetail /></ProtectedRoute>} />
+      <Route path="/dashboard/inscricoes/:id/editar" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoForm /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute requiredRoles={["super_admin"]} redirectTo="/"><AdminLayout /></ProtectedRoute>}>
+        <Route index element={<Overview />} />
+        <Route path="usuarios" element={<AdminUsers />} />
+        <Route path="fotografos" element={<AdminPhotographers />} />
+        <Route path="fotografos/:id" element={<AdminPhotographerDetail />} />
+        <Route path="eventos" element={<AdminEvents />} />
+        <Route path="financeiro" element={<AdminFinance />} />
+        <Route path="pagamentos" element={<AdminPayments />} />
+        <Route path="moderacao" element={<AdminModeration />} />
+        <Route path="storage" element={<AdminStorage />} />
+        <Route path="inscricoes" element={<AdminInscricoes />} />
+        <Route path="inscricoes/:id" element={<AdminInscricaoDetail />} />
+        <Route path="suporte" element={<AdminSupport />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
+        <Route path="funil-busca" element={<AdminSearchAnalytics />} />
+        <Route path="configuracoes" element={<AdminSettings />} />
+        <Route path="hero" element={<AdminHero />} />
+        <Route path="fotos" element={<AdminPhotos />} />
+        <Route path="saude" element={<AdminHealth />} />
+        <Route path="infra" element={<AdminInfraMonitor />} />
+        <Route path="foto/:photoId" element={<AdminPhotoDiagnostics />} />
+        <Route path="logs" element={<AdminLogs />} />
+        <Route path="blog" element={<BlogAdm />} />
+        <Route path="niveis" element={<AdminLevels />} />
+        <Route path="parceiros" element={<AdminParceiros />} />
+        <Route path="antifraude" element={<AdminAntifraude />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
+const isTenant = !!getTenantSlugFromHostname();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -90,90 +183,9 @@ const App = () => (
             <Sonner />
             <TermsGate />
             <PageTransition>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/login/:role" element={<LoginRole />} />
-              <Route path="/cadastro" element={<Cadastro />} />
-              <Route path="/cadastro/fotografo" element={<CadastroFotografo />} />
-              <Route path="/cadastro/organizador" element={<CadastroOrganizador />} />
-              <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/evento/:id" element={<EventPage />} />
-              <Route path="/foto/:photoId" element={<FotoPage />} />
-              <Route path="/fotografo/:slug" element={<PhotographerPage />} />
-              <Route path="/fotografo/:slug/portfolio" element={<PhotographerPortfolioPage />} />
-              <Route path="/meus-pedidos" element={<MeusPedidos />} />
-              <Route path="/favoritos" element={<Favoritos />} />
-              <Route path="/buscar" element={<BuscarEventos />} />
-              <Route path="/viu-pass" element={<VIUPass />} />
-              <Route path="/virar-fotografo" element={<VirarFotografo />} />
-              <Route path="/para-organizadores" element={<ParaOrganizadores />} />
-              <Route path="/sobre" element={<Sobre />} />
-              <Route path="/termos-de-uso" element={<TermosDeUso />} />
-              <Route path="/ajuda" element={<Ajuda />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/blogadm" element={<Navigate to="/admin/blog" replace />} />
-              <Route path="/inscricao/:slug" element={<InscricaoPublic />} />
-              <Route path="/r/:code" element={<ReferralCapture />} />
-              <Route path="/dashboard" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Dashboard /></ProtectedRoute>} />
-              <Route path="/dashboard/financeiro" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Financeiro /></ProtectedRoute>} />
-              <Route path="/dashboard/marketing" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Marketing /></ProtectedRoute>} />
-              <Route path="/dashboard/criar-evento" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><CriarEvento /></ProtectedRoute>} />
-              <Route path="/dashboard/pedidos" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Pedidos /></ProtectedRoute>} />
-              <Route path="/dashboard/clientes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Clientes /></ProtectedRoute>} />
-              <Route path="/dashboard/oportunidades" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Oportunidades /></ProtectedRoute>} />
-              <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
-              <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
-              <Route path="/dashboard/parceiros" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Parceiros /></ProtectedRoute>} />
-              <Route path="/dashboard/nivel" element={
-                <ProtectedRoute requiredRoles={["photographer", "organizer"]}>
-                  <div className="flex min-h-screen bg-background">
-                    <DashboardSidebar />
-                    <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto">
-                      <MeuNivel />
-                    </main>
-                  </div>
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard/chamados" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Chamados /></ProtectedRoute>} />
-              <Route path="/dashboard/evento/:id" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><EventDashboard /></ProtectedRoute>} />
-              <Route path="/dashboard/inscricoes" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricoesList /></ProtectedRoute>} />
-              <Route path="/dashboard/inscricoes/novo" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoForm /></ProtectedRoute>} />
-              <Route path="/dashboard/inscricoes/:id" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoDetail /></ProtectedRoute>} />
-              <Route path="/dashboard/inscricoes/:id/editar" element={<ProtectedRoute requiredRoles={["organizer"]}><InscricaoForm /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute requiredRoles={["super_admin"]} redirectTo="/"><AdminLayout /></ProtectedRoute>}>
-                <Route index element={<Overview />} />
-                <Route path="usuarios" element={<AdminUsers />} />
-                <Route path="fotografos" element={<AdminPhotographers />} />
-                <Route path="fotografos/:id" element={<AdminPhotographerDetail />} />
-                <Route path="eventos" element={<AdminEvents />} />
-                <Route path="financeiro" element={<AdminFinance />} />
-                <Route path="pagamentos" element={<AdminPayments />} />
-                <Route path="moderacao" element={<AdminModeration />} />
-                <Route path="storage" element={<AdminStorage />} />
-                <Route path="inscricoes" element={<AdminInscricoes />} />
-                <Route path="inscricoes/:id" element={<AdminInscricaoDetail />} />
-                <Route path="suporte" element={<AdminSupport />} />
-                <Route path="analytics" element={<AdminAnalytics />} />
-                <Route path="funil-busca" element={<AdminSearchAnalytics />} />
-                <Route path="configuracoes" element={<AdminSettings />} />
-                <Route path="hero" element={<AdminHero />} />
-                <Route path="fotos" element={<AdminPhotos />} />
-                <Route path="saude" element={<AdminHealth />} />
-                <Route path="infra" element={<AdminInfraMonitor />} />
-                <Route path="foto/:photoId" element={<AdminPhotoDiagnostics />} />
-                <Route path="logs" element={<AdminLogs />} />
-                <Route path="blog" element={<BlogAdm />} />
-                <Route path="niveis" element={<AdminLevels />} />
-                <Route path="parceiros" element={<AdminParceiros />} />
-                <Route path="antifraude" element={<AdminAntifraude />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AppRoutes />
             </PageTransition>
-            <BottomNav />
+            {!isTenant && <BottomNav />}
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>
