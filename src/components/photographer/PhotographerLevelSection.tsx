@@ -1,5 +1,5 @@
 import { usePhotographerLevel } from "@/hooks/usePhotographerLevel";
-import { LEVEL_ICONS, LEVEL_LABELS, type LevelKey } from "@/lib/levels";
+import { LEVEL_LABELS, type LevelKey } from "@/lib/levels";
 import { Trophy, Medal, Sparkles, Crown, Gem, Award } from "lucide-react";
 
 interface Props { userId: string | undefined }
