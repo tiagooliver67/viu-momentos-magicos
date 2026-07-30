@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Save, Check, ShieldCheck, Droplets, Plus, Trash2, Info } from "lucide-react";
+import { Save, Check, ShieldCheck, Droplets, Plus, Trash2, Info, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import BlurProtectionOverlay, { type BlurPattern } from "@/components/BlurProtectionOverlay";
 import samplePhoto from "@/assets/blur-preview-sample.jpg";
@@ -40,6 +41,13 @@ const TabMarcaDagua = () => {
   const [subTab, setSubTab] = useState<"marca" | "protecao">("marca");
   const [form, setForm] = useState<Record<string, any>>({});
   const [creatorOpen, setCreatorOpen] = useState(false);
+  const [preview, setPreview] = useState<{
+    name: string;
+    description: string;
+    layers: WatermarkLayer[];
+    active: boolean;
+    apply: () => void;
+  } | null>(null);
 
   const val = (k: string, fallback?: any) => (k in form ? form[k] : ((site as any)?.[k] ?? fallback));
   const set = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }));
