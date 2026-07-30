@@ -72,6 +72,11 @@ export async function generateUniqueSlug(base: string, ownUserId?: string): Prom
  * `tiagooliver.viufoto.com` -> "tiagooliver"; `viufoto.com`/`www.viufoto.com` -> null.
  */
 export function getTenantSlugFromHostname(hostname?: string): string | null {
+  // Suporte a teste local: ?__tenant=slug (somente em desenvolvimento)
+  if (import.meta.env.DEV && typeof window !== "undefined") {
+    const forced = new URLSearchParams(window.location.search).get("__tenant");
+    if (forced) return normalizeSlug(forced) || null;
+  }
   const host = (hostname ?? (typeof window !== "undefined" ? window.location.hostname : ""))
     .toLowerCase()
     .replace(/:\d+$/, "");
