@@ -18,6 +18,8 @@ interface Props {
   onCreate: (name: string, layers: WatermarkLayer[]) => Promise<void> | void;
   uploadAsset: (file: File, path: string) => Promise<string>;
   isSaving?: boolean;
+  /** Rótulo de contexto: diferencia marca global (perfil) da marca por evento. */
+  scopeLabel?: string;
 }
 
 const MODES: { id: WatermarkMode; label: string; desc: string }[] = [
@@ -42,7 +44,7 @@ const Slider = ({ label, value, min, max, suffix, onChange }: {
   </div>
 );
 
-const CreateWatermarkModal = ({ open, onClose, onCreate, uploadAsset, isSaving }: Props) => {
+const CreateWatermarkModal = ({ open, onClose, onCreate, uploadAsset, isSaving, scopeLabel }: Props) => {
   const [name, setName] = useState("Marca d'água 1");
   const [starter, setStarter] = useState("blank");
   const [layers, setLayers] = useState<WatermarkLayer[]>(() => STARTER_TEMPLATES[0].layers());
@@ -166,6 +168,11 @@ const CreateWatermarkModal = ({ open, onClose, onCreate, uploadAsset, isSaving }
           <div>
             <h3 className="text-base font-bold">Criar marca d'água</h3>
             <p className="text-xs text-muted-foreground">Monte sua marca em camadas e veja o resultado ao vivo.</p>
+            {scopeLabel && (
+              <span className="mt-1.5 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                {scopeLabel}
+              </span>
+            )}
           </div>
           <button onClick={requestClose} className="p-2 rounded-lg hover:bg-muted" aria-label="Fechar">
             <X className="w-5 h-5" />
