@@ -362,6 +362,36 @@ const TabMarcaDagua = () => {
         </button>
       </div>
 
+      <Dialog open={!!preview} onOpenChange={o => !o && setPreview(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{preview?.name}</DialogTitle>
+            <DialogDescription>{preview?.description}</DialogDescription>
+          </DialogHeader>
+          {preview && (
+            <WatermarkLayersPreview layers={preview.layers} photoUrl={samplePhoto} className="rounded-xl" />
+          )}
+          <p className="text-xs text-muted-foreground">
+            Pré-visualização sobre uma foto de exemplo. Aplicar afeta apenas novos uploads.
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setPreview(null)}
+              className="px-4 py-2.5 rounded-xl text-sm font-medium bg-secondary min-h-[44px]"
+            >
+              Fechar
+            </button>
+            <button
+              onClick={() => preview?.apply()}
+              disabled={setActive.isPending || preview?.active}
+              className="px-4 py-2.5 rounded-xl text-sm font-medium bg-primary text-primary-foreground disabled:opacity-50 min-h-[44px]"
+            >
+              {preview?.active ? "Já está ativo" : "Aplicar este modelo"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <CreateWatermarkModal
         open={creatorOpen}
         onClose={() => setCreatorOpen(false)}
