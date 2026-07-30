@@ -347,15 +347,20 @@ const TabMarcaDagua = () => {
         </section>
       )}
 
-      <div className="pt-2">
-        <button
-          onClick={handleSave}
-          disabled={!dirty || upsertSite.isPending}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50 min-h-[44px]"
-        >
-          <Save className="w-4 h-4" /> Salvar
-        </button>
-      </div>
+      {subTab === "protecao" && (
+        <div className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card/95 backdrop-blur px-4 py-3 shadow-lg">
+          <p className="text-xs text-muted-foreground">
+            {dirty ? "Você tem alterações não salvas." : "Tudo salvo."}
+          </p>
+          <button
+            onClick={handleSave}
+            disabled={!dirty || upsertSite.isPending}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50 min-h-[44px] transition-all hover:bg-primary/90"
+          >
+            <Save className="w-4 h-4" /> Salvar
+          </button>
+        </div>
+      )}
 
       <Dialog open={!!preview} onOpenChange={o => !o && setPreview(null)}>
         <DialogContent className="max-w-lg">
