@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { getCoverUrl } from "@/lib/eventCover";
+import { setEventPassword } from "@/lib/eventAccess";
 import { resizeImage } from "@/lib/imageResize";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
@@ -61,7 +62,7 @@ const EventDashboard = () => {
   const [videoUploadProgress, setVideoUploadProgress] = useState<UploadFileProgress[]>([]);
 
   // Data hooks
-  const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
+  const { event, isLoading, updateEvent, deleteEvent, refetch } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
   const { site: photographerSite, uploadAsset } = usePhotographerSite();
@@ -101,6 +102,7 @@ const EventDashboard = () => {
   const [showCoupon, setShowCoupon] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [showVideoGallery, setShowVideoGallery] = useState(false);
   const [showActions, setShowActions] = useState(false);
@@ -588,7 +590,25 @@ const EventDashboard = () => {
         />
         <CouponModal open={showCoupon} onClose={() => setShowCoupon(false)} onSave={(c) => { createCoupon.mutate(c); setShowCoupon(false); }} isSaving={createCoupon.isPending} />
         <EditEventModal open={showEdit} onClose={() => setShowEdit(false)} onSave={(data) => { updateEvent.mutate(data as any); setShowEdit(false); }} initial={{ name: event.name, event_date: event.event_date, event_time: event.event_time, location: event.location, category: event.category, search_type: event.search_type || [], visibility: event.visibility }} isSaving={updateEvent.isPending} />
-        <PasswordModal open={showPassword} onClose={() => setShowPassword(false)} onSave={(pw) => { updateEvent.mutate({ password: pw }); setShowPassword(false); }} currentPassword={event.password} isSaving={updateEvent.isPending} />
+        <PasswordModal
+          open={showPassword}
+          onClose={() => setShowPassword(false)}
+          hasPassword={!!event.has_password}
+          isSaving={savingPassword}
+          onSave={async (pw) => {
+            setSavingPassword(true);
+            try {
+              await setEventPassword(event.id, pw);
+              toast.success(pw ? "Senha do evento definida!" : "Senha removida.");
+              setShowPassword(false);
+              refetch();
+            } catch (e: any) {
+              toast.error(e?.message || "Erro ao salvar a senha.");
+            } finally {
+              setSavingPassword(false);
+            }
+          }}
+        />
         <PhotoGallery
           open={showGallery}
           onClose={() => setShowGallery(false)}

@@ -326,6 +326,44 @@ export type Database = {
         }
         Relationships: []
       }
+      event_access: {
+        Row: {
+          created_at: string
+          event_id: string
+          expires_at: string
+          id: string
+          ip_address: string | null
+          session_id: string | null
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          expires_at: string
+          id?: string
+          ip_address?: string | null
+          session_id?: string | null
+          token: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          session_id?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_access_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_applications: {
         Row: {
           created_at: string
@@ -559,6 +597,35 @@ export type Database = {
             foreignKeyName: "event_partners_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_passwords: {
+        Row: {
+          created_at: string
+          event_id: string
+          password_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          password_hash: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          password_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_passwords_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -900,12 +967,12 @@ export type Database = {
           event_time: string | null
           face_index_mode: string
           face_search_enabled: boolean
+          has_password: boolean
           id: string
           location: string
           name: string
           organizer_id: string
           owner_commission_pct: number
-          password: string | null
           plan_type: string
           progressive_discount_enabled: boolean
           progressive_discount_rules: Json
@@ -928,12 +995,12 @@ export type Database = {
           event_time?: string | null
           face_index_mode?: string
           face_search_enabled?: boolean
+          has_password?: boolean
           id?: string
           location: string
           name: string
           organizer_id: string
           owner_commission_pct?: number
-          password?: string | null
           plan_type?: string
           progressive_discount_enabled?: boolean
           progressive_discount_rules?: Json
@@ -956,12 +1023,12 @@ export type Database = {
           event_time?: string | null
           face_index_mode?: string
           face_search_enabled?: boolean
+          has_password?: boolean
           id?: string
           location?: string
           name?: string
           organizer_id?: string
           owner_commission_pct?: number
-          password?: string | null
           plan_type?: string
           progressive_discount_enabled?: boolean
           progressive_discount_rules?: Json
@@ -3200,6 +3267,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_event_password: { Args: { _password: string }; Returns: string }
       increment_blog_views: { Args: { _slug: string }; Returns: undefined }
       infra_metrics_snapshot: { Args: never; Returns: Json }
       is_event_eligible: { Args: { _event_id: string }; Returns: boolean }
@@ -3220,6 +3288,10 @@ export type Database = {
       set_ambassador: {
         Args: { _enabled: boolean; _user_id: string }
         Returns: undefined
+      }
+      verify_event_password: {
+        Args: { _event_id: string; _password: string }
+        Returns: boolean
       }
     }
     Enums: {

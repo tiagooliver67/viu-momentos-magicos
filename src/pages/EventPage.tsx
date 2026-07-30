@@ -31,6 +31,7 @@ import {
   IS_LAMBDA_PIPELINE_ACTIVE,
 } from "@/lib/cdnConfig";
 import { shareBaseUrl } from "@/lib/shareUrl";
+import { getStoredAccess, verifyEventPassword, fetchProtectedGallery } from "@/lib/eventAccess";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
@@ -65,7 +66,8 @@ const EventPage = () => {
   const [searchBib, setSearchBib] = useState("");
   const [resolution, setResolution] = useState<"high" | "low">("high");
   const [passwordInput, setPasswordInput] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(() => getStoredAccess(id)?.token ?? null);
+  const [verifying, setVerifying] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [faceModalOpen, setFaceModalOpen] = useState(false);
@@ -105,6 +107,25 @@ const EventPage = () => {
   // Marketing tracker: injeta pixels do fotógrafo dono + registra eventos do funil
   const { track: mktTrack } = useMarketingTracker(event?.organizer_id, id);
 
+  const isLocked = !!event?.has_password && !accessToken;
+
+  // Conteúdo de eventos protegidos vem da edge function (validada por token no servidor)
+  const { data: protectedGallery } = useQuery({
+    queryKey: ["protected-gallery", id, accessToken],
+    queryFn: async () => {
+      if (!id || !accessToken) return null;
+      try {
+        return await fetchProtectedGallery(id, accessToken);
+      } catch {
+        setAccessToken(null);
+        return null;
+      }
+    },
+    enabled: !!id && !!event?.has_password && !!accessToken,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
   // Fetch photos
   const { data: photos } = useQuery({
     queryKey: ["public-photos", id],
@@ -117,7 +138,7 @@ const EventPage = () => {
         .order("created_at");
       return data || [];
     },
-    enabled: !!id,
+    enabled: !!id && !!event && !event.has_password,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
@@ -203,11 +224,11 @@ const EventPage = () => {
         .order("created_at");
       return ((data || []) as any[]).filter((v) => v.status === "ready");
     },
-    enabled: !!id,
+    enabled: !!id && !!event && !event.has_password,
     staleTime: 60 * 1000,
     refetchOnWindowFocus: false,
   });
-  const videoList = videos || [];
+  const videoList = event?.has_password ? (protectedGallery?.videos || []) : (videos || []);
 
   // Resolve poster (grid thumbnail) URLs for videos
   const videoIds = useMemo(() => videoList.map((v: any) => v.id).sort().join(","), [videoList]);
@@ -290,7 +311,7 @@ const EventPage = () => {
     typeof priceGrid?.video_price === "number" ? priceGrid.video_price : null;
   const hasPricing = highPrice !== null && highPrice > 0;
   const hasVideoPricing = videoPrice !== null && videoPrice > 0;
-  const allPhotos = photos || [];
+  const allPhotos = event?.has_password ? (protectedGallery?.photos || []) : (photos || []);
 
   // --- FASE 1: Busca por número de peito ---
   const trimmedBib = searchBib.trim();
@@ -472,8 +493,8 @@ const EventPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPhoto?.id]);
 
-  // Password protection
-  if (event?.password && !unlocked) {
+  // Password protection (validada no servidor)
+  if (isLocked) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -490,16 +511,22 @@ const EventPage = () => {
               className="w-full bg-secondary/50 rounded-lg px-4 py-3 text-sm outline-none border border-border focus:border-primary"
             />
             <button
-              onClick={() => {
-                if (passwordInput === event.password) {
-                  setUnlocked(true);
+              disabled={verifying || !passwordInput}
+              onClick={async () => {
+                if (!id) return;
+                setVerifying(true);
+                const grant = await verifyEventPassword(id, passwordInput);
+                setVerifying(false);
+                if (grant) {
+                  setPasswordInput("");
+                  setAccessToken(grant.token);
                 } else {
                   toast.error("Senha incorreta");
                 }
               }}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold"
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold disabled:opacity-50"
             >
-              Acessar
+              {verifying ? "Verificando..." : "Acessar"}
             </button>
           </div>
         </div>
