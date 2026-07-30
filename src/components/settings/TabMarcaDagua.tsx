@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, Upload, Check, ShieldCheck, Droplets, Plus, Trash2, Info } from "lucide-react";
+import { Save, Check, ShieldCheck, Droplets, Plus, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import BlurProtectionOverlay, { type BlurPattern } from "@/components/BlurProtectionOverlay";
@@ -7,6 +7,8 @@ import samplePhoto from "@/assets/blur-preview-sample.jpg";
 import CreateWatermarkModal from "./CreateWatermarkModal";
 import WatermarkLayersPreview from "./WatermarkLayersPreview";
 import { useWatermarkTemplates } from "@/hooks/useWatermarkTemplates";
+import { useAccountWatermark } from "@/hooks/useAccountWatermark";
+import { SYSTEM_WATERMARK_PRESETS } from "@/lib/watermarkPresets";
 import type { WatermarkLayer } from "@/lib/watermarkLayers";
 
 const patterns: { id: BlurPattern; label: string; desc: string }[] = [
@@ -34,6 +36,7 @@ const PatternGlyph = ({ id, active }: { id: BlurPattern; active: boolean }) => {
 const TabMarcaDagua = () => {
   const { site, isLoading, upsertSite, uploadAsset } = usePhotographerSite();
   const { templates, createTemplate, deleteTemplate } = useWatermarkTemplates();
+  const { activePresetId, activeTemplateId, setActive } = useAccountWatermark();
   const [subTab, setSubTab] = useState<"marca" | "protecao">("marca");
   const [form, setForm] = useState<Record<string, any>>({});
   const [creatorOpen, setCreatorOpen] = useState(false);
@@ -46,18 +49,6 @@ const TabMarcaDagua = () => {
     if (!dirty) return;
     upsertSite.mutate(form);
     setForm({});
-  };
-
-  const handleWatermarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const url = await uploadAsset(file, `watermark.${file.name.split(".").pop()}`);
-      set("watermark_url", url);
-      upsertSite.mutate({ watermark_url: url });
-    } catch (err: any) {
-      toast.error("Erro ao enviar marca d'água: " + err.message);
-    }
   };
 
   if (isLoading) return <div className="p-6 text-muted-foreground">Carregando...</div>;
