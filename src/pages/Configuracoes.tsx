@@ -499,10 +499,6 @@ const TabComunicacao = () => {
 // ─── Tab: Dispositivos ───
 const TabDispositivos = () => (
   <div className="space-y-6">
-    <div>
-      <h2 className="text-xl font-bold">Dispositivos</h2>
-      <p className="text-sm text-muted-foreground">Gerencie as sessões ativas da sua conta</p>
-    </div>
     <div className="space-y-3">
       {mockDevices.map(d => (
         <div key={d.id} className={`glass-card p-5 flex items-center justify-between ${d.current ? "border border-primary/30" : ""}`}>
