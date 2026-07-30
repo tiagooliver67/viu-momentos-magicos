@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Save, Check, ShieldCheck, Droplets, Plus, Trash2, Info } from "lucide-react";
+import { Save, Check, ShieldCheck, Droplets, Plus, Trash2, Info, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import BlurProtectionOverlay, { type BlurPattern } from "@/components/BlurProtectionOverlay";
 import samplePhoto from "@/assets/blur-preview-sample.jpg";
@@ -40,6 +41,13 @@ const TabMarcaDagua = () => {
   const [subTab, setSubTab] = useState<"marca" | "protecao">("marca");
   const [form, setForm] = useState<Record<string, any>>({});
   const [creatorOpen, setCreatorOpen] = useState(false);
+  const [preview, setPreview] = useState<{
+    name: string;
+    description: string;
+    layers: WatermarkLayer[];
+    active: boolean;
+    apply: () => void;
+  } | null>(null);
 
   const val = (k: string, fallback?: any) => (k in form ? form[k] : ((site as any)?.[k] ?? fallback));
   const set = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }));
@@ -88,7 +96,7 @@ const TabMarcaDagua = () => {
             <div>
               <h3 className="text-base font-bold">Modelos do sistema</h3>
               <p className="text-sm text-muted-foreground">
-                Modelos prontos da VIU FOTO. Um deles já vem ativo na sua conta.
+                Modelos prontos da VIU FOTO. Clique para visualizar em tamanho grande antes de aplicar.
               </p>
             </div>
 
@@ -99,12 +107,23 @@ const TabMarcaDagua = () => {
                   <button
                     key={p.id}
                     onClick={() =>
-                      setActive.mutate(
-                        { kind: "preset", presetId: p.id, layers: p.layers },
-                        { onSuccess: () => toast.success(`"${p.name}" é a sua marca d'água ativa.`) },
-                      )
+                      setPreview({
+                        name: p.name,
+                        description: p.description,
+                        layers: p.layers,
+                        active: selected,
+                        apply: () =>
+                          setActive.mutate(
+                            { kind: "preset", presetId: p.id, layers: p.layers },
+                            {
+                              onSuccess: () => {
+                                toast.success(`"${p.name}" é a sua marca d'água ativa.`);
+                                setPreview(null);
+                              },
+                            },
+                          ),
+                      })
                     }
-                    disabled={setActive.isPending}
                     className={`relative text-left rounded-2xl border-2 bg-card overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md ${
                       selected ? "border-primary shadow-md" : "border-border"
                     }`}
@@ -114,11 +133,12 @@ const TabMarcaDagua = () => {
                       <p className="text-sm font-semibold truncate">{p.name}</p>
                       <p className="text-xs text-muted-foreground">{p.description}</p>
                       <span
-                        className={`mt-2 inline-block text-xs font-medium ${
+                        className={`mt-2 inline-flex items-center gap-1 text-xs font-medium ${
                           selected ? "text-primary" : "text-muted-foreground"
                         }`}
                       >
-                        {selected ? "Ativo" : "Aplicar"}
+                        <Eye className="w-3.5 h-3.5" />
+                        {selected ? "Ativo · visualizar" : "Visualizar"}
                       </span>
                     </div>
                     {selected && (
@@ -160,7 +180,32 @@ const TabMarcaDagua = () => {
                     activeTemplateId === t.id ? "border-primary shadow-md" : "border-border"
                   }`}
                 >
-                  <WatermarkLayersPreview layers={t.layers} photoUrl={samplePhoto} className="rounded-none" />
+                  <button
+                    type="button"
+                    className="block w-full text-left"
+                    onClick={() =>
+                      setPreview({
+                        name: t.name,
+                        description: `${t.layers.length} camada${t.layers.length > 1 ? "s" : ""}`,
+                        layers: t.layers,
+                        active: activeTemplateId === t.id,
+                        apply: () => {
+                          if (!t.layers.length) return toast.error("Esta marca d'água não tem camadas.");
+                          setActive.mutate(
+                            { kind: "template", templateId: t.id, layers: t.layers },
+                            {
+                              onSuccess: () => {
+                                toast.success(`"${t.name}" é a sua marca d'água ativa.`);
+                                setPreview(null);
+                              },
+                            },
+                          );
+                        },
+                      })
+                    }
+                  >
+                    <WatermarkLayersPreview layers={t.layers} photoUrl={samplePhoto} className="rounded-none" />
+                  </button>
                   {activeTemplateId === t.id && (
                     <span className="absolute top-3 left-3 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow">
                       <Check className="w-4 h-4 text-primary-foreground" />
@@ -316,6 +361,36 @@ const TabMarcaDagua = () => {
           <Save className="w-4 h-4" /> Salvar
         </button>
       </div>
+
+      <Dialog open={!!preview} onOpenChange={o => !o && setPreview(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{preview?.name}</DialogTitle>
+            <DialogDescription>{preview?.description}</DialogDescription>
+          </DialogHeader>
+          {preview && (
+            <WatermarkLayersPreview layers={preview.layers} photoUrl={samplePhoto} className="rounded-xl" />
+          )}
+          <p className="text-xs text-muted-foreground">
+            Pré-visualização sobre uma foto de exemplo. Aplicar afeta apenas novos uploads.
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setPreview(null)}
+              className="px-4 py-2.5 rounded-xl text-sm font-medium bg-secondary min-h-[44px]"
+            >
+              Fechar
+            </button>
+            <button
+              onClick={() => preview?.apply()}
+              disabled={setActive.isPending || preview?.active}
+              className="px-4 py-2.5 rounded-xl text-sm font-medium bg-primary text-primary-foreground disabled:opacity-50 min-h-[44px]"
+            >
+              {preview?.active ? "Já está ativo" : "Aplicar este modelo"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <CreateWatermarkModal
         open={creatorOpen}
