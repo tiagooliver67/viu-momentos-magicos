@@ -12,11 +12,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 const settingsTabs = [
-  { id: "conta", label: "Minha conta", icon: User },
-  { id: "site", label: "Meu site", icon: Globe },
-  { id: "marca", label: "Marca d'água e proteção", icon: Shield },
-  { id: "carteira", label: "Carteira", icon: Wallet },
-  { id: "dispositivos", label: "Dispositivos", icon: Smartphone },
+  { id: "conta", label: "Minha conta", short: "Conta", desc: "Dados pessoais e acesso", icon: User },
+  { id: "site", label: "Meu site", short: "Site", desc: "Perfil público e portfólio", icon: Globe },
+  { id: "marca", label: "Marca d'água", short: "Marca", desc: "Proteção das suas mídias", icon: Shield },
+  { id: "carteira", label: "Carteira", short: "Carteira", desc: "Recebimentos e saques", icon: Wallet },
+  { id: "dispositivos", label: "Dispositivos", short: "Sessões", desc: "Sessões ativas da conta", icon: Smartphone },
 ];
 
 // Mock data for other tabs
