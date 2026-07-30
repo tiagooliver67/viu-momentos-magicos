@@ -254,7 +254,7 @@ const TabMarcaDagua = () => {
       )}
 
       {subTab === "protecao" && (
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+        <section className="glass-card p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           <div className="space-y-5">
             {/* Toggle */}
             <div className="flex items-start gap-3">
@@ -344,7 +344,7 @@ const TabMarcaDagua = () => {
               />
             </div>
           )}
-        </div>
+        </section>
       )}
 
       <div className="pt-2">
