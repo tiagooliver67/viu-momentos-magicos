@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_watermark_settings: {
+        Row: {
+          active_kind: string
+          active_preset_id: string | null
+          active_template_id: string | null
+          created_at: string
+          layers: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_kind?: string
+          active_preset_id?: string | null
+          active_template_id?: string | null
+          created_at?: string
+          layers?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_kind?: string
+          active_preset_id?: string | null
+          active_template_id?: string | null
+          created_at?: string
+          layers?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_watermark_settings_active_template_id_fkey"
+            columns: ["active_template_id"]
+            isOneToOne: false
+            referencedRelation: "watermark_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       achievements: {
         Row: {
           active: boolean

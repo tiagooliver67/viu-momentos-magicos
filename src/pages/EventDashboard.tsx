@@ -14,8 +14,6 @@ import PhotoGallery from "@/components/event/PhotoGallery";
 import VideoGallery from "@/components/event/VideoGallery";
 import PromoArtModal from "@/components/event/PromoArtModal";
 import CollaborationModal from "@/components/event/CollaborationModal";
-import CreateWatermarkModal from "@/components/settings/CreateWatermarkModal";
-import { useEventWatermarkConfigs } from "@/hooks/useEventWatermarkConfigs";
 import { useEvent, useEventPhotos, useEventVideos, useEventOrders, useEventCoupons, useEventPriceGrid, useDiscountPackages } from "@/hooks/useEvent";
 import { useUploadWithDupCheck } from "@/hooks/useUploadWithDupCheck";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
@@ -30,7 +28,7 @@ import { resizeImage } from "@/lib/imageResize";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
   Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
-  ExternalLink, MessageCircle, Droplets
+  ExternalLink, MessageCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { shareBaseUrl } from "@/lib/shareUrl";
@@ -49,7 +47,6 @@ const quickActions = [
   { label: "Importar Pedidos", icon: FileDown, key: "import" },
   { label: "Convidar", icon: CameraIcon, key: "invite" },
   { label: "Galeria", icon: Eye, key: "gallery" },
-  { label: "Marca d'água", icon: Droplets, key: "watermark" },
   { label: "Ações", icon: MoreHorizontal, key: "actions" },
 ];
 
@@ -65,8 +62,7 @@ const EventDashboard = () => {
   const { event, isLoading, updateEvent, deleteEvent, refetch } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
-  const { site: photographerSite, uploadAsset } = usePhotographerSite();
-  const { createConfig } = useEventWatermarkConfigs(id);
+  const { site: photographerSite } = usePhotographerSite();
   const photosUpload = useUploadWithDupCheck({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
       fileName: f.fileName,
@@ -109,7 +105,6 @@ const EventDashboard = () => {
   const [showPromo, setShowPromo] = useState(false);
   const [showCollab, setShowCollab] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
-  const [showWatermark, setShowWatermark] = useState(false);
   const { profile } = useAuth();
 
   const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
@@ -143,7 +138,6 @@ const EventDashboard = () => {
       case "actions": setShowActions(true); break;
       case "promo": setShowPromo(true); break;
       case "collab": setShowCollab(true); break;
-      case "watermark": setShowWatermark(true); break;
       case "import": toast.info("Importação de pedidos em breve!"); break;
       case "invite": toast.info("Convite de fotógrafos em breve!"); break;
       case "videos": setShowVideoGallery(true); break;
@@ -693,15 +687,6 @@ const EventDashboard = () => {
             toast.success("Publicação agendada!");
           }}
         />
-        <CreateWatermarkModal
-          open={showWatermark}
-          onClose={() => setShowWatermark(false)}
-          isSaving={createConfig.isPending}
-          scopeLabel={`Somente para o evento: ${event.name}`}
-          uploadAsset={(file, path) => uploadAsset(file, `eventos/${event.id}/${path}`)}
-          onCreate={async (name, layers) => { await createConfig.mutateAsync({ name, layers }); }}
-        />
-
         {/* Actions dropdown */}
         {showActions && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowActions(false)}>

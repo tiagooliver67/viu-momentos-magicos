@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, Upload, Check, ShieldCheck, Droplets, Plus, Trash2, Info } from "lucide-react";
+import { Save, Check, ShieldCheck, Droplets, Plus, Trash2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import BlurProtectionOverlay, { type BlurPattern } from "@/components/BlurProtectionOverlay";
@@ -7,6 +7,8 @@ import samplePhoto from "@/assets/blur-preview-sample.jpg";
 import CreateWatermarkModal from "./CreateWatermarkModal";
 import WatermarkLayersPreview from "./WatermarkLayersPreview";
 import { useWatermarkTemplates } from "@/hooks/useWatermarkTemplates";
+import { useAccountWatermark } from "@/hooks/useAccountWatermark";
+import { SYSTEM_WATERMARK_PRESETS } from "@/lib/watermarkPresets";
 import type { WatermarkLayer } from "@/lib/watermarkLayers";
 
 const patterns: { id: BlurPattern; label: string; desc: string }[] = [
@@ -34,6 +36,7 @@ const PatternGlyph = ({ id, active }: { id: BlurPattern; active: boolean }) => {
 const TabMarcaDagua = () => {
   const { site, isLoading, upsertSite, uploadAsset } = usePhotographerSite();
   const { templates, createTemplate, deleteTemplate } = useWatermarkTemplates();
+  const { activePresetId, activeTemplateId, setActive } = useAccountWatermark();
   const [subTab, setSubTab] = useState<"marca" | "protecao">("marca");
   const [form, setForm] = useState<Record<string, any>>({});
   const [creatorOpen, setCreatorOpen] = useState(false);
@@ -46,18 +49,6 @@ const TabMarcaDagua = () => {
     if (!dirty) return;
     upsertSite.mutate(form);
     setForm({});
-  };
-
-  const handleWatermarkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const url = await uploadAsset(file, `watermark.${file.name.split(".").pop()}`);
-      set("watermark_url", url);
-      upsertSite.mutate({ watermark_url: url });
-    } catch (err: any) {
-      toast.error("Erro ao enviar marca d'água: " + err.message);
-    }
   };
 
   if (isLoading) return <div className="p-6 text-muted-foreground">Carregando...</div>;
@@ -91,29 +82,58 @@ const TabMarcaDagua = () => {
       </div>
 
       {subTab === "marca" && (
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start">
-            <div className="w-40 h-40 rounded-xl border border-border bg-secondary/40 flex items-center justify-center overflow-hidden">
-              {val("watermark_url") ? (
-                <img src={val("watermark_url")} alt="Marca d'água atual" className="w-full h-full object-contain" />
-              ) : (
-                <span className="text-xs text-muted-foreground px-3 text-center">Nenhuma marca d'água enviada</span>
-              )}
-            </div>
-            <div className="space-y-2">
-              <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium cursor-pointer min-h-[44px]">
-                <Upload className="w-4 h-4" /> Enviar marca d'água (PNG)
-                <input type="file" accept="image/png" className="hidden" onChange={handleWatermarkUpload} />
-              </label>
-              <p className="text-xs text-muted-foreground max-w-sm">
-                Use PNG com fundo transparente. A marca d'água é aplicada no servidor sobre as versões
-                de visualização das suas fotos e vídeos.
+        <div className="space-y-6">
+          {/* Modelos do sistema */}
+          <div className="space-y-3">
+            <div>
+              <h3 className="text-base font-bold">Modelos do sistema</h3>
+              <p className="text-sm text-muted-foreground">
+                Modelos prontos da VIU FOTO. Um deles já vem ativo na sua conta.
               </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {SYSTEM_WATERMARK_PRESETS.map(p => {
+                const selected = activePresetId === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() =>
+                      setActive.mutate(
+                        { kind: "preset", presetId: p.id, layers: p.layers },
+                        { onSuccess: () => toast.success(`"${p.name}" é a sua marca d'água ativa.`) },
+                      )
+                    }
+                    disabled={setActive.isPending}
+                    className={`relative text-left rounded-2xl border-2 bg-card overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                      selected ? "border-primary shadow-md" : "border-border"
+                    }`}
+                  >
+                    <WatermarkLayersPreview layers={p.layers} photoUrl={samplePhoto} className="rounded-none" />
+                    <div className="p-3">
+                      <p className="text-sm font-semibold truncate">{p.name}</p>
+                      <p className="text-xs text-muted-foreground">{p.description}</p>
+                      <span
+                        className={`mt-2 inline-block text-xs font-medium ${
+                          selected ? "text-primary" : "text-muted-foreground"
+                        }`}
+                      >
+                        {selected ? "Ativo" : "Aplicar"}
+                      </span>
+                    </div>
+                    {selected && (
+                      <span className="absolute top-3 left-3 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow">
+                        <Check className="w-4 h-4 text-primary-foreground" />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           {/* Minhas marcas d'água */}
-          <div className="pt-4 border-t border-border space-y-3">
+          <div className="pt-5 border-t border-border space-y-3">
             <div>
               <h3 className="text-base font-bold">Minhas marcas d'água</h3>
               <p className="text-sm text-muted-foreground">Modelos criados por você.</p>
@@ -134,8 +154,18 @@ const TabMarcaDagua = () => {
               </button>
 
               {templates.map(t => (
-                <div key={t.id} className="rounded-2xl border border-border bg-card overflow-hidden">
+                <div
+                  key={t.id}
+                  className={`relative rounded-2xl border-2 bg-card overflow-hidden ${
+                    activeTemplateId === t.id ? "border-primary shadow-md" : "border-border"
+                  }`}
+                >
                   <WatermarkLayersPreview layers={t.layers} photoUrl={samplePhoto} className="rounded-none" />
+                  {activeTemplateId === t.id && (
+                    <span className="absolute top-3 left-3 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow">
+                      <Check className="w-4 h-4 text-primary-foreground" />
+                    </span>
+                  )}
                   <div className="p-3 flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold truncate">{t.name}</p>
@@ -146,14 +176,21 @@ const TabMarcaDagua = () => {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => {
-                          const first = t.layers.find(l => l.imageUrl);
-                          if (!first?.imageUrl) return toast.error("Esta marca d'água não tem imagem.");
-                          set("watermark_url", first.imageUrl);
-                          upsertSite.mutate({ watermark_url: first.imageUrl });
+                          if (activeTemplateId === t.id) return;
+                          if (!t.layers.length) return toast.error("Esta marca d'água não tem camadas.");
+                          setActive.mutate(
+                            { kind: "template", templateId: t.id, layers: t.layers },
+                            { onSuccess: () => toast.success(`"${t.name}" é a sua marca d'água ativa.`) },
+                          );
                         }}
-                        className="px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 min-h-[36px]"
+                        disabled={setActive.isPending}
+                        className={`px-3 py-2 rounded-lg text-xs font-medium min-h-[36px] ${
+                          activeTemplateId === t.id
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary/10 text-primary hover:bg-primary/20"
+                        }`}
                       >
-                        Aplicar
+                        {activeTemplateId === t.id ? "Ativo" : "Aplicar"}
                       </button>
                       <button
                         onClick={() => deleteTemplate.mutate(t.id)}
