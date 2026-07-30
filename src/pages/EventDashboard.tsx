@@ -28,7 +28,7 @@ import { resizeImage } from "@/lib/imageResize";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
   Video, FileDown, Camera as CameraIcon, Eye, Check, ChevronRight, Users, BarChart3, X, Trash2, Copy, Share2,
-  ExternalLink, MessageCircle, Droplets
+  ExternalLink, MessageCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { shareBaseUrl } from "@/lib/shareUrl";
@@ -105,7 +105,6 @@ const EventDashboard = () => {
   const [showPromo, setShowPromo] = useState(false);
   const [showCollab, setShowCollab] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
-  const [showWatermark, setShowWatermark] = useState(false);
   const { profile } = useAuth();
 
   const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
