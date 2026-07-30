@@ -555,30 +555,56 @@ const Configuracoes = () => {
     return tab && tabComponents[tab] ? tab : "conta";
   });
   const ActiveComponent = tabComponents[activeTab];
+  const current = settingsTabs.find(t => t.id === activeTab) ?? settingsTabs[0];
 
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
       <main className="flex-1 p-4 pt-20 lg:pt-4 md:p-8 overflow-auto">
         <div className="max-w-6xl mx-auto">
+          {/* Cabeçalho da página — padrão VIU FOTO */}
+          <header className="mb-6 sm:mb-8">
+            <div className="flex items-center gap-3">
+              <span className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                <current.icon className="w-5 h-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Configurações</p>
+                <h1 className="text-xl sm:text-2xl font-bold leading-tight truncate">{current.label}</h1>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">{current.desc}</p>
+          </header>
+
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-            {/* Sidebar tabs - horizontal scroll on mobile */}
+            {/* Navegação — pílulas no mobile, lista no desktop */}
             <nav className="lg:w-64 flex-shrink-0 -mx-4 px-4 lg:mx-0 lg:px-0">
-              <div className="glass-card p-1.5 sm:p-2 lg:sticky lg:top-8 flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible scrollbar-hide">
+              <div className="lg:sticky lg:top-8 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible scrollbar-hide pb-1 lg:pb-0">
                 {settingsTabs.map(tab => {
                   const isActive = activeTab === tab.id;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all min-h-[44px] ${
-                        isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                      className={`group relative flex items-center gap-3 px-3.5 py-3 rounded-2xl text-sm font-medium whitespace-nowrap transition-all min-h-[44px] border lg:w-full text-left ${
+                        isActive
+                          ? "bg-card border-primary/30 text-foreground shadow-[0_4px_16px_-8px_hsl(var(--primary)/0.5)]"
+                          : "bg-card/60 border-transparent text-muted-foreground hover:bg-card hover:border-border hover:text-foreground"
                       }`}
                     >
-                      <tab.icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                      <span className="hidden sm:inline lg:inline">{tab.label}</span>
-                      <span className="sm:hidden lg:hidden">{tab.label.split(' ')[0]}</span>
-                      {isActive && <ChevronRight className="w-4 h-4 ml-auto hidden lg:block" />}
+                      <span
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                          isActive ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-muted-foreground group-hover:text-foreground"
+                        }`}
+                      >
+                        <tab.icon className="w-4 h-4" />
+                      </span>
+                      <span className="hidden lg:flex flex-col min-w-0">
+                        <span className={`truncate ${isActive ? "font-semibold text-primary" : ""}`}>{tab.label}</span>
+                        <span className="text-xs text-muted-foreground font-normal truncate">{tab.desc}</span>
+                      </span>
+                      <span className="lg:hidden">{tab.short}</span>
+                      {isActive && <ChevronRight className="w-4 h-4 ml-auto hidden lg:block text-primary" />}
                     </button>
                   );
                 })}
