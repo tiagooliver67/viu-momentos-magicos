@@ -17,8 +17,9 @@ import {
 
 const EVENTS_PAGE_SIZE = 9;
 
-const PhotographerPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+const PhotographerPage = ({ slug: slugProp }: { slug?: string } = {}) => {
+  const params = useParams<{ slug: string }>();
+  const slug = slugProp ?? params.slug;
   const { data: site, isLoading } = usePhotographerSiteBySlug(slug);
   const [page, setPage] = useState(1);
 
@@ -27,6 +28,16 @@ const PhotographerPage = () => {
     if (!site) return;
     const title = site.seo_title || `${site.display_name || "Fotógrafo"} | ViuFoto`;
     document.title = title;
+    const setMeta = (attr: "name" | "property", key: string, content: string) => {
+      if (!content) return;
+      let tag = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
+      if (!tag) {
+        tag = document.createElement("meta");
+        tag.setAttribute(attr, key);
+        document.head.appendChild(tag);
+      }
+      tag.content = content;
+    };
     if (site.seo_keywords) {
       let tag = document.querySelector('meta[name="keywords"]') as HTMLMetaElement | null;
       if (!tag) {
@@ -46,6 +57,25 @@ const PhotographerPage = () => {
       }
       metaDesc.content = desc;
     }
+    // Open Graph / compartilhamento com os dados do fotógrafo
+    const siteUrl = site.slug ? photographerSiteUrl(site.slug) : shareUrl(`/fotografo/${slug ?? ""}`);
+    setMeta("property", "og:title", title);
+    setMeta("property", "og:description", desc || title);
+    setMeta("property", "og:type", "profile");
+    setMeta("property", "og:url", siteUrl);
+    if (site.avatar_url || site.banner_url) {
+      setMeta("property", "og:image", site.banner_url || site.avatar_url);
+      setMeta("name", "twitter:image", site.banner_url || site.avatar_url);
+    }
+    setMeta("name", "twitter:card", "summary_large_image");
+    setMeta("name", "twitter:title", title);
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+    canonical.href = siteUrl;
   }, [site]);
 
   const { data: eventsResult } = useQuery({
