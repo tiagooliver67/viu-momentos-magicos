@@ -7,8 +7,9 @@ import Footer from "@/components/Footer";
 
 const categories = ["Corrida", "Ciclismo", "Triathlon", "Trail Run"];
 
-const PhotographerPortfolioPage = () => {
-  const { slug } = useParams<{ slug: string }>();
+const PhotographerPortfolioPage = ({ slug: slugProp }: { slug?: string } = {}) => {
+  const params = useParams<{ slug: string }>();
+  const slug = slugProp ?? params.slug;
   const { data: site, isLoading } = usePhotographerSiteBySlug(slug);
   const [cat, setCat] = useState("Corrida");
 

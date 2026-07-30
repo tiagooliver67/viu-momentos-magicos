@@ -6,6 +6,11 @@ import {
 import { toast } from "sonner";
 import { usePhotographerSite } from "@/hooks/usePhotographerSite";
 import TabPortfolio from "@/components/settings/TabPortfolio";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  ROOT_DOMAIN, normalizeSlug, validateSlug, isSlugAvailable,
+  generateUniqueSlug, photographerSiteUrl,
+} from "@/lib/siteSlug";
 
 const siteSubTabs = [
   { id: "geral", label: "Meu site", icon: Globe },
@@ -31,14 +36,41 @@ const presetColors = [
 const MeuSiteTab = () => {
   const [activeSubTab, setActiveSubTab] = useState("geral");
   const { site, isLoading, upsertSite, uploadAsset } = usePhotographerSite();
+  const { user } = useAuth();
   const [form, setForm] = useState<Record<string, any>>({});
+  const [slugError, setSlugError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
   const avatarRef = useRef<HTMLInputElement>(null);
 
   const val = (key: string) => form[key] ?? (site as any)?.[key] ?? "";
   const set = (key: string, value: any) => setForm(prev => ({ ...prev, [key]: value }));
 
-  const handleSave = () => {
-    upsertSite.mutate(form);
+  const handleSave = async () => {
+    const payload = { ...form };
+    if (payload.slug !== undefined) {
+      const slug = normalizeSlug(payload.slug);
+      const err = validateSlug(slug);
+      if (err) {
+        setSlugError(err);
+        toast.error(err);
+        return;
+      }
+      setChecking(true);
+      const free = await isSlugAvailable(slug, user?.id);
+      if (!free) {
+        const suggestion = await generateUniqueSlug(slug, user?.id);
+        setChecking(false);
+        setSlugError(`O endereço "${slug}" já está em uso. Que tal "${suggestion}"?`);
+        toast.error(`Endereço já usado. Sugestão: ${suggestion}`, {
+          action: { label: "Usar sugestão", onClick: () => { set("slug", suggestion); setSlugError(null); } },
+        });
+        return;
+      }
+      setChecking(false);
+      payload.slug = slug;
+    }
+    setSlugError(null);
+    upsertSite.mutate(payload);
     setForm({});
   };
 
@@ -97,12 +129,26 @@ const MeuSiteTab = () => {
                   <span className="bg-secondary/80 px-3 py-2.5 text-sm text-muted-foreground">https://</span>
                   <input
                     value={val("slug")}
-                    onChange={e => set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                    onChange={e => { setSlugError(null); set("slug", normalizeSlug(e.target.value)); }}
                     className="flex-1 bg-secondary/50 px-3 py-2.5 text-sm outline-none"
                     placeholder="seu-nome"
                   />
-                  <span className="bg-secondary/80 px-3 py-2.5 text-sm text-muted-foreground">.viufoto.com</span>
+                  <span className="bg-secondary/80 px-3 py-2.5 text-sm text-muted-foreground">.{ROOT_DOMAIN}</span>
                 </div>
+                {slugError && <p className="text-xs text-destructive mt-1.5">{slugError}</p>}
+                {(site as any)?.slug && (
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Seu site está no ar em{" "}
+                    <a
+                      href={photographerSiteUrl((site as any).slug)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary hover:underline font-medium"
+                    >
+                      {photographerSiteUrl((site as any).slug)}
+                    </a>
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

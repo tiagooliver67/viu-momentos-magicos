@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { generateUniqueSlug } from "@/lib/siteSlug";
 import type { User, Session } from "@supabase/supabase-js";
 
 type AppRole = "user" | "photographer" | "organizer" | "super_admin";
@@ -46,6 +47,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (rolesRes.data) {
       setRoles(rolesRes.data.map((r: any) => r.role as AppRole));
     }
+
+    // Garante slug único do site para fotógrafos (gerado a partir do nome)
+    try {
+      const isPhotographer = (rolesRes.data || []).some((r: any) => r.role === "photographer");
+      if (isPhotographer) {
+        const { data: site } = await supabase
+          .from("photographer_sites")
+          .select("id, slug")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (!site?.slug) {
+          const baseName = profileRes.data?.full_name || "fotografo";
+          const slug = await generateUniqueSlug(baseName, userId);
+          if (site?.id) {
+            await supabase.from("photographer_sites").update({ slug }).eq("user_id", userId);
+          } else {
+            await supabase.from("photographer_sites").insert({
+              user_id: userId,
+              slug,
+              display_name: profileRes.data?.full_name || "",
+            });
+          }
+        }
+      }
+    } catch { /* noop */ }
+
     // Track last sign in
     supabase.from("profiles").update({ last_sign_in_at: new Date().toISOString() }).eq("user_id", userId).then(() => {});
 
