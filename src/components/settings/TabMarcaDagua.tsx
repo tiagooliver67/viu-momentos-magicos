@@ -66,22 +66,17 @@ const TabMarcaDagua = () => {
   const pattern = (val("blur_protection_pattern", "faixa") || "faixa") as BlurPattern;
 
   return (
-    <div className="glass-card p-5 sm:p-6 space-y-6">
-      <div>
-        <h2 className="text-lg font-bold">Marca d'água e proteção</h2>
-        <p className="text-sm text-muted-foreground">
-          Defina a marca d'água exibida sobre as fotos e vídeos e ative camadas extras de proteção visual.
-        </p>
-      </div>
-
-      {/* Sub tabs */}
-      <div className="flex gap-6 border-b border-border">
+    <div className="space-y-5 sm:space-y-6">
+      {/* Sub tabs — controle segmentado no padrão VIU FOTO */}
+      <div className="inline-flex p-1 rounded-2xl bg-secondary/60 border border-border gap-1">
         {([["marca", "Marca d'água", Droplets], ["protecao", "Proteção", ShieldCheck]] as const).map(([id, label, Icon]) => (
           <button
             key={id}
             onClick={() => setSubTab(id)}
-            className={`flex items-center gap-2 pb-3 -mb-px text-sm font-medium border-b-2 transition-colors ${
-              subTab === id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium min-h-[44px] transition-all ${
+              subTab === id
+                ? "bg-card text-primary shadow-sm font-semibold"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Icon className="w-4 h-4" /> {label}
@@ -90,9 +85,9 @@ const TabMarcaDagua = () => {
       </div>
 
       {subTab === "marca" && (
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           {/* Modelos do sistema */}
-          <div className="space-y-3">
+          <section className="glass-card p-5 sm:p-6 space-y-4">
             <div>
               <h3 className="text-base font-bold">Modelos do sistema</h3>
               <p className="text-sm text-muted-foreground">
@@ -150,10 +145,10 @@ const TabMarcaDagua = () => {
                 );
               })}
             </div>
-          </div>
+          </section>
 
           {/* Minhas marcas d'água */}
-          <div className="pt-5 border-t border-border space-y-3">
+          <section className="glass-card p-5 sm:p-6 space-y-4">
             <div>
               <h3 className="text-base font-bold">Minhas marcas d'água</h3>
               <p className="text-sm text-muted-foreground">Modelos criados por você.</p>
