@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { getCoverUrl } from "@/lib/eventCover";
+import { setEventPassword } from "@/lib/eventAccess";
 import { resizeImage } from "@/lib/imageResize";
 import {
   Edit, ShoppingCart, DollarSign, Upload, Image, MoreHorizontal, Lock, Megaphone, Tag,
@@ -61,7 +62,7 @@ const EventDashboard = () => {
   const [videoUploadProgress, setVideoUploadProgress] = useState<UploadFileProgress[]>([]);
 
   // Data hooks
-  const { event, isLoading, updateEvent, deleteEvent } = useEvent(id);
+  const { event, isLoading, updateEvent, deleteEvent, refetch } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
   const { site: photographerSite, uploadAsset } = usePhotographerSite();
