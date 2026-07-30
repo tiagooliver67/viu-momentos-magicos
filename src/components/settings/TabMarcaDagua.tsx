@@ -180,7 +180,32 @@ const TabMarcaDagua = () => {
                     activeTemplateId === t.id ? "border-primary shadow-md" : "border-border"
                   }`}
                 >
-                  <WatermarkLayersPreview layers={t.layers} photoUrl={samplePhoto} className="rounded-none" />
+                  <button
+                    type="button"
+                    className="block w-full text-left"
+                    onClick={() =>
+                      setPreview({
+                        name: t.name,
+                        description: `${t.layers.length} camada${t.layers.length > 1 ? "s" : ""}`,
+                        layers: t.layers,
+                        active: activeTemplateId === t.id,
+                        apply: () => {
+                          if (!t.layers.length) return toast.error("Esta marca d'água não tem camadas.");
+                          setActive.mutate(
+                            { kind: "template", templateId: t.id, layers: t.layers },
+                            {
+                              onSuccess: () => {
+                                toast.success(`"${t.name}" é a sua marca d'água ativa.`);
+                                setPreview(null);
+                              },
+                            },
+                          );
+                        },
+                      })
+                    }
+                  >
+                    <WatermarkLayersPreview layers={t.layers} photoUrl={samplePhoto} className="rounded-none" />
+                  </button>
                   {activeTemplateId === t.id && (
                     <span className="absolute top-3 left-3 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow">
                       <Check className="w-4 h-4 text-primary-foreground" />
