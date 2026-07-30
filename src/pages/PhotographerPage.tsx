@@ -10,6 +10,8 @@ import Footer from "@/components/Footer";
 import PhotographerLevelSection from "@/components/photographer/PhotographerLevelSection";
 import PhotographerAiBio from "@/components/photographer/PhotographerAiBio";
 import { getCoverUrl } from "@/lib/eventCover";
+import { photographerSiteUrl } from "@/lib/siteSlug";
+import { shareUrl } from "@/lib/shareUrl";
 import {
   Pagination, PaginationContent, PaginationItem, PaginationLink,
   PaginationNext, PaginationPrevious, PaginationEllipsis,
