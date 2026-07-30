@@ -129,12 +129,26 @@ const MeuSiteTab = () => {
                   <span className="bg-secondary/80 px-3 py-2.5 text-sm text-muted-foreground">https://</span>
                   <input
                     value={val("slug")}
-                    onChange={e => set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                    onChange={e => { setSlugError(null); set("slug", normalizeSlug(e.target.value)); }}
                     className="flex-1 bg-secondary/50 px-3 py-2.5 text-sm outline-none"
                     placeholder="seu-nome"
                   />
-                  <span className="bg-secondary/80 px-3 py-2.5 text-sm text-muted-foreground">.viufoto.com</span>
+                  <span className="bg-secondary/80 px-3 py-2.5 text-sm text-muted-foreground">.{ROOT_DOMAIN}</span>
                 </div>
+                {slugError && <p className="text-xs text-destructive mt-1.5">{slugError}</p>}
+                {(site as any)?.slug && (
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Seu site está no ar em{" "}
+                    <a
+                      href={photographerSiteUrl((site as any).slug)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary hover:underline font-medium"
+                    >
+                      {photographerSiteUrl((site as any).slug)}
+                    </a>
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
