@@ -40,7 +40,33 @@ function extractEventId(key) {
   return "default";
 }
 
-/** Busca a config de marca d'água do evento (com cache). Retorna array de layers ou null. */
+/** Consulta genérica ao PostgREST. Retorna array de linhas (ou null em falha). */
+async function restSelect(pathWithQuery) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${pathWithQuery}`, {
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+    });
+    if (!res.ok) {
+      console.log(`⚠️ PostgREST ${pathWithQuery} [${res.status}]: ${await res.text()}`);
+      return null;
+    }
+    return await res.json();
+  } catch (e) {
+    console.log(`⚠️ Falha na consulta ${pathWithQuery}:`, e.message);
+    return null;
+  }
+}
+
+/**
+ * Resolve as camadas de marca d'água do evento (com cache).
+ * Ordem de precedência:
+ *   1. watermark_configs (override legado/específico do evento, se existir);
+ *   2. account_watermark_settings do organizador do evento (modelo ATIVO da conta);
+ *   3. null → marca d'água padrão do bucket.
+ */
 async function fetchWatermarkConfig(eventId) {
   if (!eventId || eventId === "default") return null;
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null;
@@ -49,25 +75,29 @@ async function fetchWatermarkConfig(eventId) {
   if (cached) return cached.value;
 
   let layers = null;
-  try {
-    const url = `${SUPABASE_URL}/rest/v1/watermark_configs`
-      + `?event_id=eq.${encodeURIComponent(eventId)}`
-      + `&select=layers,created_at&order=created_at.desc&limit=1`;
-    const res = await fetch(url, {
-      headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      },
-    });
-    if (!res.ok) {
-      console.log(`⚠️ watermark_configs [${res.status}]: ${await res.text()}`);
-    } else {
-      const rows = await res.json();
-      const raw = Array.isArray(rows) && rows[0] ? rows[0].layers : null;
-      if (Array.isArray(raw) && raw.length > 0) layers = raw;
+
+  // 1) Override por evento (tabela legada, ainda respeitada quando existir)
+  const cfgRows = await restSelect(
+    `watermark_configs?event_id=eq.${encodeURIComponent(eventId)}`
+    + `&select=layers,created_at&order=created_at.desc&limit=1`,
+  );
+  const cfgRaw = Array.isArray(cfgRows) && cfgRows[0] ? cfgRows[0].layers : null;
+  if (Array.isArray(cfgRaw) && cfgRaw.length > 0) layers = cfgRaw;
+
+  // 2) Modelo ATIVO da conta do organizador do evento
+  if (!layers) {
+    const evRows = await restSelect(
+      `events?id=eq.${encodeURIComponent(eventId)}&select=organizer_id&limit=1`,
+    );
+    const organizerId = Array.isArray(evRows) && evRows[0] ? evRows[0].organizer_id : null;
+    if (organizerId) {
+      const acctRows = await restSelect(
+        `account_watermark_settings?user_id=eq.${encodeURIComponent(organizerId)}`
+        + `&select=layers&limit=1`,
+      );
+      const acctRaw = Array.isArray(acctRows) && acctRows[0] ? acctRows[0].layers : null;
+      if (Array.isArray(acctRaw) && acctRaw.length > 0) layers = acctRaw;
     }
-  } catch (e) {
-    console.log("⚠️ Falha ao consultar watermark_configs:", e.message);
   }
 
   configCache.set(eventId, { value: layers, expiresAt: Date.now() + CONFIG_TTL_MS });
