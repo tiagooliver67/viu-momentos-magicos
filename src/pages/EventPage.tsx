@@ -31,6 +31,7 @@ import {
   IS_LAMBDA_PIPELINE_ACTIVE,
 } from "@/lib/cdnConfig";
 import { shareBaseUrl } from "@/lib/shareUrl";
+import { getStoredAccess, verifyEventPassword, fetchProtectedGallery } from "@/lib/eventAccess";
 
 /** Fetch signed read URLs without requiring auth */
 async function getPublicSignedUrls(paths: string[]): Promise<Record<string, string>> {
@@ -65,7 +66,8 @@ const EventPage = () => {
   const [searchBib, setSearchBib] = useState("");
   const [resolution, setResolution] = useState<"high" | "low">("high");
   const [passwordInput, setPasswordInput] = useState("");
-  const [unlocked, setUnlocked] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(() => getStoredAccess(id)?.token ?? null);
+  const [verifying, setVerifying] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [faceModalOpen, setFaceModalOpen] = useState(false);
@@ -105,6 +107,25 @@ const EventPage = () => {
   // Marketing tracker: injeta pixels do fotógrafo dono + registra eventos do funil
   const { track: mktTrack } = useMarketingTracker(event?.organizer_id, id);
 
+  const isLocked = !!event?.has_password && !accessToken;
+
+  // Conteúdo de eventos protegidos vem da edge function (validada por token no servidor)
+  const { data: protectedGallery } = useQuery({
+    queryKey: ["protected-gallery", id, accessToken],
+    queryFn: async () => {
+      if (!id || !accessToken) return null;
+      try {
+        return await fetchProtectedGallery(id, accessToken);
+      } catch {
+        setAccessToken(null);
+        return null;
+      }
+    },
+    enabled: !!id && !!event?.has_password && !!accessToken,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
   // Fetch photos
   const { data: photos } = useQuery({
     queryKey: ["public-photos", id],
@@ -117,7 +138,7 @@ const EventPage = () => {
         .order("created_at");
       return data || [];
     },
-    enabled: !!id,
+    enabled: !!id && !!event && !event.has_password,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
