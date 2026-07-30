@@ -62,7 +62,7 @@ const EventDashboard = () => {
   const { event, isLoading, updateEvent, deleteEvent, refetch } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
   const { videos, deleteVideo } = useEventVideos(id);
-  const { site: photographerSite, uploadAsset } = usePhotographerSite();
+  const { site: photographerSite } = usePhotographerSite();
   const photosUpload = useUploadWithDupCheck({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
       fileName: f.fileName,
@@ -138,7 +138,6 @@ const EventDashboard = () => {
       case "actions": setShowActions(true); break;
       case "promo": setShowPromo(true); break;
       case "collab": setShowCollab(true); break;
-      case "watermark": setShowWatermark(true); break;
       case "import": toast.info("Importação de pedidos em breve!"); break;
       case "invite": toast.info("Convite de fotógrafos em breve!"); break;
       case "videos": setShowVideoGallery(true); break;
