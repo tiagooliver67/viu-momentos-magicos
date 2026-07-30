@@ -3267,6 +3267,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_event_password: { Args: { _password: string }; Returns: string }
       increment_blog_views: { Args: { _slug: string }; Returns: undefined }
       infra_metrics_snapshot: { Args: never; Returns: Json }
       is_event_eligible: { Args: { _event_id: string }; Returns: boolean }
@@ -3287,6 +3288,10 @@ export type Database = {
       set_ambassador: {
         Args: { _enabled: boolean; _user_id: string }
         Returns: undefined
+      }
+      verify_event_password: {
+        Args: { _event_id: string; _password: string }
+        Returns: boolean
       }
     }
     Enums: {
