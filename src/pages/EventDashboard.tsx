@@ -697,6 +697,7 @@ const EventDashboard = () => {
           open={showWatermark}
           onClose={() => setShowWatermark(false)}
           isSaving={createConfig.isPending}
+          scopeLabel={`Somente para o evento: ${event.name}`}
           uploadAsset={(file, path) => uploadAsset(file, `eventos/${event.id}/${path}`)}
           onCreate={async (name, layers) => { await createConfig.mutateAsync({ name, layers }); }}
         />
