@@ -33,31 +33,44 @@ export function useEventWatermarkConfigs(eventId?: string) {
   const createConfig = useMutation({
     mutationFn: async ({ name, layers }: { name: string; layers: WatermarkLayer[] }) => {
       if (!eventId) throw new Error("Evento não encontrado");
+      const dbLayers = toDbLayers(layers);
+      if (!dbLayers.some(l => l.image_url)) {
+        throw new Error("Envie a imagem de pelo menos uma camada antes de salvar.");
+      }
       const { data, error } = await supabase
         .from("watermark_configs" as any)
-        .insert({ event_id: eventId, name, layers: toDbLayers(layers) as any })
+        .insert({ event_id: eventId, name, layers: dbLayers as any })
         .select()
         .single();
-      if (error) throw error;
+      if (error) {
+        console.error("[watermark_configs] insert falhou", error);
+        throw new Error(
+          [error.message, error.details, error.hint].filter(Boolean).join(" — ") ||
+            "Falha desconhecida ao salvar a marca d'água."
+        );
+      }
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["watermark-configs", eventId] });
       toast.success("Marca d'água criada para este evento!");
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => toast.error("Erro ao salvar marca d'água: " + (err?.message || "falha desconhecida")),
   });
 
   const deleteConfig = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("watermark_configs" as any).delete().eq("id", id);
-      if (error) throw error;
+      if (error) {
+        console.error("[watermark_configs] delete falhou", error);
+        throw new Error([error.message, error.details, error.hint].filter(Boolean).join(" — "));
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["watermark-configs", eventId] });
       toast.success("Marca d'água removida.");
     },
-    onError: (err: any) => toast.error(err.message),
+    onError: (err: any) => toast.error("Erro ao remover: " + (err?.message || "falha desconhecida")),
   });
 
   return {
