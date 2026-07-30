@@ -249,7 +249,7 @@ const TabMarcaDagua = () => {
               <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
               Alterar a marca d'água afetará apenas novos uploads.
             </div>
-          </div>
+          </section>
         </div>
       )}
 
