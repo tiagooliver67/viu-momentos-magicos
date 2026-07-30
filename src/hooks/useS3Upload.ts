@@ -267,16 +267,34 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
       let eventLayers: WatermarkLayerDb[] | null = null;
       if (isPhoto && !IS_LAMBDA_PIPELINE_ACTIVE) {
         try {
-          const { data: auth } = await supabase.auth.getUser();
-          const uid = auth?.user?.id;
-          if (uid) {
+          // 1) Override legado por evento
+          const { data: cfgRow } = await supabase
+            .from("watermark_configs" as any)
+            .select("layers")
+            .eq("event_id", eventId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const cfgRaw = (cfgRow as any)?.layers;
+          if (Array.isArray(cfgRaw) && cfgRaw.length > 0) eventLayers = cfgRaw as WatermarkLayerDb[];
+
+          // 2) Modelo ATIVO da conta do ORGANIZADOR do evento (mesma regra da Lambda)
+          if (!eventLayers) {
+            const { data: ev } = await supabase
+              .from("events")
+              .select("organizer_id")
+              .eq("id", eventId)
+              .maybeSingle();
+            const ownerUid = (ev as any)?.organizer_id;
+            if (ownerUid) {
             const { data: wmCfg } = await supabase
               .from("account_watermark_settings" as any)
               .select("layers")
-              .eq("user_id", uid)
+                .eq("user_id", ownerUid)
               .maybeSingle();
             const raw = (wmCfg as any)?.layers;
             if (Array.isArray(raw) && raw.length > 0) eventLayers = raw as WatermarkLayerDb[];
+            }
           }
         } catch (cfgErr) {
           console.warn("[S3Upload] Falha ao carregar marca d'água da conta:", cfgErr);
