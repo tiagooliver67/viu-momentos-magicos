@@ -1,4 +1,4 @@
-export type LevelKey = "bronze" | "prata" | "ouro" | "diamante" | "embaixador";
+export type LevelKey = "bronze" | "prata" | "ouro" | "diamante";
 
 export interface LevelRule {
   level: LevelKey;
@@ -33,7 +33,6 @@ export const LEVEL_LABELS: Record<LevelKey, string> = {
   prata: "Prata",
   ouro: "Ouro",
   diamante: "Diamante",
-  embaixador: "Embaixador",
 };
 
 export const LEVEL_ICONS: Record<LevelKey, string> = {
@@ -41,7 +40,6 @@ export const LEVEL_ICONS: Record<LevelKey, string> = {
   prata: "🥈",
   ouro: "🥇",
   diamante: "💎",
-  embaixador: "👑",
 };
 
 export const LEVEL_COLORS: Record<LevelKey, string> = {
@@ -49,7 +47,6 @@ export const LEVEL_COLORS: Record<LevelKey, string> = {
   prata: "from-slate-400 to-slate-200",
   ouro: "from-yellow-500 to-amber-300",
   diamante: "from-cyan-400 to-blue-500",
-  embaixador: "from-fuchsia-500 to-purple-600",
 };
 
 export function getNextRule(rules: LevelRule[], current: LevelKey): LevelRule | null {

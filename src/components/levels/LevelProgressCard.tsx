@@ -32,7 +32,7 @@ export default function LevelProgressCard() {
             <p className="text-xs text-muted-foreground">Seu nível atual</p>
             <div className="flex items-center gap-2 mt-0.5">
               <LevelBadge level={level.current_level} size="sm" />
-              {level.is_ambassador && level.current_level !== "embaixador" && <span className="text-xs">👑 Embaixador</span>}
+              {level.is_ambassador && <span className="text-xs font-semibold text-primary ml-1">⭐ Embaixador</span>}
             </div>
             {currentRule?.message && <p className="text-xs text-muted-foreground mt-1 italic">"{currentRule.message}"</p>}
           </div>

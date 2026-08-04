@@ -68,7 +68,7 @@ import InscricoesList from "./pages/inscricoes/InscricoesList";
 import InscricaoForm from "./pages/inscricoes/InscricaoForm";
 import InscricaoDetail from "./pages/inscricoes/InscricaoDetail";
 import InscricaoPublic from "./pages/inscricoes/InscricaoPublic";
-import Parceiros from "./pages/Parceiros";
+import Embaixador from "./pages/Embaixador";
 import ReferralCapture from "./pages/ReferralCapture";
 import MeuNivel from "./pages/MeuNivel";
 import DashboardSidebar from "./components/DashboardSidebar";
@@ -123,7 +123,7 @@ const AppRoutes = () => {
       <Route path="/dashboard/oportunidades" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Oportunidades /></ProtectedRoute>} />
       <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
       <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
-      <Route path="/dashboard/parceiros" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Parceiros /></ProtectedRoute>} />
+      <Route path="/dashboard/embaixador" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Embaixador /></ProtectedRoute>} />
       <Route path="/dashboard/nivel" element={
         <ProtectedRoute requiredRoles={["photographer", "organizer"]}>
           <div className="flex min-h-screen bg-background">

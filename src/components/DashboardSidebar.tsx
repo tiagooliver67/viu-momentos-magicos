@@ -26,25 +26,12 @@ const DashboardSidebar = () => {
   const { user, hasRole } = useAuth();
   const baseItems = menuItemsBase.filter((m) => m.roles.some((r) => hasRole(r as any)));
 
-  // Programa de Parceiros só para Ouro+
-  const { data: lvl } = useQuery({
-    queryKey: ["sidebar-level", user?.id],
-    enabled: !!user?.id,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("photographer_levels" as any)
-        .select("current_level")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return (data as any)?.current_level as string | undefined;
-    },
-    staleTime: 60_000,
-  });
-  const ORDER: Record<string, number> = { bronze: 1, prata: 2, ouro: 3, diamante: 4, embaixador: 5 };
-  const showParceiros = lvl && (ORDER[lvl] ?? 0) >= 3;
-  const menuItems = showParceiros
-    ? [...baseItems.slice(0, 5), { label: "Parceiros", icon: Share2, path: "/dashboard/parceiros", roles: ["photographer", "organizer"] }, ...baseItems.slice(5)]
-    : baseItems;
+  // Programa Embaixador visível para todos (com estados diferentes)
+  const menuItems = [
+    ...baseItems.slice(0, 5),
+    { label: "Programa Embaixador", icon: Share2, path: "/dashboard/embaixador", roles: ["photographer", "organizer"] },
+    ...baseItems.slice(5)
+  ];
 
   /* ── real sidebar stats ── */
   const { data: sidebarStats } = useQuery({
