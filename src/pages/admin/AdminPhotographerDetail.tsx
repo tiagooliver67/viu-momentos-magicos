@@ -114,7 +114,7 @@ const AdminPhotographerDetail = () => {
     const { error } = await supabase.rpc("set_ambassador" as any, { _user_id: id, _enabled: enabled });
     setAmbSaving(false);
     if (error) return toast.error(error.message);
-    setPhotogLevel((p) => p ? { ...p, is_ambassador: enabled, current_level: enabled ? "embaixador" : p.current_level } : p);
+    setPhotogLevel((p) => p ? { ...p, is_ambassador: enabled } : p);
     toast.success(enabled ? "Embaixador ativado" : "Embaixador removido");
   };
 

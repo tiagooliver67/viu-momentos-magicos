@@ -37,8 +37,8 @@ export default function MeuNivel() {
           <div className="flex-1 min-w-0 w-full">
             <div className="flex items-center gap-3 flex-wrap mb-2">
               <LevelBadge level={level.current_level} size="lg" />
-              {level.is_ambassador && level.current_level !== "embaixador" && (
-                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-primary/10 text-primary">👑 Embaixador</span>
+              {level.is_ambassador && (
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">⭐ Embaixador</span>
               )}
             </div>
             {currentRule?.message && <p className="text-sm italic text-muted-foreground mb-4">"{currentRule.message}"</p>}
@@ -109,10 +109,7 @@ export default function MeuNivel() {
           <p className="text-xs text-muted-foreground">Toque para ver os benefícios</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {rules
-            .filter((r) => !r.manual_only)
-            .sort((a, b) => a.sort_order - b.sort_order)
-            .map((r) => {
+          {rules.sort((a, b) => a.sort_order - b.sort_order).map((r) => {
               const reached = currentOrder >= r.sort_order;
               const isOpen = openLevel === r.level;
               return (

@@ -9,7 +9,6 @@ const LEVEL_GRADIENTS: Record<LevelKey, string> = {
   prata: "from-slate-400 to-slate-200",
   ouro: "from-yellow-500 to-amber-300",
   diamante: "from-cyan-400 to-blue-500",
-  embaixador: "from-fuchsia-500 to-purple-600",
 };
 
 const LEVEL_ICON_COMPONENTS: Record<LevelKey, React.ElementType> = {
@@ -17,7 +16,6 @@ const LEVEL_ICON_COMPONENTS: Record<LevelKey, React.ElementType> = {
   prata: Medal,
   ouro: Trophy,
   diamante: Gem,
-  embaixador: Crown,
 };
 
 export default function PhotographerLevelSection({ userId }: Props) {

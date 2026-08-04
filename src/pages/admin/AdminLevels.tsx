@@ -152,14 +152,9 @@ export default function AdminLevels() {
             <div className="flex items-center gap-3">
               <span className="text-2xl">{LEVEL_ICONS[rule.level]}</span>
               <h3 className="font-bold text-lg">{LEVEL_LABELS[rule.level]}</h3>
-              {rule.manual_only && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-fuchsia-500/15 text-fuchsia-600 font-bold">
-                  Apenas manual
-                </span>
-              )}
             </div>
 
-            {!rule.manual_only && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Field
                   label="Mín. eventos elegíveis"
@@ -193,7 +188,7 @@ export default function AdminLevels() {
                   </select>
                 </div>
               </div>
-            )}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Field
@@ -211,7 +206,7 @@ export default function AdminLevels() {
               />
             </div>
 
-            {!rule.manual_only && (
+            <div className="flex gap-4">
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 text-sm">
                   <input
@@ -236,7 +231,7 @@ export default function AdminLevels() {
                   Documento validado
                 </label>
               </div>
-            )}
+            </div>
 
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Benefícios (um por linha)</label>
