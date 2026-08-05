@@ -561,8 +561,8 @@ const Configuracoes = () => {
                 <current.icon className="w-5 h-5" />
               </span>
               <div className="min-w-0">
-                <p className="caption font-semibold uppercase tracking-wide text-muted-foreground">Configurações</p>
-                <h1 className="h2 leading-tight truncate">{current.label}</h1>
+                <PageSubtitle className="font-semibold uppercase tracking-wide">Configurações</PageSubtitle>
+                <PageTitle className="truncate">{current.label}</PageTitle>
               </div>
             </div>
             <p className="body-small text-muted-foreground mt-2">{current.desc}</p>
