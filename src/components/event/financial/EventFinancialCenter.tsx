@@ -111,9 +111,9 @@ export const EventFinancialCenter = () => {
   }, [data]);
 
   const exportToCSV = () => {
-    if (!data?.orders.length) return;
+    if (!filteredOrders.length) return;
     const headers = ["ID", "Data", "Cliente", "Email", "Valor Bruto", "Comissão (10%)", "Líquido", "Status", "Método"];
-    const rows = data.orders.map(o => [
+    const rows = filteredOrders.map(o => [
       o.id,
       format(parseISO(o.created_at), "dd/MM/yyyy HH:mm"),
       o.client_name,
@@ -137,8 +137,8 @@ export const EventFinancialCenter = () => {
   };
 
   const exportToExcel = () => {
-    if (!data?.orders.length) return;
-    const ws = XLSX.utils.json_to_sheet(data.orders.map(o => ({
+    if (!filteredOrders.length) return;
+    const ws = XLSX.utils.json_to_sheet(filteredOrders.map(o => ({
       ID: o.id,
       Data: format(parseISO(o.created_at), "dd/MM/yyyy HH:mm"),
       Cliente: o.client_name,
@@ -156,14 +156,14 @@ export const EventFinancialCenter = () => {
   };
 
   const exportToPDF = () => {
-    if (!data?.orders.length) return;
+    if (!filteredOrders.length) return;
     const doc = new jsPDF();
     doc.text(`Relatório Financeiro - ${event?.name || "Evento"}`, 14, 15);
     
     autoTable(doc, {
       startY: 25,
       head: [["Data", "Cliente", "Valor Bruto", "Líquido", "Status"]],
-      body: data.orders.map(o => [
+      body: filteredOrders.map(o => [
         format(parseISO(o.created_at), "dd/MM/yy"),
         o.client_name,
         `R$ ${Number(o.amount).toFixed(2)}`,
