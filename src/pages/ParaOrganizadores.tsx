@@ -103,7 +103,7 @@ export default function ParaOrganizadores() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl font-black text-foreground tracking-tight leading-[1.05] mb-5"
+              className="display-title text-foreground tracking-tight leading-[1.05] mb-5"
             >
               Inscreva, organize e dê check-in
               <br className="hidden sm:block" />
@@ -113,7 +113,7 @@ export default function ParaOrganizadores() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-              className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-10"
+              className="body-large text-muted-foreground max-w-2xl mx-auto mb-10"
             >
               A ViuFoto agora é também sua plataforma de gestão de eventos esportivos:
               página pública de inscrição, recebimento via Pix, check-in mobile e
@@ -149,7 +149,7 @@ export default function ParaOrganizadores() {
               <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3">
                 Os 3 pilares
               </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
+              <h2 className="h2 text-foreground tracking-tight">
                 Tudo o que você precisa pra rodar sua prova
               </h2>
             </div>
@@ -168,8 +168,8 @@ export default function ParaOrganizadores() {
                     <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-5">
                       <Icon className="w-6 h-6 text-primary" strokeWidth={2.2} />
                     </div>
-                    <h3 className="text-xl font-bold text-foreground mb-2.5 tracking-tight">{p.title}</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">{p.description}</p>
+                    <h3 className="h3 text-foreground mb-2.5 tracking-tight">{p.title}</h3>
+                    <p className="body-base text-muted-foreground leading-relaxed">{p.description}</p>
                   </motion.div>
                 );
               })}
@@ -181,10 +181,10 @@ export default function ParaOrganizadores() {
         <section className="py-16 sm:py-20">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight mb-3">
+              <h2 className="h2 text-foreground tracking-tight mb-3">
                 Recursos pensados pra simplificar
               </h2>
-              <p className="text-base text-muted-foreground">
+              <p className="body-base text-muted-foreground">
                 Tudo o que você costumava juntar em planilhas, formulários e grupos de WhatsApp.
               </p>
             </div>
@@ -199,8 +199,8 @@ export default function ParaOrganizadores() {
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                       <Icon className="w-5 h-5 text-primary" />
                     </div>
-                    <h3 className="font-bold text-foreground mb-1.5">{f.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                    <h3 className="h4 text-foreground mb-1.5">{f.title}</h3>
+                    <p className="body-small text-muted-foreground leading-relaxed">{f.desc}</p>
                   </div>
                 );
               })}
@@ -215,7 +215,7 @@ export default function ParaOrganizadores() {
               <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3">
                 Como funciona
               </span>
-              <h2 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
+              <h2 className="h2 text-foreground tracking-tight">
                 Do zero ao check-in em 3 passos
               </h2>
             </div>
@@ -230,8 +230,8 @@ export default function ParaOrganizadores() {
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mt-2 mb-4">
                       <Icon className="w-6 h-6 text-primary" />
                     </div>
-                    <h3 className="text-lg font-bold text-foreground mb-1.5">{s.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+                    <h3 className="h4 text-foreground mb-1.5">{s.title}</h3>
+                    <p className="body-small text-muted-foreground leading-relaxed">{s.desc}</p>
                   </div>
                 );
               })}
@@ -250,10 +250,10 @@ export default function ParaOrganizadores() {
                 <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2">
                   Mais que inscrições
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight mb-2">
+                <h2 className="h3 text-foreground tracking-tight mb-2">
                   Entregue fotos profissionais aos atletas
                 </h2>
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                <p className="body-small text-muted-foreground leading-relaxed">
                   Conecte sua prova ao ecossistema de fotógrafos parceiros da ViuFoto e
                   ofereça cobertura oficial com busca facial, pagamento integrado e
                   entrega automática — sem custo adicional para o organizador.
@@ -267,7 +267,7 @@ export default function ParaOrganizadores() {
         <section className="py-16 sm:py-20 bg-muted/30">
           <div className="container mx-auto px-4 max-w-3xl">
             <div className="text-center mb-10">
-              <h2 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
+              <h2 className="h2 text-foreground tracking-tight">
                 Perguntas frequentes
               </h2>
             </div>
@@ -277,13 +277,13 @@ export default function ParaOrganizadores() {
                   key={f.q}
                   className="group rounded-xl border border-border bg-card p-5 open:shadow-sm"
                 >
-                  <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-semibold text-foreground">
+                  <summary className="cursor-pointer list-none flex items-center justify-between gap-4 h5 text-foreground">
                     {f.q}
                     <span className="text-primary transition-transform group-open:rotate-45 text-xl leading-none">
                       +
                     </span>
                   </summary>
-                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
+                  <p className="mt-3 body-small text-muted-foreground leading-relaxed">{f.a}</p>
                 </details>
               ))}
             </div>
@@ -293,10 +293,10 @@ export default function ParaOrganizadores() {
         {/* Final CTA */}
         <section className="py-20 sm:py-28">
           <div className="container mx-auto px-4 max-w-3xl text-center">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight mb-4">
+            <h2 className="h1 text-foreground tracking-tight mb-4">
               Comece em 2 minutos
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground mb-8">
+            <p className="body-large text-muted-foreground mb-8">
               Crie sua conta de organizador e publique seu primeiro evento hoje mesmo.
             </p>
             <Link

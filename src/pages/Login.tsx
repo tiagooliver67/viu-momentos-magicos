@@ -74,7 +74,7 @@ export default function Login() {
           {fromCheckout && (
             <div className="mb-4 p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-3">
               <ShoppingCart className="w-5 h-5 text-primary flex-shrink-0" />
-              <p className="text-sm text-foreground">
+              <p className="body-small text-foreground">
                 Para continuar com a compra, faça login ou{" "}
                 <Link to="/cadastro" state={{ from: redirectTo, fromCheckout: true }} className="text-primary font-semibold hover:underline">
                   crie sua conta
@@ -84,8 +84,8 @@ export default function Login() {
           )}
 
           <div className="bg-card border border-border rounded-2xl p-8">
-            <h1 className="text-2xl font-bold text-foreground mb-1">Faça login</h1>
-            <p className="text-muted-foreground text-sm mb-6">
+            <h1 className="h3 text-foreground mb-1">Faça login</h1>
+            <p className="body-small text-muted-foreground mb-6">
               Ainda não possui cadastro?{" "}
               <Link to="/cadastro" state={{ from: redirectTo, fromCheckout }} className="text-primary font-semibold hover:underline">Crie sua conta</Link>
             </p>
@@ -115,11 +115,11 @@ export default function Login() {
                 </button>
               </div>
 
-              <Link to="/recuperar-senha" className="block text-sm text-muted-foreground hover:text-foreground underline">
+              <Link to="/recuperar-senha" className="block body-small text-muted-foreground hover:text-foreground underline">
                 Esqueci minha senha
               </Link>
 
-              <Button type="submit" className="w-full h-12 text-base font-bold" disabled={loading}>
+              <Button type="submit" className="w-full h-12 text-base font-bold btn-height" disabled={loading}>
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : fromCheckout ? "Entrar e continuar compra" : "Entrar"}
               </Button>
             </form>

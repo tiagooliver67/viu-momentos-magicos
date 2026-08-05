@@ -57,10 +57,10 @@ const Blog = () => {
     >
       <section className="container mx-auto px-4 max-w-6xl py-10 md:py-14">
         <header className="mb-10 max-w-3xl">
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight text-neutral-900 mb-3">
+          <h1 className="h1 tracking-tight text-neutral-900 mb-3">
             Conteúdo que faz seu negócio crescer
           </h1>
-          <p className="text-neutral-600 text-base md:text-lg">
+          <p className="text-neutral-600 body-base">
             Dicas, estratégias e cases reais para fotógrafos que querem vender mais online.
           </p>
         </header>
@@ -98,11 +98,11 @@ const Blog = () => {
                       <span className="inline-flex w-fit px-2.5 py-1 rounded-full bg-[#673DE6]/10 text-[#673DE6] text-xs font-semibold tracking-wide uppercase mb-4">
                         {featured.category ?? "Geral"}
                       </span>
-                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-neutral-900 mb-3 group-hover:text-[#673DE6] transition-colors">
+                      <h2 className="h2 tracking-tight text-neutral-900 mb-3 group-hover:text-[#673DE6] transition-colors">
                         {featured.title}
                       </h2>
                       {featured.meta_description && (
-                        <p className="text-neutral-600 mb-5 line-clamp-3">{featured.meta_description}</p>
+                        <p className="body-base text-neutral-600 mb-5 line-clamp-3">{featured.meta_description}</p>
                       )}
                       <div className="flex items-center gap-4 text-xs text-neutral-500">
                         <span className="inline-flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {featured.published_at ? new Date(featured.published_at).toLocaleDateString("pt-BR") : ""}</span>
@@ -130,10 +130,10 @@ const Blog = () => {
                     <span className="text-xs font-semibold uppercase tracking-wide text-[#673DE6] mb-2">
                       {p.category ?? "Geral"}
                     </span>
-                    <h2 className="font-bold text-lg leading-snug mb-2 text-neutral-900 group-hover:text-[#673DE6] transition-colors line-clamp-2">
+                    <h2 className="h5 leading-snug mb-2 text-neutral-900 group-hover:text-[#673DE6] transition-colors line-clamp-2">
                       {p.title}
                     </h2>
-                    {p.meta_description && <p className="text-sm text-neutral-600 line-clamp-2 mb-3">{p.meta_description}</p>}
+                    {p.meta_description && <p className="body-small text-neutral-600 line-clamp-2 mb-3">{p.meta_description}</p>}
                     <div className="mt-auto flex items-center gap-4 text-xs text-neutral-500">
                       <span className="inline-flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {p.published_at ? new Date(p.published_at).toLocaleDateString("pt-BR") : ""}</span>
                       <span className="inline-flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {p.read_minutes ?? 5} min</span>

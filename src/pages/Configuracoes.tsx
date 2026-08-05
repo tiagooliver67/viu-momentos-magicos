@@ -303,8 +303,8 @@ const TabPortfolio = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Meu portfólio</h2>
-        <p className="text-sm text-muted-foreground">Selecione suas melhores fotos para exibir publicamente</p>
+        <h2 className="h3">Meu portfólio</h2>
+        <p className="body-small text-muted-foreground">Selecione suas melhores fotos para exibir publicamente</p>
       </div>
       <div className="flex gap-2 flex-wrap">
         {categories.map(cat => (
@@ -355,8 +355,8 @@ const TabExclusividade = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Exclusividade</h2>
-        <p className="text-sm text-muted-foreground">Defina se você atua exclusivamente com a VIUFOTO</p>
+        <h2 className="h3">Exclusividade</h2>
+        <p className="body-small text-muted-foreground">Defina se você atua exclusivamente com a VIUFOTO</p>
       </div>
       <div className="glass-card p-6">
         <div className="flex items-start gap-4">
@@ -560,11 +560,11 @@ const Configuracoes = () => {
                 <current.icon className="w-5 h-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Configurações</p>
-                <h1 className="text-xl sm:text-2xl font-bold leading-tight truncate">{current.label}</h1>
+                <p className="caption font-semibold uppercase tracking-wide text-muted-foreground">Configurações</p>
+                <h1 className="h2 leading-tight truncate">{current.label}</h1>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">{current.desc}</p>
+            <p className="body-small text-muted-foreground mt-2">{current.desc}</p>
           </header>
 
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">

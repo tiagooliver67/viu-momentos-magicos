@@ -149,23 +149,23 @@ const Overview = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Overview</h1>
-        <p className="text-muted-foreground text-sm">Visão geral da plataforma — dados reais</p>
+        <h1 className="h2">Overview</h1>
+        <p className="body-small text-muted-foreground">Visão geral da plataforma — dados reais</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {kpiCards.map((kpi) => (
           <div key={kpi.label} className="glass-card p-4 hover:border-primary/20 transition-all duration-300">
             <kpi.icon className={`w-5 h-5 ${kpi.color} mb-2`} />
-            <p className="text-xl font-bold">{kpi.value}</p>
-            <p className="text-xs text-muted-foreground">{kpi.label}</p>
+            <p className="h3">{kpi.value}</p>
+            <p className="caption text-muted-foreground">{kpi.label}</p>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 glass-card p-5">
-          <h3 className="font-semibold mb-4">Receita vs Comissão (últimos 6 meses)</h3>
+          <h3 className="h5 mb-4">Receita vs Comissão (últimos 6 meses)</h3>
           {monthlyData.some(m => m.receita > 0) ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -185,7 +185,7 @@ const Overview = () => {
         </div>
 
         <div className="glass-card p-5">
-          <h3 className="font-semibold mb-4">Eventos por Categoria</h3>
+          <h3 className="h5 mb-4">Eventos por Categoria</h3>
           {categoryData.length > 0 ? (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -204,7 +204,7 @@ const Overview = () => {
       </div>
 
       <div className="glass-card p-5">
-        <h3 className="font-semibold mb-4">🏆 Top Organizadores por Receita</h3>
+        <h3 className="h5 mb-4">🏆 Top Organizadores por Receita</h3>
         {topPhotographers.length > 0 ? (
           <div className="space-y-3">
             {topPhotographers.map((p, i) => (

@@ -265,7 +265,7 @@ const HeroSection = () => {
                 initial={{ opacity: 0, y: 18 }}
                 animate={mounted ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                className="text-base sm:text-lg text-muted-foreground max-w-md mb-8"
+                className="body-base text-muted-foreground max-w-md mb-8"
               >
                 Mostre seu rosto ou digite seu número de peito. Nossa inteligência
                 artificial encontra todas as suas fotos automaticamente e entrega em alta resolução.
@@ -312,7 +312,7 @@ const HeroSection = () => {
                         ? "Digite o nome do evento..."
                         : "Envie sua selfie..."
                     }
-                    className="flex-1 min-w-0 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-sm sm:text-base py-2.5 sm:py-3 px-2"
+                    className="flex-1 min-w-0 bg-transparent text-foreground placeholder:text-muted-foreground outline-none body-base py-2.5 sm:py-3 px-2"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -323,7 +323,7 @@ const HeroSection = () => {
                     Buscar
                   </button>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-3 ml-1 whitespace-pre-line">
+                <p className="caption text-muted-foreground mt-3 ml-1 whitespace-pre-line">
                   Grátis para buscar e visualizar - você só paga o que quiser baixar.{"\n"}
                   Não sabe o nome do evento?{" "}
                   <button
