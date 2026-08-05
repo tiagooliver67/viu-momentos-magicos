@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { OrdersModule } from "@/components/event/orders/OrdersModule";
+import { EventFinancialCenter } from "@/components/event/financial/EventFinancialCenter";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
