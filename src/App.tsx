@@ -74,6 +74,7 @@ import MeuNivel from "./pages/MeuNivel";
 import DashboardSidebar from "./components/DashboardSidebar";
 import BottomNav from "./components/BottomNav";
 import AdminLevels from "./pages/admin/AdminLevels";
+import AdminEmbaixador from "./pages/admin/AdminEmbaixador";
 import AdminParceiros from "./pages/admin/AdminParceiros";
 import AdminAntifraude from "./pages/admin/AdminAntifraude";
 import Sobre from "./pages/Sobre";
@@ -164,6 +165,7 @@ const AppRoutes = () => {
         <Route path="logs" element={<AdminLogs />} />
         <Route path="blog" element={<BlogAdm />} />
         <Route path="niveis" element={<AdminLevels />} />
+        <Route path="embaixador" element={<AdminEmbaixador />} />
         <Route path="parceiros" element={<AdminParceiros />} />
         <Route path="antifraude" element={<AdminAntifraude />} />
       </Route>

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { platformRevenue, monthsRemaining } from "@/lib/ambassador";
+import { platformRevenue, monthsRemainingFromExpiry } from "@/lib/ambassador";
 
 export type ReferralRow = {
   id: string;
@@ -46,7 +46,7 @@ export function useAmbassadorProgram(enabled: boolean) {
       const [refsRes, earnRes, payoutsRes] = await Promise.all([
         supabase
           .from("referrals")
-          .select("id, referred_id, status, created_at")
+          .select("id, referred_id, status, created_at, expires_at, commission_pct, is_paused")
           .eq("referrer_id", user!.id)
           .order("created_at", { ascending: false }),
         supabase
@@ -103,8 +103,8 @@ export function useAmbassadorProgram(enabled: boolean) {
         referredId: r.referred_id,
         name: names[r.referred_id] || "Fotógrafo",
         createdAt: r.created_at,
-        status: r.status || "pending",
-        monthsLeft: monthsRemaining(r.created_at),
+        status: r.is_paused ? "paused" : (r.status || "pending"),
+        monthsLeft: monthsRemainingFromExpiry(r.expires_at),
         grossSales: byReferred[r.referred_id]?.gross ?? 0,
         commission: byReferred[r.referred_id]?.commission ?? 0,
       }));
