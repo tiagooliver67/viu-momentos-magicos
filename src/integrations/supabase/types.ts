@@ -1008,6 +1008,7 @@ export type Database = {
           processing_error: string | null
           status: Database["public"]["Enums"]["video_processing_status"]
           thumbnail_url: string | null
+          visibility: string | null
           width: number | null
         }
         Insert: {
@@ -1029,6 +1030,7 @@ export type Database = {
           processing_error?: string | null
           status?: Database["public"]["Enums"]["video_processing_status"]
           thumbnail_url?: string | null
+          visibility?: string | null
           width?: number | null
         }
         Update: {
@@ -1050,6 +1052,7 @@ export type Database = {
           processing_error?: string | null
           status?: Database["public"]["Enums"]["video_processing_status"]
           thumbnail_url?: string | null
+          visibility?: string | null
           width?: number | null
         }
         Relationships: [
