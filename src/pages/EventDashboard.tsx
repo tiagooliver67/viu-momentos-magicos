@@ -448,9 +448,9 @@ const EventDashboard = () => {
               transition={{ duration: 0.3, delay: i * 0.06 }}
               className="rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md transition-all"
             >
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{k.label}</p>
-              <p className="text-2xl font-bold text-foreground tracking-tight">{k.value}</p>
-              <p className="text-[11px] text-muted-foreground mt-1.5 truncate">{k.sub}</p>
+              <p className="caption font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{k.label}</p>
+              <p className="h2 text-foreground tracking-tight">{k.value}</p>
+              <p className="caption text-muted-foreground mt-1.5 truncate">{k.sub}</p>
             </motion.div>
           ))}
         </div>
@@ -477,7 +477,7 @@ const EventDashboard = () => {
         {/* Coupons List */}
         {coupons.length > 0 && (
           <div className="glass-card p-4 mb-6">
-            <h3 className="text-sm font-bold text-foreground mb-3">CUPONS ATIVOS</h3>
+            <h3 className="caption font-bold text-foreground mb-3">CUPONS ATIVOS</h3>
             <div className="space-y-2">
               {coupons.map(c => (
                 <div key={c.id} className="flex items-center justify-between bg-secondary/30 rounded-lg px-3 py-2">
@@ -515,7 +515,7 @@ const EventDashboard = () => {
           return (
             <div className="rounded-2xl bg-card border border-border shadow-sm p-6 mb-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-bold text-foreground">Progresso do Evento</h3>
+                <h3 className="h5 text-foreground">Progresso do Evento</h3>
                 <span className="text-xs text-muted-foreground font-medium">{doneCount} de {steps.length}</span>
               </div>
               <div className="relative flex items-start justify-between">

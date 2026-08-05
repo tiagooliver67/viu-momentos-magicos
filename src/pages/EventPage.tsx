@@ -551,7 +551,7 @@ const EventPage = () => {
         <Navbar />
         <div className="flex items-center justify-center min-h-screen text-center">
           <div>
-            <h1 className="text-2xl font-bold mb-2">Evento não encontrado</h1>
+            <h1 className="h3 mb-2">Evento não encontrado</h1>
             <Link to="/" className="text-primary hover:underline">Voltar</Link>
           </div>
         </div>
