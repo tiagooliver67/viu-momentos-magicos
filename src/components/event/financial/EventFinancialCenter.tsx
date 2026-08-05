@@ -183,6 +183,8 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
     }
 
     if (!data?.orders || data.orders.length === 0) {
+      if (!open) return null;
+      
       return (
         <div className="flex flex-col items-center justify-center py-24 px-4 text-center min-h-[400px]">
           <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-500">
