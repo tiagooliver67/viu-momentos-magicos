@@ -115,6 +115,7 @@ const EventDashboard = () => {
   const [showOrders, setShowOrders] = useState(false);
   const [showFinancial, setShowFinancial] = useState(false);
   const [showPhotoManager, setShowPhotoManager] = useState(false);
+  const [showVideoManager, setShowVideoManager] = useState(false);
   const { profile } = useAuth();
 
   const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
