@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { OrdersModule } from "@/components/event/orders/OrdersModule";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
@@ -33,6 +34,8 @@ import {
 import { motion } from "framer-motion";
 import { shareBaseUrl } from "@/lib/shareUrl";
 import { PageTitle, PageSubtitle, SectionTitle, CardTitle, Caption } from "@/components/ui/Typography";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+
 
 const quickActions = [
   { label: "Editar", icon: Edit, key: "edit" },
@@ -106,6 +109,7 @@ const EventDashboard = () => {
   const [showPromo, setShowPromo] = useState(false);
   const [showCollab, setShowCollab] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
   const { profile } = useAuth();
 
   const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
@@ -129,7 +133,7 @@ const EventDashboard = () => {
   const handleAction = (key: string) => {
     switch (key) {
       case "edit": setShowEdit(true); break;
-      case "orders": navigate(`/dashboard/pedidos`); break;
+      case "orders": setShowOrders(true); break;
       case "financial": navigate(`/dashboard/configuracoes?tab=carteira`); break;
       case "upload-photos": setShowGallery(true); break;
       case "upload-videos": setShowVideoGallery(true); break;
@@ -377,14 +381,59 @@ const EventDashboard = () => {
                 <span className="text-foreground font-semibold">R$ {grid?.video_price?.toFixed(2).replace(".", ",") || "—"}</span>
               </div>
             </div>
-            <div
-              onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}
-              className="mt-4 pt-3 border-t border-border/70 flex items-center justify-between text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-            >
-              <span>Pacotes e Descontos</span>
-              <ChevronRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}
+            className="text-left rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <Tag className="w-4 h-4 text-emerald-600" />
+                </div>
+                <Caption className="font-bold uppercase tracking-widest">Descontos</Caption>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Pacotes ativos</span>
+                <span className="text-foreground font-semibold">{packages.filter(p => p.active).length}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Cupons ativos</span>
+                <span className="text-foreground font-semibold">{coupons.filter(c => c.active).length}</span>
+              </div>
             </div>
           </button>
+
+          <button
+            onClick={() => setShowOrders(true)}
+            className="text-left rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                  <ShoppingCart className="w-4 h-4 text-orange-600" />
+                </div>
+                <Caption className="font-bold uppercase tracking-widest">Vendas do Evento</Caption>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Total vendas</span>
+                <span className="text-foreground font-semibold">R$ {totalRevenue.toFixed(2).replace(".", ",")}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Pedidos pagos</span>
+                <span className="text-foreground font-semibold">{paidOrders.length}</span>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
           <button
             type="button"
@@ -711,6 +760,13 @@ const EventDashboard = () => {
           </div>
         )}
       </main>
+      <Dialog open={showOrders} onOpenChange={setShowOrders}>
+        <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col p-0">
+          <div className="p-6 overflow-y-auto flex-1">
+            <OrdersModule />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
