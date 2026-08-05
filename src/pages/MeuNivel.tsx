@@ -7,6 +7,7 @@ import { Loader2, Check, ChevronDown, Lock, Star, Trophy, Shield, Info } from "l
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PageTitle, PageSubtitle, SectionTitle, CardTitle } from "@/components/ui/Typography";
 
 export default function MeuNivel() {
   const { level, rules, achievements, specialties, reputation, isLoading } = usePhotographerLevel();
@@ -37,8 +38,8 @@ export default function MeuNivel() {
   return (
     <div className="space-y-6 max-w-6xl">
       <div>
-        <h2 className="text-2xl font-bold text-foreground">Nível & Conquistas</h2>
-        <p className="text-sm text-muted-foreground mt-1">Sua jornada profissional na Viu Foto</p>
+        <PageTitle>Nível & Conquistas</PageTitle>
+        <PageSubtitle className="mt-1">Sua jornada profissional na Viu Foto</PageSubtitle>
       </div>
 
       {/* 1. Minha Reputação & Nível Atual */}

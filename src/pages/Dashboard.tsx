@@ -17,6 +17,7 @@ import {
   Pagination, PaginationContent, PaginationItem, PaginationLink,
   PaginationPrevious, PaginationNext, PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { PageTitle, PageSubtitle, SectionTitle, CardTitle, Caption } from "@/components/ui/Typography";
 
 /* ── animated counter ── */
 function AnimatedNumber({ value, prefix = "", duration = 1200 }: { value: number; prefix?: string; duration?: number }) {

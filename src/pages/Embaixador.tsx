@@ -17,6 +17,7 @@ import { useAmbassadorProgram, useAmbassadorReferralCode } from "@/hooks/useAmba
 import {
   AMBASSADOR_PCT, COMMISSION_MONTHS, PLATFORM_FEE_PCT, ambassadorShare, platformRevenue,
 } from "@/lib/ambassador";
+import { PageTitle, PageSubtitle, SectionTitle, CardTitle } from "@/components/ui/Typography";
 
 const STEPS = [
   {
@@ -94,10 +95,10 @@ export default function Embaixador() {
       <main className="flex-1 p-4 pt-24 lg:p-8 overflow-auto max-w-6xl mx-auto w-full">
         <div className="space-y-10 pb-16">
           <div className="mb-12">
-            <h1 className="h1 mb-3">Programa Embaixador</h1>
-            <p className="body-large text-muted-foreground max-w-2xl">
+            <PageTitle>Programa Embaixador</PageTitle>
+            <PageSubtitle className="mt-3 max-w-2xl text-lg">
               Indique novos fotógrafos para a ViuFoto e receba 1% de toda a receita líquida gerada por eles. Para sempre.
-            </p>
+            </PageSubtitle>
           </div>
           {/* Hero antigo removido ou adaptado conforme nova estrutura */}
           <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 md:p-10">

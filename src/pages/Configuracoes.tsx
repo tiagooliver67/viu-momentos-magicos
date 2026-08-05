@@ -10,6 +10,7 @@ import TabMarcaDagua from "@/components/settings/TabMarcaDagua";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PageTitle, PageSubtitle, SectionTitle, CardTitle } from "@/components/ui/Typography";
 
 const settingsTabs = [
   { id: "conta", label: "Minha conta", short: "Conta", desc: "Dados pessoais e acesso", icon: User },

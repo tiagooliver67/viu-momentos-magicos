@@ -11,6 +11,7 @@ import DesempenhoChart from "@/components/financeiro/DesempenhoChart";
 import EstimativaGanhos from "@/components/financeiro/EstimativaGanhos";
 import FaturamentoTable from "@/components/financeiro/FaturamentoTable";
 import PedidosTab from "@/components/financeiro/PedidosTab";
+import { PageTitle, PageSubtitle } from "@/components/ui/Typography";
 
 type SubTab = "Caixa" | "Pedidos" | "Fiscal";
 
