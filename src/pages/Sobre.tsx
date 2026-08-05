@@ -347,10 +347,10 @@ const Sobre = () => {
                   key={s.label}
                   className="bg-card border border-border rounded-2xl p-7 text-center shadow-sm"
                 >
-                  <div className="text-4xl sm:text-5xl font-black text-primary tracking-tight">
+                  <div className="h1 text-primary">
                     {fmt(s.value)}
                   </div>
-                  <div className="mt-2 text-sm font-medium text-muted-foreground">{s.label}</div>
+                  <div className="mt-2 caption text-muted-foreground">{s.label}</div>
                 </div>
               ))}
             </div>
