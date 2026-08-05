@@ -806,6 +806,21 @@ const EventDashboard = () => {
         }}
         eventId={id || ""}
       />
+
+      <VideoManager
+        open={showVideoManager}
+        onClose={() => setShowVideoManager(false)}
+        videos={videos.map(v => ({
+          ...v,
+          visibility: (v as any).visibility || "public",
+          sales_count: (v as any).sales_count || 0,
+          downloads_count: (v as any).downloads_count || 0,
+          price: (v as any).price || 0
+        })) as any}
+        onDelete={(videoId) => deleteVideo.mutate(videoId)}
+        onUpdateStatus={(ids, status) => updateVideoStatus.mutate({ ids, visibility: status })}
+        eventId={id || ""}
+      />
     </div>
   );
 };
