@@ -2,10 +2,10 @@ import { Settings, Palette } from "lucide-react";
 
 const AdminSettings = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-24 lg:pt-0">
       <div>
-        <h1 className="text-2xl font-bold">Configurações Globais</h1>
-        <p className="text-sm text-muted-foreground">Configurações da plataforma</p>
+        <h1 className="h1">Configurações Globais</h1>
+        <p className="body-base text-muted-foreground">Gerencie as regras globais e parâmetros da plataforma.</p>
       </div>
 
       {/* White-label */}

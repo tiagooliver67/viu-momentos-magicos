@@ -91,9 +91,15 @@ export default function Embaixador() {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto max-w-6xl mx-auto w-full">
+      <main className="flex-1 p-4 pt-24 lg:p-8 overflow-auto max-w-6xl mx-auto w-full">
         <div className="space-y-10 pb-16">
-          {/* Hero */}
+          <div className="mb-12">
+            <h1 className="h1 mb-3">Programa Embaixador</h1>
+            <p className="body-large text-muted-foreground max-w-2xl">
+              Indique novos fotógrafos para a ViuFoto e receba 1% de toda a receita líquida gerada por eles. Para sempre.
+            </p>
+          </div>
+          {/* Hero antigo removido ou adaptado conforme nova estrutura */}
           <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 md:p-10">
             <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary/10 blur-3xl" aria-hidden />
             <div className="relative space-y-4">

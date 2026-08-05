@@ -205,7 +205,7 @@ const Ajuda = () => {
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold mb-4">Como podemos ajudar?</h2>
+              <h2 className="h3 mb-4">Como podemos ajudar?</h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 {categories.map((c) => (
                   <button
