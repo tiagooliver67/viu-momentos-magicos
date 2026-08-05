@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Search, Download, FileText, ChevronDown, 
   Filter, MoreVertical, CreditCard, 
-  Pix, ShoppingBag, Eye, RefreshCw, 
+  ShoppingBag, Eye, RefreshCw, 
   Send, ExternalLink, Trash2, Calendar
 } from "lucide-react";
 import { 
