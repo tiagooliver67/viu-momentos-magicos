@@ -52,6 +52,20 @@ export function VideoManager({ open, onClose, videos, onDelete, onUpdateStatus, 
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const itemsPerPage = 24;
 
+  // Sign URLs for visible thumbnails
+  useEffect(() => {
+    if (!open) return;
+    const thumbPaths = paginatedVideos
+      .map(v => v.thumbnail_url)
+      .filter((p): p is string => !!p && isStoragePath(p) && !signedUrls[p]);
+    
+    if (thumbPaths.length > 0 && !IS_LAMBDA_PIPELINE_ACTIVE) {
+      getSignedReadUrls(thumbPaths).then(urls => {
+        setSignedUrls(prev => ({ ...prev, ...urls }));
+      });
+    }
+  }, [open, paginatedVideos, signedUrls]);
+
   // Stats
   const stats = useMemo(() => {
     return {
