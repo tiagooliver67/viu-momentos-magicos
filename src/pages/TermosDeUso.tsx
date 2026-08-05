@@ -170,7 +170,7 @@ export default function TermosDeUso() {
         <Section title="12. Programa de Embaixadores">
           <p>O Programa de Embaixadores da ViuFoto possui regras específicas de participação, validade de indicação e políticas antifraude.</p>
           <ul>
-            <li>A comissão de 1% sobre a receita líquida é válida por 12 meses por indicação.</li>
+            <li>A comissão sobre a receita líquida é válida pelo período definido na política atual do programa por indicação.</li>
             <li>Indicações só são válidas para novos usuários sem histórico prévio na plataforma.</li>
             <li>A ViuFoto reserva-se o direito de auditar e cancelar comissões em caso de fraude.</li>
             <li>A política completa e atualizada está disponível na Central de Ajuda e no Painel do Embaixador.</li>

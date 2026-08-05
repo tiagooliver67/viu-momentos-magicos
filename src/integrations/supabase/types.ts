@@ -2025,6 +2025,33 @@ export type Database = {
         }
         Relationships: []
       }
+      photographer_reputation: {
+        Row: {
+          rating_avg: number | null
+          response_rate: number | null
+          score: number | null
+          total_reviews: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          rating_avg?: number | null
+          response_rate?: number | null
+          score?: number | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          rating_avg?: number | null
+          response_rate?: number | null
+          score?: number | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       photographer_sites: {
         Row: {
           ai_bio: string | null
@@ -2141,6 +2168,50 @@ export type Database = {
           youtube?: string | null
         }
         Relationships: []
+      }
+      photographer_specialties: {
+        Row: {
+          events_count: number | null
+          id: string
+          level: string | null
+          photos_sold_count: number | null
+          specialty_id: string
+          unique_clients_count: number | null
+          unlocked_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          events_count?: number | null
+          id?: string
+          level?: string | null
+          photos_sold_count?: number | null
+          specialty_id: string
+          unique_clients_count?: number | null
+          unlocked_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          events_count?: number | null
+          id?: string
+          level?: string | null
+          photos_sold_count?: number | null
+          specialty_id?: string
+          unique_clients_count?: number | null
+          unlocked_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photographer_specialties_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       portfolio_categories: {
         Row: {
@@ -2759,6 +2830,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      specialties: {
+        Row: {
+          code: string
+          created_at: string | null
+          icon: string
+          id: string
+          min_events: number
+          min_photos_sold: number
+          min_unique_clients: number
+          sort_order: number | null
+          title: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          icon: string
+          id?: string
+          min_events?: number
+          min_photos_sold?: number
+          min_unique_clients?: number
+          sort_order?: number | null
+          title: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          icon?: string
+          id?: string
+          min_events?: number
+          min_photos_sold?: number
+          min_unique_clients?: number
+          sort_order?: number | null
+          title?: string
+        }
+        Relationships: []
       }
       support_tickets: {
         Row: {

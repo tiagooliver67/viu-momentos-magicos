@@ -50,7 +50,7 @@ export const LEVEL_COLORS: Record<LevelKey, string> = {
 };
 
 export function getNextRule(rules: LevelRule[], current: LevelKey): LevelRule | null {
-  const sorted = [...rules].filter((r) => !r.manual_only).sort((a, b) => a.sort_order - b.sort_order);
+  const sorted = [...rules].filter((r) => !r.manual_only && r.level !== ("embaixador" as any)).sort((a, b) => a.sort_order - b.sort_order);
   const currentOrder = sorted.find((r) => r.level === current)?.sort_order ?? 1;
   return sorted.find((r) => r.sort_order > currentOrder) ?? null;
 }

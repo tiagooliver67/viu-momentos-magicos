@@ -1,6 +1,6 @@
 import { usePhotographerLevel } from "@/hooks/usePhotographerLevel";
 import { LEVEL_LABELS, type LevelKey } from "@/lib/levels";
-import { Trophy, Medal, Sparkles, Crown, Gem, Award } from "lucide-react";
+import { Trophy, Medal, Sparkles, Crown, Gem, Award, Star, Shield } from "lucide-react";
 
 interface Props { userId: string | undefined }
 
@@ -19,7 +19,7 @@ const LEVEL_ICON_COMPONENTS: Record<LevelKey, React.ElementType> = {
 };
 
 export default function PhotographerLevelSection({ userId }: Props) {
-  const { level, rules, achievements, isLoading } = usePhotographerLevel(userId);
+  const { level, rules, achievements, specialties, reputation, isLoading } = usePhotographerLevel(userId);
   if (!userId || isLoading || !level) return null;
 
   const unlocked = achievements.filter((a) => a.unlocked);
@@ -27,80 +27,92 @@ export default function PhotographerLevelSection({ userId }: Props) {
   // Hide section when nothing meaningful to show
   if (level.current_level === "bronze" && unlocked.length === 0 && !level.is_ambassador) return null;
 
-  const visible = unlocked.slice(0, 4);
-  const remaining = unlocked.length - visible.length;
+  const unlockedSpecialties = specialties.filter(s => s.unlocked_at !== null);
   const LevelIcon = LEVEL_ICON_COMPONENTS[level.current_level];
 
   return (
     <section className="container mx-auto px-4 py-6">
-      <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-[var(--shadow)]">
-        <div className="flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
-          {/* Level badge / credibility stamp */}
-          <div className="flex items-center gap-4 min-w-0">
-            <div
-              className={`flex-shrink-0 w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-br ${LEVEL_GRADIENTS[level.current_level]} flex items-center justify-center text-white shadow-md`}
-            >
-              <LevelIcon className="w-7 h-7 sm:w-8 sm:h-8" strokeWidth={1.75} />
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-[var(--shadow)]">
+          <div className="flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
+            {/* 1. Reputation Index (New Focus) */}
+            <div className="flex items-center gap-4 min-w-[180px]">
+              <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-primary/5 border border-primary/10 flex flex-col items-center justify-center">
+                <span className="text-2xl font-black text-foreground leading-none">{reputation?.score || 0}</span>
+                <span className="text-[9px] font-bold text-muted-foreground uppercase mt-1">Reputação</span>
+              </div>
+              <div className="min-w-0">
+                <div className="flex mb-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-3 h-3 ${star <= Math.round(reputation?.rating_avg || 0) ? "text-yellow-400 fill-yellow-400" : "text-muted"}`}
+                    />
+                  ))}
+                </div>
+                <h4 className="text-xs font-bold text-foreground">Credibilidade ViuFoto</h4>
+                <p className="text-[10px] text-muted-foreground">Baseada em vendas e avaliações</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Nível na Viu Foto
-                </span>
-                {level.is_ambassador && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                    <Sparkles className="w-3 h-3" /> Embaixador
-                  </span>
+
+            <div className="hidden md:block w-px h-12 bg-border" />
+
+            {/* 2. Level & Ambassador Status */}
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div
+                className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${LEVEL_GRADIENTS[level.current_level]} flex items-center justify-center text-white shadow-sm`}
+              >
+                <LevelIcon className="w-6 h-6" strokeWidth={2} />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-foreground truncate">
+                    Nível {LEVEL_LABELS[level.current_level]}
+                  </h3>
+                  {level.is_ambassador && (
+                    <span className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                      ⭐ EMBAIXADOR
+                    </span>
+                  )}
+                </div>
+                {currentRule?.message && (
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 italic">
+                    "{currentRule.message}"
+                  </p>
                 )}
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-foreground truncate">
-                {LEVEL_LABELS[level.current_level]}
-              </h3>
-              {currentRule?.message && (
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                  {currentRule.message}
-                </p>
-              )}
             </div>
-          </div>
 
-          {/* Divider on desktop */}
-          <div className="hidden md:block w-px h-12 bg-border" />
+            <div className="hidden md:block w-px h-12 bg-border" />
 
-          {/* Achievements compact strip */}
-          {unlocked.length > 0 ? (
+            {/* 3. Specialized Expertise (Conquered Specialties) */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <Medal className="w-4 h-4 text-primary" />
-                <span className="text-xs font-semibold text-foreground">
-                  {unlocked.length} {unlocked.length === 1 ? "conquista" : "conquistas"} desbloqueada
-                  {unlocked.length === 1 ? "" : "s"}
+                <Shield className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Especialidades Reconhecidas
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
-                {visible.map((a) => (
-                  <div
-                    key={a.id}
-                    className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-foreground text-xs font-medium"
-                    title={a.description ?? undefined}
-                  >
-                    <span className="text-base leading-none">{a.icon || "🏅"}</span>
-                    <span className="truncate max-w-[140px]">{a.title}</span>
-                  </div>
-                ))}
-                {remaining > 0 && (
-                  <div className="inline-flex items-center justify-center w-8 h-7 rounded-full bg-secondary text-muted-foreground text-xs font-semibold">
-                    +{remaining}
-                  </div>
+                {unlockedSpecialties.length > 0 ? (
+                  unlockedSpecialties.slice(0, 3).map((s) => (
+                    <div
+                      key={s.id}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/20 bg-primary/5 text-foreground text-[10px] font-bold"
+                    >
+                      <span>{s.icon}</span>
+                      <span>{s.title}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">Em evolução...</span>
+                )}
+                {unlockedSpecialties.length > 3 && (
+                  <span className="text-[10px] font-bold text-muted-foreground">+{unlockedSpecialties.length - 3}</span>
                 )}
               </div>
             </div>
-          ) : (
-            <div className="flex-1 flex items-center gap-2 text-muted-foreground text-sm">
-              <Trophy className="w-4 h-4" />
-              <span>Em breve novas conquistas por aqui.</span>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </section>
