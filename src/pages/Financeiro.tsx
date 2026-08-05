@@ -200,7 +200,7 @@ const Financeiro = () => {
                 {activeTab === "Pedidos" ? "Acompanhe e reenvie pedidos aos seus clientes." :
                  activeTab === "Fiscal" ? "Notas fiscais e relatórios contábeis." :
                  "Acompanhe seu saldo, vendas e saques em um só lugar."}
-              </p>
+              </PageSubtitle>
             </div>
             <div className="flex items-center gap-2">
               <button
