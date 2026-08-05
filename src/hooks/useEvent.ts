@@ -260,3 +260,39 @@ export function useDiscountPackages(eventId: string | undefined) {
 
   return { packages: packagesQuery.data || [], isLoading: packagesQuery.isLoading, savePackage, deletePackage };
 }
+
+export function useEventFinancials(eventId: string | undefined) {
+  return useQuery({
+    queryKey: ["event-financials", eventId],
+    queryFn: async () => {
+      if (!eventId) throw new Error("No event ID");
+      
+      // Fetch orders with items
+      const { data: orders, error: ordersError } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          items:order_items(
+            *,
+            event_photos(id),
+            event_videos(id)
+          )
+        `)
+        .eq("event_id", eventId)
+        .order("created_at", { ascending: false });
+
+      if (ordersError) throw ordersError;
+
+      // Fetch event coupons usage
+      const { data: coupons, error: couponsError } = await supabase
+        .from("event_coupons")
+        .select("*")
+        .eq("event_id", eventId);
+
+      if (couponsError) throw couponsError;
+
+      return { orders, coupons };
+    },
+    enabled: !!eventId,
+  });
+}
