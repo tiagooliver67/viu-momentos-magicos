@@ -380,7 +380,7 @@ const EventDashboard = () => {
               </div>
             </div>
           </button>
-
+          <button
             onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}
             className="text-left rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all"
           >
