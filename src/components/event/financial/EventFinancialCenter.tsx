@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useEvent, useEventFinancials } from "@/hooks/useEvent";
 import { 
@@ -14,6 +14,7 @@ import {
 import { format, subDays, startOfDay, isWithinInterval, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -28,10 +29,17 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-export const EventFinancialCenter = () => {
-  const { id } = useParams();
-  const { event } = useEvent(id);
-  const { data, isLoading } = useEventFinancials(id);
+interface EventFinancialCenterProps {
+  open?: boolean;
+  onClose?: () => void;
+  eventId?: string;
+}
+
+export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: EventFinancialCenterProps) => {
+  const { id: urlEventId } = useParams();
+  const eventId = propEventId || urlEventId;
+  const { event } = useEvent(eventId);
+  const { data, isLoading } = useEventFinancials(eventId);
   const [search, setSearch] = useState("");
   const [periodFilter, setPeriodFilter] = useState("30d");
   const [statusFilter, setStatusFilter] = useState("todos");
