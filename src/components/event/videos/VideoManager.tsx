@@ -1,15 +1,16 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
   X, Search, Trash2, Eye, Download, Info, FileText, 
   CheckCircle2, AlertCircle, Loader2, ChevronLeft, 
   ChevronRight, ChevronsLeft, ChevronsRight, Film,
-  EyeOff, Globe, Play, Copy, ExternalLink, Edit
+  EyeOff, Globe, Play, Copy, ExternalLink, Edit, MoreVertical
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
-import { IS_LAMBDA_PIPELINE_ACTIVE, getVideoDerivativeCdnUrl } from "@/lib/cdnConfig";
+import { IS_LAMBDA_PIPELINE_ACTIVE, getVideoDerivativeCdnUrl, isStoragePath } from "@/lib/cdnConfig";
 import { PageSubtitle, Caption } from "@/components/ui/Typography";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export interface EventVideo {
   id: string;
