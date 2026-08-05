@@ -49,12 +49,12 @@ export function useFolderMonitor(options: {
 
   const startMonitoring = async () => {
     try {
-      if (!("showDirectoryPicker" in window)) {
+      if (!(window as any).showDirectoryPicker) {
         toast.error("Seu navegador não suporta acesso a pastas locais. Use Chrome, Edge ou Opera.");
         return;
       }
 
-      const handle = await window.showDirectoryPicker({
+      const handle = await (window as any).showDirectoryPicker({
         mode: "read",
       });
       
