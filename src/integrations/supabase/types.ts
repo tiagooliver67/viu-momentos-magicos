@@ -115,6 +115,77 @@ export type Database = {
         }
         Relationships: []
       }
+      ambassador_audit_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string | null
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          referral_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          referral_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          referral_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ambassador_audit_logs_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ambassador_settings: {
+        Row: {
+          default_commission_pct: number
+          default_duration_months: number
+          id: string
+          is_active: boolean
+          min_payout_amount: number
+          payout_cooldown_days: number
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          default_commission_pct?: number
+          default_duration_months?: number
+          id?: string
+          is_active?: boolean
+          min_payout_amount?: number
+          payout_cooldown_days?: number
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          default_commission_pct?: number
+          default_duration_months?: number
+          id?: string
+          is_active?: boolean
+          min_payout_amount?: number
+          payout_cooldown_days?: number
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       bib_detection_errors: {
         Row: {
           created_at: string
@@ -2551,28 +2622,43 @@ export type Database = {
         Row: {
           activated_at: string | null
           code: string
+          commission_pct: number | null
           created_at: string
+          expires_at: string | null
           id: string
+          is_paused: boolean | null
+          notes: string | null
           referred_id: string
           referrer_id: string
+          starts_at: string | null
           status: string
         }
         Insert: {
           activated_at?: string | null
           code: string
+          commission_pct?: number | null
           created_at?: string
+          expires_at?: string | null
           id?: string
+          is_paused?: boolean | null
+          notes?: string | null
           referred_id: string
           referrer_id: string
+          starts_at?: string | null
           status?: string
         }
         Update: {
           activated_at?: string | null
           code?: string
+          commission_pct?: number | null
           created_at?: string
+          expires_at?: string | null
           id?: string
+          is_paused?: boolean | null
+          notes?: string | null
           referred_id?: string
           referrer_id?: string
+          starts_at?: string | null
           status?: string
         }
         Relationships: []
@@ -3396,6 +3482,10 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      get_referral_active_commission: {
+        Args: { _referral_id: string }
+        Returns: number
       }
       get_registration_availability: {
         Args: { _event_id: string }
