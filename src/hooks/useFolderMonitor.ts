@@ -49,6 +49,17 @@ export function useFolderMonitor(options: {
 
   const startMonitoring = async () => {
     try {
+      // Proteção defensiva contra execução dentro de iframes (como o preview da Lovable)
+      // O navegador bloqueia showDirectoryPicker em sub-frames de origens diferentes.
+      const isIframe = window.top !== window.self;
+      
+      if (isIframe) {
+        toast.error("Não é possível monitorar uma pasta dentro do modo de pré-visualização. Abra o site publicado (fora do editor) para usar essa função.", {
+          duration: 6000
+        });
+        return;
+      }
+
       if (!(window as any).showDirectoryPicker) {
         toast.error("Seu navegador não suporta acesso a pastas locais. Use Chrome, Edge ou Opera.");
         return;
@@ -64,14 +75,12 @@ export function useFolderMonitor(options: {
       setErrorLog([]);
       
       toast.success("Monitoramento de pasta iniciado!");
-      
-      // Primeira verificação imediata para ignorar o que já está lá ou subir se o usuário preferir
-      // (O requisito diz "conforme novos arquivos são exportados", então idealmente monitoramos mudanças)
-      // Mas para uma experiência fluida, processamos o estado atual como "inicial".
       await checkNewFiles(handle);
 
     } catch (err: any) {
-      if (err.name !== "AbortError") {
+      if (err.name === "SecurityError" || err.message?.includes("Cross origin sub frames")) {
+        toast.error("Acesso bloqueado pelo navegador: Não é possível monitorar pastas dentro de pré-visualizações. Por favor, use o site publicado.");
+      } else if (err.name !== "AbortError") {
         toast.error("Erro ao selecionar pasta: " + err.message);
       }
     }
