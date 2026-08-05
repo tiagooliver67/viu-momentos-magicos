@@ -28,6 +28,7 @@ export default function PhotographerLevelSection({ userId }: Props) {
   if (level.current_level === "bronze" && unlocked.length === 0 && !level.is_ambassador) return null;
 
   const unlockedSpecialties = specialties.filter(s => s.unlocked_at !== null);
+  const LevelIcon = LEVEL_ICON_COMPONENTS[level.current_level];
 
   return (
     <section className="container mx-auto px-4 py-6">
