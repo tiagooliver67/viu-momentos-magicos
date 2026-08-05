@@ -185,8 +185,8 @@ const Ajuda = () => {
                   <selected.icon className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{selected.name}</h2>
-                  <p className="text-sm text-muted-foreground">{selected.description}</p>
+                  <h2 className="h2">{selected.name}</h2>
+                  <p className="body-small text-muted-foreground">{selected.description}</p>
                 </div>
               </div>
               <Accordion type="single" collapsible className="space-y-2">
