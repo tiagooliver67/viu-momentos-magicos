@@ -278,7 +278,7 @@ const EventDashboard = () => {
               />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10" />
-            <div className="absolute top-4 right-4 z-10">
+            <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
               <StatusDropdown
                 status={event.status}
                 publishAt={(event as any).publish_at}
