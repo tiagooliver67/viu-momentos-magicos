@@ -440,12 +440,31 @@ export const EventFinancialCenter = () => {
 
       {/* Transaction History Table */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <SectionTitle className="text-lg">Histórico Financeiro</SectionTitle>
-          <div className="flex items-center gap-2">
-             <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase tracking-widest gap-2">
-               <Filter className="w-3 h-3" /> Filtrar
-             </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input 
+                placeholder="Buscar por cliente ou ID..." 
+                className="pl-9 h-9 rounded-xl text-xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9 rounded-xl text-[10px] font-bold uppercase tracking-widest gap-2">
+                  <Filter className="w-3.5 h-3.5" /> {statusFilter === "todos" ? "Status" : statusFilter}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setStatusFilter("todos")}>Todos</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("pago")}>Pago</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("aguardando_pagamento")}>Aguardando</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setStatusFilter("cancelado")}>Cancelado</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
