@@ -211,10 +211,10 @@ const Dashboard = () => {
         {/* ── HEADER ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
+            <h1 className="h2 text-foreground">
               Bem-vindo de volta, {firstName} 👋
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="body-small text-muted-foreground mt-1">
               Aqui está o resumo do seu desempenho · <span className="text-primary font-medium">{getMessage()}</span>
             </p>
           </div>
@@ -258,7 +258,7 @@ const Dashboard = () => {
 
         {/* ── QUICK ACTIONS ── */}
         <div className="rounded-xl border border-border bg-card p-5">
-          <h3 className="text-sm font-semibold text-foreground mb-4">🎯 Comece por aqui</h3>
+          <h3 className="h5 text-foreground mb-4">🎯 Comece por aqui</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Link
               to="/dashboard/criar-evento"
@@ -301,7 +301,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Chart */}
           <div className="lg:col-span-2 rounded-xl border border-border bg-card p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">📈 Faturamento dos últimos 6 meses</h3>
+            <h3 className="h5 text-foreground mb-4">📈 Faturamento dos últimos 6 meses</h3>
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
@@ -347,7 +347,7 @@ const Dashboard = () => {
         {/* ── EVENTS GRID ── */}
         <div ref={eventsRef}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-foreground">Meus Eventos</h2>
+            <h2 className="h3 text-foreground">Meus Eventos</h2>
             <span className="text-xs text-muted-foreground">
               {events.length} evento(s){events.length > EVENTS_PAGE_SIZE ? ` · página ${eventsPage} de ${Math.ceil(events.length / EVENTS_PAGE_SIZE)}` : ""}
             </span>

@@ -132,8 +132,8 @@ export default function Cadastro() {
           )}
 
           <div className="bg-card border border-border rounded-2xl p-8">
-            <h1 className="text-2xl font-bold text-foreground mb-1">Crie sua conta</h1>
-            <p className="text-muted-foreground text-sm mb-6">
+            <h1 className="h3 text-foreground mb-1">Crie sua conta</h1>
+            <p className="body-small text-muted-foreground mb-6">
               Já é cadastrado?{" "}
               <Link to="/login" state={{ from: redirectTo, fromCheckout }} className="text-primary font-semibold hover:underline">Efetuar login</Link>
             </p>
@@ -141,7 +141,7 @@ export default function Cadastro() {
             <form onSubmit={handleSignup} className="space-y-4">
               {/* Role selection */}
               <div>
-                <p className="text-sm font-medium text-foreground mb-2">Como você quer usar o ViuFoto?</p>
+                <p className="body-small font-medium text-foreground mb-2">Como você quer usar o ViuFoto?</p>
                 <div className="grid grid-cols-2 gap-2">
                   {roleOptions.map((opt) => (
                     <button

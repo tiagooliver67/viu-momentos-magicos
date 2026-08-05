@@ -84,8 +84,8 @@ export default function Login() {
           )}
 
           <div className="bg-card border border-border rounded-2xl p-8">
-            <h1 className="text-2xl font-bold text-foreground mb-1">Faça login</h1>
-            <p className="text-muted-foreground text-sm mb-6">
+            <h1 className="h3 text-foreground mb-1">Faça login</h1>
+            <p className="body-small text-muted-foreground mb-6">
               Ainda não possui cadastro?{" "}
               <Link to="/cadastro" state={{ from: redirectTo, fromCheckout }} className="text-primary font-semibold hover:underline">Crie sua conta</Link>
             </p>
