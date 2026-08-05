@@ -208,10 +208,29 @@ export const EventFinancialCenter = () => {
           <PageTitle className="text-2xl">Centro Financeiro</PageTitle>
           <PageSubtitle>Gestão e performance de {event?.name}</PageSubtitle>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/40">
+            {[
+              { label: "Hoje", value: "today" },
+              { label: "7D", value: "7d" },
+              { label: "30D", value: "30d" },
+              { label: "Tudo", value: "todos" }
+            ].map(p => (
+              <Button 
+                key={p.value} 
+                variant={periodFilter === p.value ? "secondary" : "ghost"}
+                size="sm"
+                className="h-7 text-[10px] font-bold px-3 rounded-lg"
+                onClick={() => setPeriodFilter(p.value)}
+              >
+                {p.label}
+              </Button>
+            ))}
+          </div>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2 rounded-xl">
+              <Button variant="outline" className="gap-2 rounded-xl h-9">
                 <Download className="w-4 h-4" /> Exportar
               </Button>
             </DropdownMenuTrigger>
