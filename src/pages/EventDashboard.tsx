@@ -772,13 +772,38 @@ const EventDashboard = () => {
           </div>
         </DialogContent>
       </Dialog>
-      <Dialog open={showFinancial} onOpenChange={setShowFinancial}>
-        <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col p-0">
-          <div className="p-6 overflow-y-auto flex-1">
-            <EventFinancialCenter />
-          </div>
-        </DialogContent>
-      </Dialog>
+
+      <EventFinancialCenter 
+        open={showFinancial} 
+        onClose={() => setShowFinancial(false)} 
+        eventId={id} 
+      />
+
+      <PhotoManager
+        open={showPhotoManager}
+        onClose={() => setShowPhotoManager(false)}
+        photos={photos.map(p => ({
+          ...p,
+          visibility: (p as any).visibility || "public",
+          sales_count: (p as any).sales_count || 0,
+          downloads_count: (p as any).downloads_count || 0,
+          price: (p as any).price || 0
+        }))}
+        onDelete={(photoId) => deletePhoto.mutate(photoId)}
+        onUpdateStatus={async (ids, status) => {
+          try {
+            const { error } = await supabase
+              .from("event_photos")
+              .update({ visibility: status } as any)
+              .in("id", ids);
+            if (error) throw error;
+            queryClient.invalidateQueries({ queryKey: ["event-photos", id] });
+          } catch (err: any) {
+            toast.error("Erro ao atualizar status: " + err.message);
+          }
+        }}
+        eventId={id || ""}
+      />
     </div>
   );
 };
