@@ -308,6 +308,44 @@ export function VideoManager({ open, onClose, videos, onDelete, onUpdateStatus, 
                       </div>
                     )}
 
+                    {/* Top-right menu button */}
+                    <div className="absolute top-2 right-2 z-30 flex items-center gap-1">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button 
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-1.5 rounded-md bg-black/40 hover:bg-black/60 text-white transition-colors backdrop-blur-sm sm:opacity-0 group-hover:opacity-100"
+                          >
+                            <MoreVertical className="w-3.5 h-3.5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDetailVideo(video); }}>
+                            <Edit className="w-4 h-4 mr-2" /> Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onUpdateStatus?.([video.id], video.visibility === 'hidden' ? 'public' : 'hidden'); }}>
+                            {video.visibility === 'hidden' ? <Globe className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
+                            {video.visibility === 'hidden' ? 'Publicar' : 'Ocultar'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); getSignedReadUrls([video.file_url]).then(urls => urls[video.file_url] && window.open(urls[video.file_url], "_blank")); }}>
+                            <Download className="w-4 h-4 mr-2" /> Baixar original
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(`${window.location.origin}/foto/${video.id}`); toast.success("Copiado!"); }}>
+                            <Copy className="w-4 h-4 mr-2" /> Copiar link
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(`/evento/${eventId}`, "_blank"); }}>
+                            <ExternalLink className="w-4 h-4 mr-2" /> Visualizar no site
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={(e) => { e.stopPropagation(); if(confirm("Excluir vídeo?")) onDelete(video.id); }}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" /> Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
                     {/* Status Tags */}
                     <div className="absolute top-2 left-2 flex flex-col gap-1 z-20">
                       {isHidden && (
