@@ -39,6 +39,7 @@ const HeroSection = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<"text" | "face">("text");
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [settings, setSettings] = useState<HeroSettings>(DEFAULT_SETTINGS);
   const [slides, setSlides] = useState<SlideMedia[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -52,49 +53,56 @@ const HeroSection = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [s, sl] = await Promise.all([
-        supabase.from("hero_settings").select("*").limit(1).maybeSingle(),
-        supabase
-          .from("hero_slides")
-          .select("image_path, media_type, poster_path")
-          .eq("active", true)
-          .order("sort_order", { ascending: true }),
-      ]);
-      if (cancelled) return;
-      if (s.data) setSettings(s.data as any);
-      if (sl.data) {
-        const rows = sl.data as any[];
-        const allPaths: string[] = [];
-        rows.forEach((r) => {
-          if (r.image_path) allPaths.push(r.image_path);
-          if (r.poster_path) allPaths.push(r.poster_path);
-        });
-        const cdnMap: Record<string, string | null> = {};
-        allPaths.forEach((p) => (cdnMap[p] = cdnUrl(p)));
-        const needsSigning = allPaths.filter((p) => !cdnMap[p]);
-        let signedMap: Record<string, string> = {};
-        if (needsSigning.length > 0) {
-          try {
-            signedMap = await getSignedReadUrls(needsSigning);
-          } catch (e) {
-            console.warn("[Hero] Falha ao assinar URLs dos slides:", e);
+      setIsLoading(true);
+      try {
+        const [s, sl] = await Promise.all([
+          supabase.from("hero_settings").select("*").limit(1).maybeSingle(),
+          supabase
+            .from("hero_slides")
+            .select("image_path, media_type, poster_path")
+            .eq("active", true)
+            .order("sort_order", { ascending: true }),
+        ]);
+        if (cancelled) return;
+        if (s.data) setSettings(s.data as any);
+        if (sl.data) {
+          const rows = sl.data as any[];
+          const allPaths: string[] = [];
+          rows.forEach((r) => {
+            if (r.image_path) allPaths.push(r.image_path);
+            if (r.poster_path) allPaths.push(r.poster_path);
+          });
+          const cdnMap: Record<string, string | null> = {};
+          allPaths.forEach((p) => (cdnMap[p] = cdnUrl(p)));
+          const needsSigning = allPaths.filter((p) => !cdnMap[p]);
+          let signedMap: Record<string, string> = {};
+          if (needsSigning.length > 0) {
+            try {
+              signedMap = await getSignedReadUrls(needsSigning);
+            } catch (e) {
+              console.warn("[Hero] Falha ao assinar URLs dos slides:", e);
+            }
           }
+          const resolve = (p?: string | null) =>
+            p ? cdnMap[p] || signedMap[p] || null : null;
+          const media: SlideMedia[] = rows
+            .map((r): SlideMedia | null => {
+              const url = resolve(r.image_path);
+              if (!url) return null;
+              const poster = resolve(r.poster_path);
+              return {
+                url,
+                type: r.media_type === "video" ? "video" : "image",
+                ...(poster ? { poster } : {}),
+              };
+            })
+            .filter((m): m is SlideMedia => m !== null);
+          setSlides(media);
         }
-        const resolve = (p?: string | null) =>
-          p ? cdnMap[p] || signedMap[p] || null : null;
-        const media: SlideMedia[] = rows
-          .map((r): SlideMedia | null => {
-            const url = resolve(r.image_path);
-            if (!url) return null;
-            const poster = resolve(r.poster_path);
-            return {
-              url,
-              type: r.media_type === "video" ? "video" : "image",
-              ...(poster ? { poster } : {}),
-            };
-          })
-          .filter((m): m is SlideMedia => m !== null);
-        setSlides(media);
+      } catch (err) {
+        console.error("Hero load error:", err);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     })();
     return () => {
@@ -159,7 +167,27 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative bg-background overflow-visible">
+    <section className="relative bg-background overflow-visible min-h-[500px] sm:min-h-[600px] lg:min-h-[700px]">
+      {isLoading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <div className="h-16 w-3/4 bg-muted animate-pulse rounded-2xl" />
+                <div className="h-8 w-1/2 bg-muted animate-pulse rounded-xl" />
+                <div className="h-20 w-full bg-muted animate-pulse rounded-2xl" />
+              </div>
+              <div className="hidden lg:block h-[500px] bg-muted animate-pulse rounded-[2.5rem]" />
+            </div>
+          </div>
+        </div>
+      )}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={!isLoading ? { opacity: 1 } : {}}
+        transition={{ duration: 0.6 }}
+        className="w-full h-full"
+      >
       {/* Right-side image fills the entire hero on desktop */}
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
@@ -209,7 +237,7 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 22 }}
               animate={mounted ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.02] tracking-tight mb-5"
+              className="display-title mb-5"
               style={{ color: settings.title_color }}
             >
               {(() => {
@@ -341,7 +369,7 @@ const HeroSection = () => {
             </motion.div>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 };
