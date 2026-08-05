@@ -104,8 +104,8 @@ const AdminAnalytics = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold">Analytics Avançados</h1>
-          <p className="text-sm text-muted-foreground">Crescimento, engajamento e métricas da plataforma</p>
+          <h1 className="h2">Analytics Avançados</h1>
+          <p className="body-small text-muted-foreground">Crescimento, engajamento e métricas da plataforma</p>
         </div>
         <div className="flex gap-1 bg-secondary/50 rounded-lg p-1">
           {(["7d", "30d", "90d"] as const).map(p => (
@@ -130,15 +130,15 @@ const AdminAnalytics = () => {
         ].map(k => (
           <div key={k.label} className="glass-card p-4">
             <k.icon className="w-5 h-5 text-primary mb-2" />
-            <p className="text-xl font-bold">{k.value}</p>
-            <p className="text-xs text-muted-foreground">{k.label}</p>
+            <p className="h3">{k.value}</p>
+            <p className="caption text-muted-foreground">{k.label}</p>
           </div>
         ))}
       </div>
 
       {/* Growth chart */}
       <div className="glass-card p-5">
-        <h3 className="font-semibold mb-4">Crescimento da Plataforma</h3>
+        <h3 className="h5 mb-4">Crescimento da Plataforma</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={growthData}>
@@ -157,7 +157,7 @@ const AdminAnalytics = () => {
       {/* Revenue + Categories */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass-card p-5">
-          <h3 className="font-semibold mb-4">Receita Diária</h3>
+          <h3 className="h5 mb-4">Receita Diária</h3>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={growthData}>
@@ -172,7 +172,7 @@ const AdminAnalytics = () => {
         </div>
 
         <div className="glass-card p-5">
-          <h3 className="font-semibold mb-4">Eventos por Categoria</h3>
+          <h3 className="h5 mb-4">Eventos por Categoria</h3>
           {categoryData.length > 0 ? (
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
@@ -193,7 +193,7 @@ const AdminAnalytics = () => {
       {/* Plan distribution + Top photographers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="glass-card p-5">
-          <h3 className="font-semibold mb-4">Distribuição por Plano</h3>
+          <h3 className="h5 mb-4">Distribuição por Plano</h3>
           {planData.length > 0 ? (
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
@@ -211,7 +211,7 @@ const AdminAnalytics = () => {
         </div>
 
         <div className="glass-card p-5">
-          <h3 className="font-semibold mb-4">Top Fotógrafos por Receita</h3>
+          <h3 className="h5 mb-4">Top Fotógrafos por Receita</h3>
           {topPhotographers.length > 0 ? (
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {topPhotographers.map((p, i) => (
