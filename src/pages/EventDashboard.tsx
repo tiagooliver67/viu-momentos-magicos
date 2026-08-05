@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { OrdersModule } from "@/components/event/orders/OrdersModule";
+import { EventFinancialCenter } from "@/components/event/financial/EventFinancialCenter";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
@@ -110,6 +111,7 @@ const EventDashboard = () => {
   const [showCollab, setShowCollab] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
+  const [showFinancial, setShowFinancial] = useState(false);
   const { profile } = useAuth();
 
   const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
@@ -134,7 +136,7 @@ const EventDashboard = () => {
     switch (key) {
       case "edit": setShowEdit(true); break;
       case "orders": setShowOrders(true); break;
-      case "financial": navigate(`/dashboard/configuracoes?tab=carteira`); break;
+      case "financial": setShowFinancial(true); break;
       case "upload-photos": setShowGallery(true); break;
       case "upload-videos": setShowVideoGallery(true); break;
       case "photos": case "gallery": setShowGallery(true); break;
@@ -764,6 +766,13 @@ const EventDashboard = () => {
         <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col p-0">
           <div className="p-6 overflow-y-auto flex-1">
             <OrdersModule />
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showFinancial} onOpenChange={setShowFinancial}>
+        <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col p-0">
+          <div className="p-6 overflow-y-auto flex-1">
+            <EventFinancialCenter />
           </div>
         </DialogContent>
       </Dialog>
