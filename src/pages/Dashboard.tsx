@@ -17,6 +17,7 @@ import {
   Pagination, PaginationContent, PaginationItem, PaginationLink,
   PaginationPrevious, PaginationNext, PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { PageTitle, PageSubtitle, SectionTitle, CardTitle, Caption } from "@/components/ui/Typography";
 
 /* ── animated counter ── */
 function AnimatedNumber({ value, prefix = "", duration = 1200 }: { value: number; prefix?: string; duration?: number }) {
@@ -211,12 +212,12 @@ const Dashboard = () => {
         {/* ── HEADER ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="h2 text-foreground">
+            <PageTitle>
               Bem-vindo de volta, {firstName} 👋
-            </h1>
-            <p className="body-small text-muted-foreground mt-1">
+            </PageTitle>
+            <PageSubtitle className="mt-1">
               Aqui está o resumo do seu desempenho · <span className="text-primary font-medium">{getMessage()}</span>
-            </p>
+            </PageSubtitle>
           </div>
         </div>
 
@@ -247,10 +248,10 @@ const Dashboard = () => {
                     <stat.icon className={`w-4 h-4 ${stat.color}`} />
                   </div>
                 </div>
-                <p className={`text-xl sm:text-2xl font-bold ${stat.highlight ? "text-primary" : "text-foreground"}`}>
+                <SectionTitle className={`text-xl sm:text-2xl ${stat.highlight ? "text-primary" : "text-foreground"}`}>
                   <AnimatedNumber value={stat.value} prefix={stat.prefix} />
-                </p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.label}</p>
+                </SectionTitle>
+                <Caption className="sm:text-xs mt-1">{stat.label}</Caption>
               </div>
             ))}
           </div>
@@ -258,7 +259,7 @@ const Dashboard = () => {
 
         {/* ── QUICK ACTIONS ── */}
         <div className="rounded-xl border border-border bg-card p-5">
-          <h3 className="h5 text-foreground mb-4">🎯 Comece por aqui</h3>
+          <SectionTitle className="text-base sm:text-lg mb-4">🎯 Comece por aqui</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Link
               to="/dashboard/criar-evento"
@@ -347,7 +348,7 @@ const Dashboard = () => {
         {/* ── EVENTS GRID ── */}
         <div ref={eventsRef}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="h3 text-foreground">Meus Eventos</h2>
+            <SectionTitle>Meus Eventos</SectionTitle>
             <span className="text-xs text-muted-foreground">
               {events.length} evento(s){events.length > EVENTS_PAGE_SIZE ? ` · página ${eventsPage} de ${Math.ceil(events.length / EVENTS_PAGE_SIZE)}` : ""}
             </span>

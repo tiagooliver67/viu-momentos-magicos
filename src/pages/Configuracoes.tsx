@@ -10,6 +10,7 @@ import TabMarcaDagua from "@/components/settings/TabMarcaDagua";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PageTitle, PageSubtitle, SectionTitle, CardTitle } from "@/components/ui/Typography";
 
 const settingsTabs = [
   { id: "conta", label: "Minha conta", short: "Conta", desc: "Dados pessoais e acesso", icon: User },
@@ -182,7 +183,7 @@ const TabConta = () => {
     <div className="space-y-6">
       {/* Foto de perfil */}
       <div className="glass-card p-6">
-        <h3 className="font-semibold mb-4 flex items-center gap-2"><User className="w-4 h-4 text-primary" /> Foto de perfil</h3>
+        <CardTitle className="mb-4 flex items-center gap-2"><User className="w-4 h-4 text-primary" /> Foto de perfil</CardTitle>
         <div className="flex items-center gap-5">
           <div className="w-20 h-20 rounded-full overflow-hidden bg-secondary border border-border flex items-center justify-center flex-shrink-0">
             {avatarUrl ? (
@@ -253,7 +254,7 @@ const TabConta = () => {
 
       {/* Contato */}
       <div className="glass-card p-6 space-y-0">
-        <h3 className="font-semibold mb-3 flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /> Contato</h3>
+        <CardTitle className="mb-3 flex items-center gap-2"><Phone className="w-4 h-4 text-primary" /> Contato</CardTitle>
         <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] items-center gap-2 py-3">
           <label className="text-sm text-muted-foreground font-medium">Celular</label>
           <div className="flex items-center gap-2">
@@ -270,7 +271,7 @@ const TabConta = () => {
 
       {/* Segurança */}
       <div className="glass-card p-6">
-        <h3 className="font-semibold mb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /> Segurança</h3>
+        <CardTitle className="mb-4 flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /> Segurança</CardTitle>
         <button
           onClick={() => toast.info("Funcionalidade de alteração de senha será integrada em breve.")}
           className="px-5 py-2.5 rounded-xl border-2 border-primary text-primary font-bold text-sm hover:bg-primary/10 transition-all"
@@ -303,7 +304,7 @@ const TabPortfolio = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="h3">Meu portfólio</h2>
+        <SectionTitle>Meu portfólio</SectionTitle>
         <p className="body-small text-muted-foreground">Selecione suas melhores fotos para exibir publicamente</p>
       </div>
       <div className="flex gap-2 flex-wrap">
@@ -355,7 +356,7 @@ const TabExclusividade = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="h3">Exclusividade</h2>
+        <SectionTitle>Exclusividade</SectionTitle>
         <p className="body-small text-muted-foreground">Defina se você atua exclusivamente com a VIUFOTO</p>
       </div>
       <div className="glass-card p-6">
@@ -365,7 +366,7 @@ const TabExclusividade = () => {
             <div className={`w-6 h-6 rounded-full bg-white absolute top-0.5 transition-all shadow-sm ${exclusive ? "left-7" : "left-0.5"}`} />
           </button>
           <div>
-            <h3 className="font-bold text-lg">{exclusive ? "Exclusividade ativada" : "Sem exclusividade"}</h3>
+            <CardTitle>{exclusive ? "Exclusividade ativada" : "Sem exclusividade"}</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
               {exclusive
                 ? "Você é um fotógrafo exclusivo VIUFOTO. Benefícios especiais estão ativos."
@@ -394,7 +395,7 @@ const TabExclusividade = () => {
 const TabSmartCard = () => (
   <div className="space-y-6">
     <div>
-      <h2 className="text-xl font-bold">SmartCard</h2>
+      <SectionTitle>SmartCard</SectionTitle>
       <p className="text-sm text-muted-foreground">Seu cartão digital profissional</p>
     </div>
     <div className="glass-card p-6">
@@ -402,7 +403,7 @@ const TabSmartCard = () => (
         <div className="aspect-[1.6/1] rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--accent))] p-6 text-white flex flex-col justify-between shadow-xl">
           <div>
             <p className="text-xs opacity-70">VIUFOTO PRO</p>
-            <h3 className="text-lg font-bold mt-1">Tiago Oliver</h3>
+            <CardTitle className="mt-1">Tiago Oliver</CardTitle>
             <p className="text-xs opacity-80">Fotógrafo Esportivo</p>
           </div>
           <div className="flex justify-between items-end">
@@ -449,7 +450,7 @@ const TabComunicacao = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Comunicação</h2>
+        <SectionTitle>Comunicação</SectionTitle>
         <p className="text-sm text-muted-foreground">Configure como deseja receber notificações</p>
       </div>
       <div className="glass-card overflow-hidden">
@@ -560,8 +561,8 @@ const Configuracoes = () => {
                 <current.icon className="w-5 h-5" />
               </span>
               <div className="min-w-0">
-                <p className="caption font-semibold uppercase tracking-wide text-muted-foreground">Configurações</p>
-                <h1 className="h2 leading-tight truncate">{current.label}</h1>
+                <PageSubtitle className="font-semibold uppercase tracking-wide">Configurações</PageSubtitle>
+                <PageTitle className="truncate">{current.label}</PageTitle>
               </div>
             </div>
             <p className="body-small text-muted-foreground mt-2">{current.desc}</p>

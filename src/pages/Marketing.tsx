@@ -9,6 +9,7 @@ import MarketingPublicosTab from "@/components/marketing/MarketingPublicosTab";
 import MarketingAutomacaoTab from "@/components/marketing/MarketingAutomacaoTab";
 import MarketingConsultoraTab from "@/components/marketing/MarketingConsultoraTab";
 import MarketingRelatoriosTab from "@/components/marketing/MarketingRelatoriosTab";
+import { PageTitle, PageSubtitle } from "@/components/ui/Typography";
 
 type Tab = "dashboard" | "pixels" | "campanhas" | "publicos" | "automacao" | "ia" | "consultora" | "relatorios";
 
@@ -32,10 +33,10 @@ const Marketing = () => {
       <main className="flex-1 p-4 pt-20 lg:pt-6 lg:p-8 overflow-auto">
         <div className="max-w-7xl mx-auto">
           <header className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-black tracking-tight">Marketing</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <PageTitle>Marketing</PageTitle>
+            <PageSubtitle className="mt-1">
               Pixels, campanhas e inteligência de vendas para o seu negócio de fotografia.
-            </p>
+            </PageSubtitle>
           </header>
 
           <div className="border-b border-border mb-6 overflow-x-auto">

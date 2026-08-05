@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { shareBaseUrl } from "@/lib/shareUrl";
+import { PageTitle, PageSubtitle, SectionTitle, CardTitle, Caption } from "@/components/ui/Typography";
 
 const quickActions = [
   { label: "Editar", icon: Edit, key: "edit" },
@@ -291,7 +292,7 @@ const EventDashboard = () => {
             <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-[10px] font-bold tracking-widest text-white/70">#{event.id.slice(0, 8).toUpperCase()}</p>
-                <h1 className="h3 text-white truncate drop-shadow">{event.name}</h1>
+                <PageTitle className="text-white drop-shadow truncate">{event.name}</PageTitle>
                 <p className="body-small text-white/80 mt-0.5">
                   {new Date(event.event_date).toLocaleDateString("pt-BR")} · {event.location}
                 </p>
@@ -362,7 +363,7 @@ const EventDashboard = () => {
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <DollarSign className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Grade de Preço</h3>
+                <Caption className="font-bold uppercase tracking-widest">Grade de Preço</Caption>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </div>
@@ -394,7 +395,7 @@ const EventDashboard = () => {
               <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Tipo de Busca</h3>
+              <Caption className="font-bold uppercase tracking-widest">Tipo de Busca</Caption>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {(event.search_type && event.search_type.length > 0 ? event.search_type : ["—"]).map((t) => (
@@ -449,7 +450,7 @@ const EventDashboard = () => {
               className="rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md transition-all"
             >
               <p className="caption font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{k.label}</p>
-              <p className="h2 text-foreground tracking-tight">{k.value}</p>
+              <SectionTitle className="tracking-tight">{k.value}</SectionTitle>
               <p className="caption text-muted-foreground mt-1.5 truncate">{k.sub}</p>
             </motion.div>
           ))}
@@ -477,7 +478,7 @@ const EventDashboard = () => {
         {/* Coupons List */}
         {coupons.length > 0 && (
           <div className="glass-card p-4 mb-6">
-            <h3 className="caption font-bold text-foreground mb-3">CUPONS ATIVOS</h3>
+            <Caption className="font-bold text-foreground mb-3">CUPONS ATIVOS</Caption>
             <div className="space-y-2">
               {coupons.map(c => (
                 <div key={c.id} className="flex items-center justify-between bg-secondary/30 rounded-lg px-3 py-2">
@@ -515,7 +516,7 @@ const EventDashboard = () => {
           return (
             <div className="rounded-2xl bg-card border border-border shadow-sm p-6 mb-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="h5 text-foreground">Progresso do Evento</h3>
+                <SectionTitle className="text-base sm:text-lg">Progresso do Evento</SectionTitle>
                 <span className="text-xs text-muted-foreground font-medium">{doneCount} de {steps.length}</span>
               </div>
               <div className="relative flex items-start justify-between">
@@ -691,7 +692,7 @@ const EventDashboard = () => {
         {showActions && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowActions(false)}>
             <div className="glass-card p-4 max-w-xs w-full" onClick={e => e.stopPropagation()}>
-              <h3 className="font-bold text-foreground mb-3">Ações do Evento</h3>
+              <SectionTitle className="text-base sm:text-lg mb-3">Ações do Evento</SectionTitle>
               <div className="space-y-2">
                 <button onClick={handleDuplicateEvent} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary/50 transition-colors text-left">
                   <Copy className="w-4 h-4 text-primary" />
