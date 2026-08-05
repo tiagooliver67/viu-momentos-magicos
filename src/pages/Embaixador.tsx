@@ -17,7 +17,7 @@ import { useAmbassadorProgram, useAmbassadorReferralCode } from "@/hooks/useAmba
 import {
   AMBASSADOR_PCT, COMMISSION_MONTHS, PLATFORM_FEE_PCT, ambassadorShare, platformRevenue,
 } from "@/lib/ambassador";
-import { PageTitle, PageSubtitle, SectionTitle, CardTitle } from "@/components/ui/Typography";
+import { PageTitle, PageSubtitle, CardTitle } from "@/components/ui/Typography";
 
 const STEPS = [
   {
