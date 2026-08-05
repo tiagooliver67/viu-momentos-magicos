@@ -68,7 +68,7 @@ const EventDashboard = () => {
   // Data hooks
   const { event, isLoading, updateEvent, deleteEvent, refetch } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
-  const { videos, deleteVideo } = useEventVideos(id);
+  const { videos, deleteVideo, updateVideoStatus } = useEventVideos(id);
   const { site: photographerSite } = usePhotographerSite();
   const photosUpload = useUploadWithDupCheck({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
