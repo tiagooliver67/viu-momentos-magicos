@@ -379,7 +379,8 @@ const EventDashboard = () => {
                 <span className="text-foreground font-semibold">R$ {grid?.video_price?.toFixed(2).replace(".", ",") || "—"}</span>
               </div>
             </div>
-          <button
+          </button>
+
             onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}
             className="text-left rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all"
           >
