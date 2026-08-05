@@ -22,8 +22,9 @@ export function useFolderMonitor(options: {
   const checkNewFiles = useCallback(async (handle: FileSystemDirectoryHandle) => {
     try {
       const newFiles: File[] = [];
-      // @ts-ignore - FileSystemDirectoryHandle values() is an async iterator but TS might not recognize it correctly
-      for await (const entry of handle.values()) {
+      // Use any to bypass TS error on async iterator if needed
+      const values = (handle as any).values();
+      for await (const entry of values) {
         if (entry.kind === "file") {
           const file = await (entry as FileSystemFileHandle).getFile();
           // Criar uma chave única baseada em nome, tamanho e última modificação para evitar re-upload imediato
