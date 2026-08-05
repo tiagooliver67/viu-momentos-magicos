@@ -348,7 +348,7 @@ const Dashboard = () => {
         {/* ── EVENTS GRID ── */}
         <div ref={eventsRef}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="h3 text-foreground">Meus Eventos</h2>
+            <SectionTitle>Meus Eventos</SectionTitle>
             <span className="text-xs text-muted-foreground">
               {events.length} evento(s){events.length > EVENTS_PAGE_SIZE ? ` · página ${eventsPage} de ${Math.ceil(events.length / EVENTS_PAGE_SIZE)}` : ""}
             </span>

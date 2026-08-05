@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { shareBaseUrl } from "@/lib/shareUrl";
-import { PageTitle, PageSubtitle, SectionTitle, CardTitle } from "@/components/ui/Typography";
+import { PageTitle, PageSubtitle, SectionTitle, CardTitle, Caption } from "@/components/ui/Typography";
 
 const quickActions = [
   { label: "Editar", icon: Edit, key: "edit" },
