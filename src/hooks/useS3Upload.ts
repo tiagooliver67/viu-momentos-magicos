@@ -183,9 +183,9 @@ export function useS3Upload({ eventId, type, watermarkUrl, onProgress }: UploadO
         console.warn("[S3Upload] Falha ao obter organizer_id, usando uploader id:", e);
       }
 
-      // Fotos: 30 MB por arquivo. Vídeos: 5 GB por arquivo.
-      const MAX_SIZE = isPhoto ? 30 * 1024 * 1024 : 5 * 1024 * 1024 * 1024;
-      const humanLimit = isPhoto ? "30MB" : "5GB";
+      // Fotos: 30 MB por arquivo. Vídeos: 500 MB por arquivo.
+      const MAX_SIZE = isPhoto ? 30 * 1024 * 1024 : 500 * 1024 * 1024;
+      const humanLimit = isPhoto ? "30MB" : "500MB";
       const validFiles: File[] = [];
       const invalidFiles: string[] = [];
       for (const f of files) {
