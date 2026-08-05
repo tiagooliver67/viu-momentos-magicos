@@ -32,6 +32,10 @@ export const EventFinancialCenter = () => {
   const { id } = useParams();
   const { event } = useEvent(id);
   const { data, isLoading } = useEventFinancials(id);
+  const [search, setSearch] = useState("");
+  const [periodFilter, setPeriodFilter] = useState("30d");
+  const [statusFilter, setStatusFilter] = useState("todos");
+
 
   const stats = useMemo(() => {
     if (!data) return null;
