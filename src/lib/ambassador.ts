@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
  * Agora integradas com o banco de dados para permitir gestão pelo Super Admin.
  */
 
-export const PLATFORM_FEE_PCT = 10; // comissão da ViuFoto sobre as vendas do fotógrafo
+export const PLATFORM_FEE_PCT = 10;
+export const AMBASSADOR_PCT = 1.0;
+export const COMMISSION_MONTHS = 12;
 
 /** Busca as configurações globais do programa */
 export async function getAmbassadorSettings() {
