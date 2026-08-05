@@ -189,26 +189,7 @@ const Financeiro = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 overflow-auto">
-        {/* Sub nav */}
-        <div className="mt-14 lg:mt-0 border-b border-border bg-card">
-          <div className="flex items-center gap-2 py-2 px-4 sm:px-8 max-w-7xl mx-auto">
-            {(["Caixa", "Pedidos", "Fiscal"] as SubTab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all min-h-[40px] ${
-                  activeTab === tab
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-
+      <main className="flex-1 overflow-auto pt-20 lg:pt-0">
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -233,6 +214,25 @@ const Financeiro = () => {
               >
                 Efetuar saque <ArrowRight className="w-4 h-4" />
               </button>
+            </div>
+          </div>
+
+          {/* Sub nav - Moved below title */}
+          <div className="border-b border-border bg-card/50 rounded-xl p-1 inline-flex">
+            <div className="flex items-center gap-1">
+              {(["Caixa", "Pedidos", "Fiscal"] as SubTab[]).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-6 py-2 rounded-lg text-sm font-medium transition-all min-h-[40px] ${
+                    activeTab === tab
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
           </div>
 
