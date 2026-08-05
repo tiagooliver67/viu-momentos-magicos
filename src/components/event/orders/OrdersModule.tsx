@@ -11,7 +11,7 @@ import {
   Search, Download, FileText, ChevronDown, 
   Filter, MoreVertical, CreditCard, 
   ShoppingBag, Eye, RefreshCw, 
-  Send, ExternalLink, Trash2, Calendar
+  Send, ExternalLink, Trash2, Calendar, X
 } from "lucide-react";
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
@@ -22,7 +22,11 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OrderDetailsModal } from "./OrderDetailsModal";
 
-export const OrdersModule = () => {
+interface OrdersModuleProps {
+  onClose?: () => void;
+}
+
+export const OrdersModule = ({ onClose }: OrdersModuleProps) => {
   const { id } = useParams();
   const { event } = useEvent(id);
   const { data: orders = [], isLoading } = useEventOrders(id);
@@ -79,6 +83,11 @@ export const OrdersModule = () => {
           <Button variant="outline" size="sm" className="h-9 gap-2">
             <FileText className="w-4 h-4" /> PDF
           </Button>
+          {onClose && (
+            <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+              <X className="w-5 h-5" />
+            </Button>
+          )}
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { OrdersModule } from "@/components/event/orders/OrdersModule";
 import { EventFinancialCenter } from "@/components/event/financial/EventFinancialCenter";
+import { PhotoManager } from "@/components/event/photos/PhotoManager";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
@@ -112,6 +113,7 @@ const EventDashboard = () => {
   const [showSchedule, setShowSchedule] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
   const [showFinancial, setShowFinancial] = useState(false);
+  const [showPhotoManager, setShowPhotoManager] = useState(false);
   const { profile } = useAuth();
 
   const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
@@ -139,7 +141,8 @@ const EventDashboard = () => {
       case "financial": setShowFinancial(true); break;
       case "upload-photos": setShowGallery(true); break;
       case "upload-videos": setShowVideoGallery(true); break;
-      case "photos": case "gallery": setShowGallery(true); break;
+      case "photos": setShowPhotoManager(true); break;
+      case "gallery": setShowGallery(true); break;
       case "password": setShowPassword(true); break;
       case "coupons": setShowCoupon(true); break;
       case "actions": setShowActions(true); break;
@@ -763,19 +766,44 @@ const EventDashboard = () => {
         )}
       </main>
       <Dialog open={showOrders} onOpenChange={setShowOrders}>
-        <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col p-0">
-          <div className="p-6 overflow-y-auto flex-1">
-            <OrdersModule />
+        <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col p-0 bg-background border-border">
+          <div className="p-0 overflow-y-auto flex-1 scrollbar-thin">
+            <OrdersModule onClose={() => setShowOrders(false)} />
           </div>
         </DialogContent>
       </Dialog>
-      <Dialog open={showFinancial} onOpenChange={setShowFinancial}>
-        <DialogContent className="max-w-6xl h-[90vh] overflow-hidden flex flex-col p-0">
-          <div className="p-6 overflow-y-auto flex-1">
-            <EventFinancialCenter />
-          </div>
-        </DialogContent>
-      </Dialog>
+
+      <EventFinancialCenter 
+        open={showFinancial} 
+        onClose={() => setShowFinancial(false)} 
+        eventId={id} 
+      />
+
+      <PhotoManager
+        open={showPhotoManager}
+        onClose={() => setShowPhotoManager(false)}
+        photos={photos.map(p => ({
+          ...p,
+          visibility: (p as any).visibility || "public",
+          sales_count: (p as any).sales_count || 0,
+          downloads_count: (p as any).downloads_count || 0,
+          price: (p as any).price || 0
+        }))}
+        onDelete={(photoId) => deletePhoto.mutate(photoId)}
+        onUpdateStatus={async (ids, status) => {
+          try {
+            const { error } = await supabase
+              .from("event_photos")
+              .update({ visibility: status } as any)
+              .in("id", ids);
+            if (error) throw error;
+            queryClient.invalidateQueries({ queryKey: ["event-photos", id] });
+          } catch (err: any) {
+            toast.error("Erro ao atualizar status: " + err.message);
+          }
+        }}
+        eventId={id || ""}
+      />
     </div>
   );
 };
