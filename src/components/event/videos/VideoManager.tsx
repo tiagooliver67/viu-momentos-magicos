@@ -282,6 +282,16 @@ export function VideoManager({ open, onClose, videos, onDelete, onUpdateStatus, 
                       isSelected ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/50"
                     } ${isHidden ? "opacity-70" : ""}`}
                   >
+                    {/* Selection Checkbox */}
+                    <div 
+                      className={`absolute top-2 left-2 z-40 transition-opacity ${selectedIds.size > 0 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                      onClick={(e) => { e.stopPropagation(); toggleSelect(video.id); }}
+                    >
+                      <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isSelected ? 'bg-primary border-primary' : 'bg-black/20 border-white/50 hover:border-white'}`}>
+                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                      </div>
+                    </div>
+
                     <div className="absolute inset-0 bg-secondary/20 flex items-center justify-center">
                       <Film className="w-8 h-8 text-muted-foreground/30" />
                     </div>
