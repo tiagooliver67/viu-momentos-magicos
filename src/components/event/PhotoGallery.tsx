@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, Folder, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star } from "lucide-react";
+import { X, Trash2, Search, Upload, Image, MoreVertical, FolderPlus, Folder, ScanFace, Settings, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, AlertCircle, Loader2, RotateCcw, Star, FolderSync } from "lucide-react";
+import { FolderMonitorButton } from "./FolderMonitorButton";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
@@ -397,43 +398,57 @@ export default function PhotoGallery({ open, onClose, photos, onDelete, isDeleti
             </div>
           </div>
 
-          {/* Upload Drop Zone */}
-          <div
-            onDragOver={e => e.preventDefault()}
-            onDrop={handleDrop}
-            onClick={() => !isUploading && inputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-10 sm:p-16 text-center transition-colors mb-6 ${
-              isUploading 
-                ? "border-primary/30 bg-primary/5 cursor-not-allowed" 
-                : "border-border hover:border-primary/50 cursor-pointer"
-            }`}
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
-                <p className="text-sm text-foreground font-medium">
-                  Enviando {uploadProgress.length} foto(s)... {overallProgress}%
-                </p>
-                <Progress value={overallProgress} className="h-2 mt-3 max-w-xs mx-auto" />
-              </>
-            ) : (
-              <>
-                <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-foreground">
-                  Arraste ou selecione suas fotos para começar o envio
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">JPG ou JPEG • Máximo 30MB por arquivo</p>
-              </>
-            )}
-            <input
-              ref={inputRef}
-              type="file"
-              multiple
-              accept=".jpg,.jpeg,image/jpeg"
-              onChange={handleSelect}
-              className="hidden"
-              disabled={isUploading}
-            />
+          {/* Upload Drop Zone & Monitor Button */}
+          <div className="mb-6 space-y-4">
+            <div className="flex justify-start">
+              <FolderMonitorButton 
+                type="photos"
+                isUploading={!!isUploading}
+                onUploadClick={() => inputRef.current?.click()}
+                onFilesDetected={async (files) => {
+                  const valid = filterJpeg(files);
+                  if (valid.length > 0) startUpload(valid);
+                }}
+              />
+            </div>
+
+            <div
+              onDragOver={e => e.preventDefault()}
+              onDrop={handleDrop}
+              onClick={() => !isUploading && inputRef.current?.click()}
+              className={`border-2 border-dashed rounded-xl p-10 sm:p-16 text-center transition-colors ${
+                isUploading 
+                  ? "border-primary/30 bg-primary/5 cursor-not-allowed" 
+                  : "border-border hover:border-primary/50 cursor-pointer"
+              }`}
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-10 h-10 text-primary mx-auto mb-3 animate-spin" />
+                  <p className="text-sm text-foreground font-medium">
+                    Enviando {uploadProgress.length} foto(s)... {overallProgress}%
+                  </p>
+                  <Progress value={overallProgress} className="h-2 mt-3 max-w-xs mx-auto" />
+                </>
+              ) : (
+                <>
+                  <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-sm text-foreground">
+                    Arraste ou selecione suas fotos para começar o envio
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">JPG ou JPEG • Máximo 30MB por arquivo</p>
+                </>
+              )}
+              <input
+                ref={inputRef}
+                type="file"
+                multiple
+                accept=".jpg,.jpeg,image/jpeg"
+                onChange={handleSelect}
+                className="hidden"
+                disabled={isUploading}
+              />
+            </div>
           </div>
 
           {/* Per-file upload progress */}

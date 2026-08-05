@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import {
   X, Trash2, Upload, Loader2, AlertCircle, CheckCircle2, Clock, Play,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Film, Info,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Film, Info, FolderSync,
 } from "lucide-react";
+import { FolderMonitorButton } from "./FolderMonitorButton";
 import { Progress } from "@/components/ui/progress";
 import { getSignedReadUrls } from "@/hooks/useS3Upload";
 import { toast } from "sonner";
@@ -286,7 +287,22 @@ export default function VideoGallery({
           </div>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 space-y-4">
+          <div className="flex justify-start">
+            <FolderMonitorButton 
+              type="videos"
+              isUploading={!!isUploading}
+              onUploadClick={() => document.getElementById("video-upload-input")?.click()}
+              onFilesDetected={async (files) => {
+                const valid = validateFiles(files);
+                if (valid.length > 0) {
+                  stashFiles(valid);
+                  onUploadFiles?.(valid);
+                }
+              }}
+            />
+          </div>
+
           <VideoUploadPanel
             isUploading={!!isUploading}
             uploadProgress={uploadProgress}
