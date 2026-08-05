@@ -480,7 +480,7 @@ export const EventFinancialCenter = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.orders.slice(0, 10).map((order: any) => (
+              {filteredOrders.slice(0, 50).map((order: any) => (
                 <TableRow key={order.id}>
                   <TableCell>
                     <div className="flex flex-col">
