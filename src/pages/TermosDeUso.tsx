@@ -167,7 +167,17 @@ export default function TermosDeUso() {
           <p>A ViuFoto poderá suspender contas, bloquear acessos, remover conteúdos e encerrar cadastros sempre que houver violação destes termos ou da legislação vigente. O fotógrafo poderá solicitar o encerramento da conta a qualquer momento.</p>
         </Section>
 
-        <Section title="12. Alterações dos Termos">
+        <Section title="12. Programa de Embaixadores">
+          <p>O Programa de Embaixadores da ViuFoto possui regras específicas de participação, validade de indicação e políticas antifraude.</p>
+          <ul>
+            <li>A comissão de 1% sobre a receita líquida é válida por 12 meses por indicação.</li>
+            <li>Indicações só são válidas para novos usuários sem histórico prévio na plataforma.</li>
+            <li>A ViuFoto reserva-se o direito de auditar e cancelar comissões em caso de fraude.</li>
+            <li>A política completa e atualizada está disponível na Central de Ajuda e no Painel do Embaixador.</li>
+          </ul>
+        </Section>
+
+        <Section title="13. Alterações dos Termos">
           <p>A ViuFoto poderá atualizar estes Termos de Uso periodicamente. A continuidade da utilização da plataforma será considerada aceitação das alterações realizadas.</p>
         </Section>
 
