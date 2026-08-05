@@ -560,11 +560,11 @@ const Configuracoes = () => {
                 <current.icon className="w-5 h-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Configurações</p>
-                <h1 className="text-xl sm:text-2xl font-bold leading-tight truncate">{current.label}</h1>
+                <p className="caption font-semibold uppercase tracking-wide text-muted-foreground">Configurações</p>
+                <h1 className="h2 leading-tight truncate">{current.label}</h1>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">{current.desc}</p>
+            <p className="body-small text-muted-foreground mt-2">{current.desc}</p>
           </header>
 
           <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">

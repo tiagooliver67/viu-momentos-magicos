@@ -198,10 +198,10 @@ const Sobre = () => {
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-primary mb-4">
               <Sparkles className="w-3.5 h-3.5" /> Sobre a VIUFOTO
             </span>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-foreground tracking-tight leading-[1.05]">
+            <h1 className="display-title text-foreground">
               A fotografia esportiva, <span className="text-primary">do jeito que sempre deveria ter sido</span>.
             </h1>
-            <p className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed">
+            <p className="mt-5 body-large text-muted-foreground">
               A VIUFOTO é a plataforma brasileira que conecta atletas e fotógrafos profissionais
               através de busca inteligente por rosto e número de peito. Encontre suas fotos em
               segundos, em alta resolução, com pagamento seguro.
@@ -234,10 +234,10 @@ const Sobre = () => {
             transition={{ duration: 0.6 }}
             className="max-w-3xl mx-auto bg-card border border-border rounded-2xl p-8 sm:p-10 shadow-sm text-center"
           >
-            <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight mb-4">
+            <h2 className="h2 text-foreground mb-4">
               Por que existimos
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            <p className="body-base text-muted-foreground">
               Toda conquista esportiva merece ser eternizada. Mas, por anos, atletas se perderam
               em galerias gigantes e fotógrafos não tinham ferramentas para vender com escala.
               A VIUFOTO nasceu para resolver os dois lados: atletas encontram suas fotos em
@@ -257,7 +257,7 @@ const Sobre = () => {
             <span className="inline-block text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">
               Para quem é
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight">
+            <h2 className="h1 text-foreground">
               Feita para <span className="text-primary">todos</span> os lados da prova
             </h2>
           </div>
@@ -279,10 +279,10 @@ const Sobre = () => {
                   <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-2">
                     {p.eyebrow}
                   </span>
-                  <h3 className="text-xl font-black text-foreground tracking-tight mb-3">
+                  <h3 className="h3 text-foreground mb-3">
                     {p.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">
+                  <p className="body-small text-muted-foreground mb-6 flex-1">
                     {p.desc}
                   </p>
                   <Link
@@ -305,7 +305,7 @@ const Sobre = () => {
             <span className="inline-block text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">
               Tecnologia e diferenciais
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight">
+            <h2 className="h1 text-foreground">
               O que nos torna <span className="text-primary">diferentes</span>
             </h2>
           </div>
@@ -324,8 +324,8 @@ const Sobre = () => {
                   <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-4">
                     <Icon className="w-5 h-5 text-primary" strokeWidth={2.2} />
                   </div>
-                  <h3 className="text-base font-bold text-foreground mb-1.5">{d.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{d.desc}</p>
+                  <h3 className="h5 text-foreground mb-1.5">{d.title}</h3>
+                  <p className="body-small text-muted-foreground">{d.desc}</p>
                 </motion.div>
               );
             })}
@@ -366,10 +366,10 @@ const Sobre = () => {
               <ShieldCheck className="w-10 h-10 text-primary" strokeWidth={2} />
             </div>
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight mb-3">
+              <h2 className="h2 text-foreground mb-3">
                 Segurança e privacidade em primeiro lugar
               </h2>
-              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              <p className="body-small text-muted-foreground">
                 Os arquivos originais ficam protegidos em servidores na nuvem e nunca são
                 expostos publicamente. Todas as previews exibidas na plataforma carregam marca
                 d'água. Pagamentos são processados por gateway certificado, com Pix e cartão.
@@ -399,8 +399,8 @@ const Sobre = () => {
               },
             ].map((b) => (
               <div key={b.title} className="bg-card border border-border rounded-2xl p-7 shadow-sm">
-                <h3 className="text-lg font-black text-foreground mb-2">{b.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
+                <h3 className="h5 text-foreground mb-2">{b.title}</h3>
+                <p className="body-small text-muted-foreground">{b.desc}</p>
               </div>
             ))}
           </div>

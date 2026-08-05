@@ -12,10 +12,10 @@ export default function TermosDeUso() {
       </nav>
 
       <article className="container mx-auto max-w-3xl px-4 py-12 prose prose-neutral dark:prose-invert">
-        <h1 className="text-3xl md:text-4xl font-black text-foreground mb-2">Termos de Uso — ViuFoto</h1>
-        <p className="text-muted-foreground mb-8">Para Fotógrafos Parceiros</p>
+        <h1 className="h1 text-foreground mb-2">Termos de Uso — ViuFoto</h1>
+        <p className="body-base text-muted-foreground mb-8">Para Fotógrafos Parceiros</p>
 
-        <p className="text-foreground/80 mb-8">
+        <p className="body-base text-foreground/80 mb-8">
           Estes Termos de Uso regulam a utilização da plataforma ViuFoto por fotógrafos parceiros para publicação,
           comercialização e entrega de fotografias digitais. Ao utilizar a plataforma, o fotógrafo declara estar de
           acordo com os termos abaixo.
@@ -200,7 +200,7 @@ export default function TermosDeUso() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-10">
-      <h2 className="text-xl md:text-2xl font-bold text-foreground mb-3">{title}</h2>
+      <h2 className="h3 text-foreground mb-3">{title}</h2>
       <div className="space-y-3 text-foreground/80 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-1 [&_ul]:my-2">
         {children}
       </div>
