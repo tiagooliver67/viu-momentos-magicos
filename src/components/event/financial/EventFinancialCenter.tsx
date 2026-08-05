@@ -202,11 +202,11 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
     }
 
     return (
-      <div className="space-y-8 p-6 pb-10">
+      <div className="space-y-8 p-6 pb-10 animate-in fade-in duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <PageTitle className="text-2xl">Financeiro</PageTitle>
-            <PageSubtitle>{event?.name}</PageSubtitle>
+          <div className="flex-1 min-w-0">
+            <PageTitle className="text-2xl truncate">{event?.name || "Financeiro"}</PageTitle>
+            <PageSubtitle>Gestão de faturamento e performance</PageSubtitle>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/40">
