@@ -379,8 +379,9 @@ const EventDashboard = () => {
                 <span className="text-foreground font-semibold">R$ {grid?.video_price?.toFixed(2).replace(".", ",") || "—"}</span>
               </div>
             </div>
-            <div
+          <button
             onClick={(e) => { e.stopPropagation(); setShowDiscount(true); }}
+            className="text-left rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/30 transition-all"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-2.5">
@@ -428,12 +429,6 @@ const EventDashboard = () => {
             </div>
           </button>
         </div>
-              className="mt-4 pt-3 border-t border-border/70 flex items-center justify-between text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
-            >
-              <span>Pacotes e Descontos</span>
-              <ChevronRight className="w-4 h-4" />
-            </div>
-          </button>
 
           <button
             type="button"
