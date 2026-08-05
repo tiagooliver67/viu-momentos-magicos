@@ -14,7 +14,8 @@ const menuItemsBase = [
   { label: "Marketing", icon: Megaphone, path: "/dashboard/marketing", roles: ["photographer", "organizer"] },
   { label: "Oportunidades", icon: Briefcase, path: "/dashboard/oportunidades", roles: ["photographer", "organizer"] },
   { label: "Propostas", icon: Handshake, path: "/dashboard/propostas", roles: ["photographer", "organizer"] },
-  { label: "Nível & Conquistas", icon: Trophy, path: "/dashboard/nivel", roles: ["photographer", "organizer"] },
+  { label: "Programa Embaixador", icon: Share2, path: "/dashboard/embaixador", roles: ["photographer", "organizer"] },
+  { label: "Nível & Especialidades", icon: Trophy, path: "/dashboard/nivel", roles: ["photographer", "organizer"] },
   { label: "Chamados", icon: ShieldAlert, path: "/dashboard/chamados", roles: ["photographer", "organizer"] },
   { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes", roles: ["photographer", "organizer"] },
   { label: "Ajuda", icon: HelpCircle, path: "/ajuda", roles: ["photographer", "organizer"] },
@@ -27,11 +28,7 @@ const DashboardSidebar = () => {
   const baseItems = menuItemsBase.filter((m) => m.roles.some((r) => hasRole(r as any)));
 
   // Programa Embaixador visível para todos (com estados diferentes)
-  const menuItems = [
-    ...baseItems.slice(0, 5),
-    { label: "Programa Embaixador", icon: Share2, path: "/dashboard/embaixador", roles: ["photographer", "organizer"] },
-    ...baseItems.slice(5)
-  ];
+  const menuItems = baseItems;
 
   /* ── real sidebar stats ── */
   const { data: sidebarStats } = useQuery({
