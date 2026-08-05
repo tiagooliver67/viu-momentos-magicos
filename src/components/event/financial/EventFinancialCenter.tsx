@@ -37,10 +37,27 @@ export const EventFinancialCenter = () => {
   const [statusFilter, setStatusFilter] = useState("todos");
 
 
+  const filteredOrders = useMemo(() => {
+    if (!data) return [];
+    return data.orders.filter(o => {
+      const matchesSearch = o.client_name.toLowerCase().includes(search.toLowerCase()) || 
+                           o.id.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === "todos" || o.status === statusFilter;
+      
+      let matchesPeriod = true;
+      const orderDate = parseISO(o.created_at);
+      if (periodFilter === "7d") matchesPeriod = orderDate >= subDays(new Date(), 7);
+      else if (periodFilter === "30d") matchesPeriod = orderDate >= subDays(new Date(), 30);
+      else if (periodFilter === "today") matchesPeriod = orderDate >= startOfDay(new Date());
+
+      return matchesSearch && matchesStatus && matchesPeriod;
+    });
+  }, [data, search, statusFilter, periodFilter]);
+
   const stats = useMemo(() => {
     if (!data) return null;
-    const { orders } = data;
-    const paidOrders = orders.filter(o => o.status === "pago" || o.status === "enviado");
+    const paidOrders = filteredOrders.filter(o => o.status === "pago" || o.status === "enviado");
+
     
     const grossRevenue = paidOrders.reduce((sum, o) => sum + Number(o.amount), 0);
     const platformCommission = grossRevenue * 0.10;
