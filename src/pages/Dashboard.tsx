@@ -248,10 +248,10 @@ const Dashboard = () => {
                     <stat.icon className={`w-4 h-4 ${stat.color}`} />
                   </div>
                 </div>
-                <p className={`text-xl sm:text-2xl font-bold ${stat.highlight ? "text-primary" : "text-foreground"}`}>
+                <SectionTitle className={`text-xl sm:text-2xl ${stat.highlight ? "text-primary" : "text-foreground"}`}>
                   <AnimatedNumber value={stat.value} prefix={stat.prefix} />
-                </p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">{stat.label}</p>
+                </SectionTitle>
+                <Caption className="sm:text-xs mt-1">{stat.label}</Caption>
               </div>
             ))}
           </div>
@@ -259,7 +259,7 @@ const Dashboard = () => {
 
         {/* ── QUICK ACTIONS ── */}
         <div className="rounded-xl border border-border bg-card p-5">
-          <h3 className="h5 text-foreground mb-4">🎯 Comece por aqui</h3>
+          <SectionTitle className="text-base sm:text-lg mb-4">🎯 Comece por aqui</SectionTitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <Link
               to="/dashboard/criar-evento"
