@@ -239,7 +239,7 @@
   }
 
   /* ==================== SHIMMER SKELETON ==================== */
-  .shimmer-skeleton {
+  .shimmer-skeleton, .animate-pulse {
     background: linear-gradient(
       90deg,
       hsl(var(--muted)) 25%,
