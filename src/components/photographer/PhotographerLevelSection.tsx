@@ -19,7 +19,7 @@ const LEVEL_ICON_COMPONENTS: Record<LevelKey, React.ElementType> = {
 };
 
 export default function PhotographerLevelSection({ userId }: Props) {
-  const { level, rules, achievements, isLoading } = usePhotographerLevel(userId);
+  const { level, rules, achievements, specialties, reputation, isLoading } = usePhotographerLevel(userId);
   if (!userId || isLoading || !level) return null;
 
   const unlocked = achievements.filter((a) => a.unlocked);
