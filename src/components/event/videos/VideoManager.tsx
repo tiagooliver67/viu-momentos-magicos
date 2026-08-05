@@ -547,20 +547,30 @@ export function VideoManager({ open, onClose, videos, onDelete, onUpdateStatus, 
       {/* Video Player Dialog */}
       <Dialog open={!!playerVideo} onOpenChange={(o) => !o && setPlayerVideo(null)}>
         <DialogContent className="max-w-4xl p-0 bg-black overflow-hidden border-none aspect-video flex items-center justify-center">
-          {playerVideo && (
-            <video 
-              src={IS_LAMBDA_PIPELINE_ACTIVE && playerVideo.preview_url ? getVideoDerivativeCdnUrl(playerVideo.preview_url) : playerVideo.file_url}
-              controls
-              autoPlay
-              className="w-full h-full"
-            />
-          )}
-          <button 
-            onClick={() => setPlayerVideo(null)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="w-full h-full relative group">
+            {playerVideo && (
+              <video 
+                key={playerVideo.id}
+                src={IS_LAMBDA_PIPELINE_ACTIVE && playerVideo.preview_url ? getVideoDerivativeCdnUrl(playerVideo.preview_url) : (signedUrls[playerVideo.file_url] || playerVideo.file_url)}
+                controls
+                autoPlay
+                className="w-full h-full"
+                onLoadStart={() => {
+                  if (!IS_LAMBDA_PIPELINE_ACTIVE && !signedUrls[playerVideo.file_url] && isStoragePath(playerVideo.file_url)) {
+                    getSignedReadUrls([playerVideo.file_url]).then(urls => {
+                      setSignedUrls(prev => ({ ...prev, ...urls }));
+                    });
+                  }
+                }}
+              />
+            )}
+            <button 
+              onClick={() => setPlayerVideo(null)}
+              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </Dialog>
