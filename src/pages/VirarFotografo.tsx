@@ -49,10 +49,10 @@ export default function VirarFotografo() {
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Rocket className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-foreground mb-2">
+            <h1 className="h2 text-foreground mb-2">
               Venda suas fotos na ViuFoto
             </h1>
-            <p className="text-muted-foreground max-w-md mx-auto">
+            <p className="body-base text-muted-foreground max-w-md mx-auto">
               Transforme seus cliques em renda. Crie eventos, faça upload e receba automaticamente.
             </p>
           </div>
@@ -68,10 +68,10 @@ export default function VirarFotografo() {
                   <step.icon className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm text-foreground">
+                  <p className="h5 text-foreground">
                     Passo {i + 1}: {step.title}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{step.desc}</p>
+                  <p className="caption text-muted-foreground mt-0.5">{step.desc}</p>
                 </div>
                 {isAlreadyPhotographer && (
                   <CheckCircle2 className="w-5 h-5 text-emerald-500 ml-auto flex-shrink-0 mt-1" />
