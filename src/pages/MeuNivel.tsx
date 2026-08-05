@@ -75,7 +75,7 @@ export default function MeuNivel() {
 
         {/* Bloco Minha Reputação */}
         <div className="rounded-2xl bg-card border border-border shadow-sm p-6 flex flex-col justify-center text-center">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Minha Reputação</h3>
+          <SectionTitle className="text-sm uppercase tracking-wider mb-2 text-muted-foreground">Minha Reputação</SectionTitle>
           <div className="flex justify-center mb-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
@@ -109,7 +109,7 @@ export default function MeuNivel() {
         <div className="rounded-2xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 p-6 flex flex-col sm:flex-row items-center gap-6">
           <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-3xl">⭐</div>
           <div className="flex-1 text-center sm:text-left">
-            <h3 className="text-lg font-bold text-foreground">Status: Embaixador Oficial</h3>
+            <CardTitle>Status: Embaixador Oficial</CardTitle>
             <p className="text-sm text-muted-foreground">Representante oficial da ViuFoto. Convidado exclusivo pela nossa equipe.</p>
           </div>
           <a
@@ -124,7 +124,7 @@ export default function MeuNivel() {
       {/* 4. Especialidades (Nova Seção) */}
       <div className="rounded-2xl bg-card border border-border shadow-sm p-6">
         <div className="mb-6">
-          <h3 className="text-xl font-bold text-foreground">Especialidades</h3>
+          <SectionTitle>Especialidades</SectionTitle>
           <p className="text-sm text-muted-foreground">Construa sua reputação em diferentes modalidades.</p>
         </div>
 

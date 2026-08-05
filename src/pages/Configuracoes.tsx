@@ -304,7 +304,7 @@ const TabPortfolio = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="h3">Meu portfólio</h2>
+        <SectionTitle>Meu portfólio</SectionTitle>
         <p className="body-small text-muted-foreground">Selecione suas melhores fotos para exibir publicamente</p>
       </div>
       <div className="flex gap-2 flex-wrap">
@@ -356,7 +356,7 @@ const TabExclusividade = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="h3">Exclusividade</h2>
+        <SectionTitle>Exclusividade</SectionTitle>
         <p className="body-small text-muted-foreground">Defina se você atua exclusivamente com a VIUFOTO</p>
       </div>
       <div className="glass-card p-6">
@@ -395,7 +395,7 @@ const TabExclusividade = () => {
 const TabSmartCard = () => (
   <div className="space-y-6">
     <div>
-      <h2 className="text-xl font-bold">SmartCard</h2>
+      <SectionTitle>SmartCard</SectionTitle>
       <p className="text-sm text-muted-foreground">Seu cartão digital profissional</p>
     </div>
     <div className="glass-card p-6">
@@ -450,7 +450,7 @@ const TabComunicacao = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Comunicação</h2>
+        <SectionTitle>Comunicação</SectionTitle>
         <p className="text-sm text-muted-foreground">Configure como deseja receber notificações</p>
       </div>
       <div className="glass-card overflow-hidden">

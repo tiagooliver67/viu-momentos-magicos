@@ -450,7 +450,7 @@ const EventDashboard = () => {
               className="rounded-2xl bg-card border border-border p-5 shadow-sm hover:shadow-md transition-all"
             >
               <p className="caption font-bold uppercase tracking-widest text-muted-foreground mb-1.5">{k.label}</p>
-              <p className="h2 text-foreground tracking-tight">{k.value}</p>
+              <SectionTitle className="tracking-tight">{k.value}</SectionTitle>
               <p className="caption text-muted-foreground mt-1.5 truncate">{k.sub}</p>
             </motion.div>
           ))}

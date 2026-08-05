@@ -107,7 +107,7 @@ export default function Embaixador() {
               <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-bold uppercase tracking-wider">
                 <Star className="w-3.5 h-3.5 fill-current" /> Programa oficial
               </span>
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Programa Embaixador ViuFoto</h1>
+              <SectionTitle className="text-3xl md:text-4xl">Programa Embaixador ViuFoto</SectionTitle>
               <p className="text-muted-foreground max-w-2xl leading-relaxed">
                 Um programa de reconhecimento para fotógrafos que ajudam a construir a comunidade ViuFoto.
                 Indique novos fotógrafos e receba <strong className="text-foreground">{AMBASSADOR_PCT}% da receita líquida da ViuFoto</strong> gerada
@@ -138,9 +138,9 @@ export default function Embaixador() {
           {isAmbassador && (
             <section className="rounded-2xl border border-primary/25 bg-primary/5 p-6 space-y-4">
               <div>
-                <h2 className="text-sm font-bold flex items-center gap-2">
+                <CardTitle className="text-sm flex items-center gap-2">
                   <Link2 className="w-4 h-4" /> Meu link de indicação
-                </h2>
+                </CardTitle>
                 <p className="text-xs text-muted-foreground mt-1">
                   Todo fotógrafo que criar a conta por este link fica vinculado ao seu perfil.
                 </p>
