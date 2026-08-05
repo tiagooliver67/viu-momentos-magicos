@@ -34,6 +34,8 @@ import {
 import { motion } from "framer-motion";
 import { shareBaseUrl } from "@/lib/shareUrl";
 import { PageTitle, PageSubtitle, SectionTitle, CardTitle, Caption } from "@/components/ui/Typography";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+
 
 const quickActions = [
   { label: "Editar", icon: Edit, key: "edit" },
