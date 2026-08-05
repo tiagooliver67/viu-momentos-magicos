@@ -54,17 +54,16 @@ export default function AdminEmbaixador() {
         // Nota: A busca complexa entre joins pode exigir RPC ou filtros específicos, aqui usamos client-side para o demo
       }
 
-      const { data, error } = await supabase.from("referrals").select(`
-        *,
-        referrer:referrer_id(full_name),
-        referred:referred_id(full_name)
-      `);
-      // Re-fetching manually because of TS issues with joined profile names in standard client
+      // Re-fetching manually to handle profile data safely
       const { data: rawData, error: err } = await supabase.from('referrals').select('*');
       if (err) throw err;
       
       const userIds = [...new Set([...rawData.map(r => r.referrer_id), ...rawData.map(r => r.referred_id)])];
-      const { data: profiles } = await supabase.from('profiles').select('user_id, full_name, email').in('user_id', userIds);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', userIds);
+      
       const profileMap = Object.fromEntries(profiles?.map(p => [p.user_id, p]) || []);
 
       return rawData.map(r => ({
@@ -234,7 +233,7 @@ export default function AdminEmbaixador() {
                       ) : new Date(ref.expires_at) < new Date() ? (
                         <Badge variant="outline">Expirado</Badge>
                       ) : (
-                        <Badge variant="success" className="bg-success/10 text-success border-success/20">Ativo</Badge>
+                        <Badge variant="default" className="bg-success/10 text-success border-success/20 hover:bg-success/20">Ativo</Badge>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right space-x-2">
@@ -298,8 +297,8 @@ export default function AdminEmbaixador() {
 
             <div className="flex gap-2">
                <Button 
-                variant={selectedReferral?.is_paused ? "success" : "warning"} 
-                className="flex-1"
+                variant={selectedReferral?.is_paused ? "default" : "outline"} 
+                className={selectedReferral?.is_paused ? "flex-1 bg-success hover:bg-success/90 text-white" : "flex-1"}
                 onClick={() => {
                   updateReferralMutation.mutate({ 
                     id: selectedReferral.id, 
@@ -359,13 +358,29 @@ function HistoryModal({ isOpen, onClose, referralId }: { isOpen: boolean, onClos
     queryKey: ["ambassador-audit-logs", referralId],
     enabled: !!referralId && isOpen,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: logs, error } = await supabase
         .from("ambassador_audit_logs")
-        .select(`*, admin:admin_id(full_name)`)
+        .select(`*`)
         .eq("referral_id", referralId)
         .order("created_at", { ascending: false });
+      
       if (error) throw error;
-      return data;
+
+      if (logs.length > 0) {
+        const adminIds = [...new Set(logs.map(l => l.admin_id).filter(Boolean))];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", adminIds);
+        
+        const profileMap = Object.fromEntries(profiles?.map(p => [p.user_id, p]) || []);
+        return logs.map(l => ({
+          ...l,
+          admin: l.admin_id ? profileMap[l.admin_id] : null
+        }));
+      }
+      
+      return [];
     },
   });
 
