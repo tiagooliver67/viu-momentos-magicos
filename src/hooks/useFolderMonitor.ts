@@ -22,9 +22,10 @@ export function useFolderMonitor(options: {
   const checkNewFiles = useCallback(async (handle: FileSystemDirectoryHandle) => {
     try {
       const newFiles: File[] = [];
-      for await (const entry of (handle as any).values()) {
+      // @ts-ignore - FileSystemDirectoryHandle values() is an async iterator but TS might not recognize it correctly
+      for await (const entry of handle.values()) {
         if (entry.kind === "file") {
-          const file = await entry.getFile();
+          const file = await (entry as FileSystemFileHandle).getFile();
           // Criar uma chave única baseada em nome, tamanho e última modificação para evitar re-upload imediato
           // O hash SHA-256 real será feito no pipeline de upload (useUploadWithDupCheck)
           const fileKey = `${file.name}-${file.size}-${file.lastModified}`;
