@@ -363,7 +363,7 @@ const EventDashboard = () => {
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                   <DollarSign className="w-4 h-4 text-primary" />
                 </div>
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Grade de Preço</h3>
+                <Caption className="font-bold uppercase tracking-widest">Grade de Preço</Caption>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </div>
@@ -395,7 +395,7 @@ const EventDashboard = () => {
               <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Tipo de Busca</h3>
+              <Caption className="font-bold uppercase tracking-widest">Tipo de Busca</Caption>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {(event.search_type && event.search_type.length > 0 ? event.search_type : ["—"]).map((t) => (
@@ -478,7 +478,7 @@ const EventDashboard = () => {
         {/* Coupons List */}
         {coupons.length > 0 && (
           <div className="glass-card p-4 mb-6">
-            <h3 className="caption font-bold text-foreground mb-3">CUPONS ATIVOS</h3>
+            <Caption className="font-bold text-foreground mb-3">CUPONS ATIVOS</Caption>
             <div className="space-y-2">
               {coupons.map(c => (
                 <div key={c.id} className="flex items-center justify-between bg-secondary/30 rounded-lg px-3 py-2">
@@ -516,7 +516,7 @@ const EventDashboard = () => {
           return (
             <div className="rounded-2xl bg-card border border-border shadow-sm p-6 mb-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="h5 text-foreground">Progresso do Evento</h3>
+                <SectionTitle className="text-base sm:text-lg">Progresso do Evento</SectionTitle>
                 <span className="text-xs text-muted-foreground font-medium">{doneCount} de {steps.length}</span>
               </div>
               <div className="relative flex items-start justify-between">
@@ -692,7 +692,7 @@ const EventDashboard = () => {
         {showActions && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setShowActions(false)}>
             <div className="glass-card p-4 max-w-xs w-full" onClick={e => e.stopPropagation()}>
-              <h3 className="font-bold text-foreground mb-3">Ações do Evento</h3>
+              <SectionTitle className="text-base sm:text-lg mb-3">Ações do Evento</SectionTitle>
               <div className="space-y-2">
                 <button onClick={handleDuplicateEvent} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary/50 transition-colors text-left">
                   <Copy className="w-4 h-4 text-primary" />
