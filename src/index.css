@@ -151,6 +151,55 @@
 }
 
 @layer components {
+  /* ==================== TYPOGRAPHY SYSTEM ==================== */
+  .display-title {
+    @apply text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.05];
+  }
+  h1, .h1 {
+    @apply text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight;
+  }
+  h2, .h2 {
+    @apply text-2xl sm:text-3xl font-bold tracking-tight leading-tight;
+  }
+  h3, .h3 {
+    @apply text-xl sm:text-2xl font-bold leading-tight;
+  }
+  h4, .h4 {
+    @apply text-lg sm:text-xl font-semibold leading-snug;
+  }
+  h5, .h5 {
+    @apply text-base sm:text-lg font-semibold leading-snug;
+  }
+  .body-large {
+    @apply text-lg leading-relaxed;
+  }
+  .body-base {
+    @apply text-base leading-relaxed;
+  }
+  .body-small, small {
+    @apply text-sm leading-normal;
+  }
+  .caption {
+    @apply text-xs leading-normal font-medium;
+  }
+
+  /* ==================== LAYOUT TOKENS ==================== */
+  .section-padding {
+    @apply py-16 sm:py-24 lg:py-32;
+  }
+  .container-tight {
+    @apply max-w-5xl mx-auto px-4;
+  }
+  .card-premium {
+    @apply bg-card border border-border rounded-2xl p-6 shadow-sm transition-all duration-300;
+  }
+  .input-premium {
+    @apply h-11 px-4 rounded-xl border-border bg-background focus:ring-2 focus:ring-primary/20 transition-all;
+  }
+  .btn-height {
+    @apply h-11 px-6 font-semibold;
+  }
+
   /* ==================== GLASS (PADRÃO CLEAN) ==================== */
   .glass {
     background: var(--glass-bg);
@@ -190,7 +239,7 @@
   }
 
   /* ==================== SHIMMER SKELETON ==================== */
-  .shimmer-skeleton {
+  .shimmer-skeleton, .animate-pulse {
     background: linear-gradient(
       90deg,
       hsl(var(--muted)) 25%,

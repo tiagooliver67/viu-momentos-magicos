@@ -125,9 +125,9 @@ const Ajuda = () => {
       <Navbar />
       <main className="flex-1">
         <section className="bg-gradient-to-b from-primary/10 to-transparent border-b border-border">
-          <div className="container mx-auto px-4 py-12 md:py-16 max-w-3xl text-center">
-            <h1 className="text-3xl md:text-5xl font-black mb-3">Central de Ajuda</h1>
-            <p className="text-muted-foreground mb-8">Encontre respostas rápidas para as dúvidas mais comuns.</p>
+          <div className="container-tight py-12 md:py-16 text-center">
+            <h1 className="h1 mb-2">Central de Ajuda</h1>
+            <p className="body-base text-muted-foreground mb-8">Encontre respostas rápidas para as dúvidas mais comuns.</p>
             <div className="relative max-w-xl mx-auto">
               <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -185,8 +185,8 @@ const Ajuda = () => {
                   <selected.icon className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{selected.name}</h2>
-                  <p className="text-sm text-muted-foreground">{selected.description}</p>
+                  <h2 className="h2">{selected.name}</h2>
+                  <p className="body-small text-muted-foreground">{selected.description}</p>
                 </div>
               </div>
               <Accordion type="single" collapsible className="space-y-2">
@@ -205,7 +205,7 @@ const Ajuda = () => {
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold mb-4">Como podemos ajudar?</h2>
+              <h2 className="h3 mb-4">Como podemos ajudar?</h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 {categories.map((c) => (
                   <button
@@ -228,8 +228,8 @@ const Ajuda = () => {
           )}
 
           <div className="mt-12 p-6 rounded-2xl border border-border bg-card text-center">
-            <h3 className="font-bold text-lg mb-2">Ainda precisa de ajuda?</h3>
-            <p className="text-sm text-muted-foreground mb-4">Nossa equipe responde em até 24 horas úteis.</p>
+            <h3 className="h3 mb-2">Ainda precisa de ajuda?</h3>
+            <p className="body-small text-muted-foreground mb-4">Nossa equipe responde em até 24 horas úteis.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a href="mailto:suporte@viufoto.com" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
                 <Mail className="w-4 h-4" /> Enviar e-mail

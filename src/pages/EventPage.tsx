@@ -501,8 +501,8 @@ const EventPage = () => {
         <div className="flex items-center justify-center min-h-screen">
           <div className="glass-card p-8 max-w-sm w-full text-center space-y-4">
             <Lock className="w-12 h-12 text-primary mx-auto" />
-            <h2 className="text-xl font-bold">Evento protegido</h2>
-            <p className="text-sm text-muted-foreground">Digite a senha para acessar as fotos</p>
+            <h2 className="h3">Evento protegido</h2>
+            <p className="body-small text-muted-foreground">Digite a senha para acessar as fotos</p>
             <input
               type="password"
               value={passwordInput}
@@ -601,11 +601,11 @@ const EventPage = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
           <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 container mx-auto px-4">
             {event.status === "ativo" && <span className="badge-live mb-2 sm:mb-3">AO VIVO</span>}
-            <h1 className="text-xl sm:text-3xl md:text-4xl font-black text-foreground mt-2">{event.name}</h1>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 sm:mt-3 text-xs sm:text-sm text-muted-foreground">
-              <span className="flex items-center gap-1"><Calendar className="w-3 h-3 sm:w-4 sm:h-4" /> {new Date(event.event_date).toLocaleDateString("pt-BR")}</span>
-              <span className="flex items-center gap-1"><MapPin className="w-3 h-3 sm:w-4 sm:h-4" /> {event.location}</span>
-              <span className="flex items-center gap-1"><Camera className="w-3 h-3 sm:w-4 sm:h-4" /> {photoList.length} fotos</span>
+            <h1 className="h1 text-foreground mt-2">{event.name}</h1>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 sm:mt-3 body-small text-muted-foreground">
+              <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {new Date(event.event_date).toLocaleDateString("pt-BR")}</span>
+              <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {event.location}</span>
+              <span className="flex items-center gap-1"><Camera className="w-3.5 h-3.5" /> {photoList.length} fotos</span>
               {videoList.length > 0 && (
                 <span className="flex items-center gap-1"><Film className="w-3 h-3 sm:w-4 sm:h-4" /> {videoList.length} vídeos</span>
               )}

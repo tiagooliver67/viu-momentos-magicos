@@ -189,13 +189,13 @@ const Financeiro = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 overflow-auto pt-20 lg:pt-0">
+      <main className="flex-1 overflow-auto pt-24 lg:pt-0">
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Financeiro</h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h1 className="h1">Financeiro</h1>
+              <p className="body-base text-muted-foreground mt-1">
                 {activeTab === "Pedidos" ? "Acompanhe e reenvie pedidos aos seus clientes." :
                  activeTab === "Fiscal" ? "Notas fiscais e relatórios contábeis." :
                  "Acompanhe seu saldo, vendas e saques em um só lugar."}
