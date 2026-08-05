@@ -9,7 +9,7 @@ import {
   DollarSign, TrendingUp, ShoppingBag, Image as ImageIcon, 
   Video, Users, Download, FileText, ArrowUpRight, 
   ArrowDownRight, Percent, Calendar, Filter,
-  CreditCard, Search, ChevronDown, Clock, Info
+  CreditCard, Search, ChevronDown, Clock, Info, Tag
 } from "lucide-react";
 import { format, subDays, startOfDay, isWithinInterval, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
