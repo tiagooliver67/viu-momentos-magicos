@@ -152,7 +152,7 @@ const EventDashboard = () => {
       case "collab": setShowCollab(true); break;
       case "import": toast.info("Importação de pedidos em breve!"); break;
       case "invite": toast.info("Convite de fotógrafos em breve!"); break;
-      case "videos": setShowVideoGallery(true); break;
+      case "videos": setShowVideoManager(true); break;
       default: break;
     }
   };
