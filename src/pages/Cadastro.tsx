@@ -155,7 +155,7 @@ export default function Cadastro() {
                       }`}
                     >
                       <opt.icon className={`w-4 h-4 mb-1 ${form.interest === opt.value ? "text-primary" : "text-muted-foreground"}`} />
-                      <p className="text-xs font-semibold text-foreground">{opt.label}</p>
+                      <p className="caption font-semibold text-foreground">{opt.label}</p>
                       <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
                     </button>
                   ))}
@@ -212,12 +212,12 @@ export default function Cadastro() {
                 </button>
               </div>
 
-              <label className="flex items-start gap-2 text-sm text-muted-foreground cursor-pointer">
+              <label className="flex items-start gap-2 body-small text-muted-foreground cursor-pointer">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1 accent-primary" />
                 <span>Ao criar uma conta, você concorda com os <span className="text-primary font-medium">Termos e Condições de uso</span></span>
               </label>
 
-              <Button type="submit" className="w-full h-12 text-base font-bold" disabled={loading}>
+              <Button type="submit" className="w-full h-12 text-base font-bold btn-height" disabled={loading}>
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Criar conta"}
               </Button>
             </form>
