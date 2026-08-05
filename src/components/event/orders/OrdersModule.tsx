@@ -11,7 +11,7 @@ import {
   Search, Download, FileText, ChevronDown, 
   Filter, MoreVertical, CreditCard, 
   ShoppingBag, Eye, RefreshCw, 
-  Send, ExternalLink, Trash2, Calendar
+  Send, ExternalLink, Trash2, Calendar, X
 } from "lucide-react";
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
