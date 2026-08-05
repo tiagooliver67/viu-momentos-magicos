@@ -357,7 +357,7 @@ export function VideoManager({ open, onClose, videos, onDelete, onUpdateStatus, 
                     </div>
 
                     {/* Status Tags */}
-                    <div className="absolute top-2 left-2 flex flex-col gap-1 z-20">
+                    <div className="absolute top-8 left-2 flex flex-col gap-1 z-20">
                       {isHidden && (
                         <span className="px-1.5 py-0.5 rounded bg-black/60 text-white text-[9px] font-bold uppercase backdrop-blur-sm flex items-center gap-1">
                           <EyeOff className="w-2.5 h-2.5" /> Oculto
