@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { OrdersModule } from "@/components/event/orders/OrdersModule";
 import { EventFinancialCenter } from "@/components/event/financial/EventFinancialCenter";
+import { PhotoManager } from "@/components/event/photos/PhotoManager";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
@@ -112,6 +113,7 @@ const EventDashboard = () => {
   const [showSchedule, setShowSchedule] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
   const [showFinancial, setShowFinancial] = useState(false);
+  const [showPhotoManager, setShowPhotoManager] = useState(false);
   const { profile } = useAuth();
 
   const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
@@ -139,7 +141,8 @@ const EventDashboard = () => {
       case "financial": setShowFinancial(true); break;
       case "upload-photos": setShowGallery(true); break;
       case "upload-videos": setShowVideoGallery(true); break;
-      case "photos": case "gallery": setShowGallery(true); break;
+      case "photos": setShowPhotoManager(true); break;
+      case "gallery": setShowGallery(true); break;
       case "password": setShowPassword(true); break;
       case "coupons": setShowCoupon(true); break;
       case "actions": setShowActions(true); break;
