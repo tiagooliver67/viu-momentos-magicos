@@ -137,7 +137,7 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `financeiro_evento_${id}.csv`);
+    link.setAttribute("download", `financeiro_evento_${eventId}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -159,7 +159,7 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
     })));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Financeiro");
-    XLSX.writeFile(wb, `financeiro_evento_${id}.xlsx`);
+    XLSX.writeFile(wb, `financeiro_evento_${eventId}.xlsx`);
     toast.success("Excel exportado com sucesso!");
   };
 
@@ -180,11 +180,25 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
       ]),
     });
     
-    doc.save(`financeiro_evento_${id}.pdf`);
+    doc.save(`financeiro_evento_${eventId}.pdf`);
     toast.success("PDF exportado com sucesso!");
   };
 
-  if (isLoading) {
+  const content = (
+    <div className="flex flex-col gap-6 p-4">
+      {/* Header logic moved to first div in content if needed */}
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <PageTitle className="text-2xl font-bold">Financeiro</PageTitle>
+          <Caption className="text-muted-foreground">{event?.name || "Resumo financeiro do evento"}</Caption>
+        </div>
+        {onClose && (
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <X className="w-5 h-5" />
+          </Button>
+        )}
+      </div>
+  
     return (
       <div className="flex flex-col gap-6 p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -533,4 +547,18 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
       </div>
     </div>
   );
+
+  if (open) {
+    return (
+      <Dialog open={open} onOpenChange={(o) => !o && onClose?.()}>
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-background border-border">
+          <div className="flex-1 overflow-auto scrollbar-thin">
+            {content}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return content;
 };
