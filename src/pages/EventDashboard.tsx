@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { OrdersModule } from "@/components/event/orders/OrdersModule";
 import { EventFinancialCenter } from "@/components/event/financial/EventFinancialCenter";
 import { PhotoManager } from "@/components/event/photos/PhotoManager";
+import { VideoManager } from "@/components/event/videos/VideoManager";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
