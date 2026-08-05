@@ -291,8 +291,8 @@ const EventDashboard = () => {
             <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-[10px] font-bold tracking-widest text-white/70">#{event.id.slice(0, 8).toUpperCase()}</p>
-                <h1 className="text-xl sm:text-2xl font-bold text-white truncate drop-shadow">{event.name}</h1>
-                <p className="text-xs text-white/80 mt-0.5">
+                <h1 className="h3 text-white truncate drop-shadow">{event.name}</h1>
+                <p className="body-small text-white/80 mt-0.5">
                   {new Date(event.event_date).toLocaleDateString("pt-BR")} · {event.location}
                 </p>
               </div>
