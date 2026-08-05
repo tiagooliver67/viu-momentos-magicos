@@ -551,7 +551,7 @@ const Configuracoes = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
-      <main className="flex-1 p-4 pt-20 lg:pt-4 md:p-8 overflow-auto">
+      <main className="flex-1 p-4 pt-24 lg:pt-10 md:p-8 overflow-auto">
         <div className="max-w-6xl mx-auto">
           {/* Cabeçalho da página — padrão VIU FOTO */}
           <header className="mb-6 sm:mb-8">
