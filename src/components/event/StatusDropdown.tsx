@@ -35,7 +35,7 @@ export default function StatusDropdown({
   return (
     <div ref={ref} className="relative inline-block">
       <button
-        onClick={() => !disabled && setOpen(!open)}
+        onClick={(e) => { e.stopPropagation(); !disabled && setOpen(!open); }}
         className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full ${cfg.bg} ${cfg.text} text-xs font-bold min-h-[36px] transition-shadow ${
           isActive ? "ring-2 ring-success/70 ring-offset-2 ring-offset-background shadow-[0_0_16px_rgba(34,197,94,0.45)]" : ""
         }`}
