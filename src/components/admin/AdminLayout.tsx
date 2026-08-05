@@ -16,6 +16,7 @@ const navItems = [
   { label: "Usuários", icon: Users, path: "/admin/usuarios" },
   { label: "Fotógrafos", icon: Camera, path: "/admin/fotografos" },
   { label: "Eventos", icon: Calendar, path: "/admin/eventos" },
+  { label: "Embaixador", icon: Handshake, path: "/admin/embaixador" },
   { label: "Inscrições", icon: ClipboardList, path: "/admin/inscricoes" },
   { label: "Financeiro", icon: DollarSign, path: "/admin/financeiro" },
   { label: "Pagamentos", icon: CreditCard, path: "/admin/pagamentos" },

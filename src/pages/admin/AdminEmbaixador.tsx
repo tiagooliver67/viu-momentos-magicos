@@ -209,7 +209,6 @@ export default function AdminEmbaixador() {
                   <tr key={ref.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-4 py-3">
                       <div className="font-medium text-foreground">{ref.referred?.full_name || "Fotógrafo"}</div>
-                      <div className="text-xs text-muted-foreground">{ref.referred?.email}</div>
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {ref.referrer?.full_name || "Embaixador"}
