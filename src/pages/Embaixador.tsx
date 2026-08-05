@@ -107,7 +107,7 @@ export default function Embaixador() {
               <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1 text-xs font-bold uppercase tracking-wider">
                 <Star className="w-3.5 h-3.5 fill-current" /> Programa oficial
               </span>
-              <SectionTitle className="text-3xl md:text-4xl">Programa Embaixador ViuFoto</SectionTitle>
+              <PageTitle className="text-3xl md:text-4xl">Programa Embaixador ViuFoto</PageTitle>
               <p className="text-muted-foreground max-w-2xl leading-relaxed">
                 Um programa de reconhecimento para fotógrafos que ajudam a construir a comunidade ViuFoto.
                 Indique novos fotógrafos e receba <strong className="text-foreground">{AMBASSADOR_PCT}% da receita líquida da ViuFoto</strong> gerada
