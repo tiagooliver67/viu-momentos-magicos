@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ArrowLeft, ChevronRight, Mail, MessageCircle, Download, CreditCard, Shield, Camera, Paperclip, Loader2, LogIn } from "lucide-react";
+import { Search, ArrowLeft, ChevronRight, Mail, MessageCircle, Download, CreditCard, Shield, Camera, Paperclip, Loader2, LogIn, Star } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
@@ -76,6 +76,30 @@ const categories: Category[] = [
       { q: "Como começar a vender na Viu Foto?", a: "Crie sua conta de fotógrafo clicando em \"Cadastrar-se como Fotógrafo\" no menu principal. Preencha seus dados profissionais e configure sua carteira para receber os pagamentos." },
       { q: "Como criar um álbum e definir preços?", a: "Acesse seu Painel > Criar Novo Álbum. Insira as informações do evento e, na aba de preços, defina o valor por foto individual e o valor dos pacotes promocionais." },
       { q: "Como e quando recebo minhas vendas?", a: "Os valores das suas vendas ficam disponíveis no seu painel da Viu Foto. Você pode solicitar o saque direto para sua conta bancária cadastrada (respeitando o prazo de liquidação de cada meio de pagamento)." },
+    ],
+  },
+  {
+    id: "embaixador",
+    name: "Programa Embaixador",
+    icon: Star,
+    description: "Regras, comissões e política oficial",
+    articles: [
+      { 
+        q: "Como funciona o Programa de Embaixadores?", 
+        a: "O programa reconhece fotógrafos que trazem novos profissionais para a ViuFoto. Você recebe 1% da receita líquida gerada pela ViuFoto através do fotógrafo indicado durante os primeiros 12 meses dele na plataforma." 
+      },
+      { 
+        q: "Quais os critérios para uma indicação ser válida?", 
+        a: "A indicação é válida apenas para novos fotógrafos que nunca tiveram conta ou cadastro iniciado na ViuFoto. O cadastro deve ser feito obrigatoriamente pelo seu link de indicação." 
+      },
+      { 
+        q: "Política Antifraude e Validação", 
+        a: "Utilizamos mecanismos como histórico de contas, CPF/CNPJ, e-mail, telefone e IP para validar indicações. Tentativas de recriação de conta ou manipulação resultam no cancelamento da comissão e possível suspensão do status de Embaixador." 
+      },
+      { 
+        q: "Onde vejo a política oficial completa?", 
+        a: "A política oficial está disponível de forma resumida na sua página de Embaixador e detalhada nos Termos de Uso da plataforma." 
+      }
     ],
   },
 ];

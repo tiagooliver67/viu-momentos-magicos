@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePhotographerLevel } from "@/hooks/usePhotographerLevel";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import {
   Loader2, Star, Users, DollarSign, Clock, CheckCircle2, Trophy, Link2,
   Share2, TrendingUp, Wallet, CalendarDays, Heart, Calculator, Sparkles,
+  Shield, ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { shareBaseUrl } from "@/lib/shareUrl";
@@ -53,6 +55,7 @@ const RULES = [
   "O saldo é atualizado automaticamente conforme as vendas são confirmadas.",
   "Os pagamentos seguem o calendário financeiro da plataforma.",
   "Casos de fraude poderão ser revisados pela ViuFoto.",
+  "Acesse a Política Oficial do Programa para ver as regras de validade de indicação e antifraude.",
 ];
 
 const FUTURE_BENEFITS = [
@@ -240,9 +243,9 @@ export default function Embaixador() {
           {/* Regras */}
           <section className="space-y-4">
             <SectionTitle icon={CheckCircle2} title="Regras do Programa" subtitle="Transparência total." />
-            <Accordion type="single" collapsible className="rounded-2xl border border-border bg-card px-6">
-              <AccordionItem value="rules" className="border-none">
-                <AccordionTrigger className="font-bold">Ver regras completas</AccordionTrigger>
+            <Accordion type="single" collapsible className="space-y-4">
+              <AccordionItem value="rules" className="rounded-2xl border border-border bg-card px-6">
+                <AccordionTrigger className="font-bold">Ver resumo das regras</AccordionTrigger>
                 <AccordionContent>
                   <ul className="space-y-3 pb-2">
                     {RULES.map((r) => (
@@ -252,6 +255,55 @@ export default function Embaixador() {
                       </li>
                     ))}
                   </ul>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="policy" className="rounded-2xl border border-border bg-card px-6">
+                <AccordionTrigger className="font-bold text-primary">Política Oficial do Programa</AccordionTrigger>
+                <AccordionContent className="space-y-6 pb-6 pt-2">
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-foreground">Princípio Fundamental</h4>
+                    <p className="text-sm text-muted-foreground">
+                      O Programa de Embaixadores da ViuFoto foi criado para reconhecer fotógrafos que apresentam a plataforma a novos profissionais.
+                      A comissão é válida exclusivamente para fotógrafos que nunca tiveram qualquer relacionamento anterior com a ViuFoto.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-foreground flex items-center gap-2">
+                      <Users className="w-4 h-4" /> Critérios para uma indicação válida
+                    </h4>
+                    <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+                      <li>O fotógrafo nunca tiver criado uma conta na ViuFoto anteriormente.</li>
+                      <li>O fotógrafo nunca tiver iniciado um cadastro.</li>
+                      <li>O fotógrafo nunca tiver utilizado login social (Google, Meta ou outro).</li>
+                      <li>A conta for criada utilizando o link oficial de indicação do Embaixador.</li>
+                    </ul>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-foreground flex items-center gap-2">
+                      <Shield className="w-4 h-4" /> Mecanismos Antifraude
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Para garantir a integridade do programa, a ViuFoto utiliza mecanismos automáticos e manuais de validação, incluindo histórico de contas, CPF/CNPJ, e-mail, telefone, dispositivo e endereço IP.
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-foreground flex items-center gap-2">
+                      <DollarSign className="w-4 h-4" /> Comissão do Programa
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      O Embaixador receberá <strong>1% da receita líquida</strong> gerada pela ViuFoto através de cada fotógrafo indicado, durante os primeiros <strong>12 meses</strong> de atividade. Após esse período, a comissão é encerrada automaticamente.
+                    </p>
+                  </div>
+
+                  <div className="pt-4 border-t border-border">
+                    <Link to="/ajuda" className="text-xs text-primary hover:underline flex items-center gap-1">
+                      Ver política completa na Central de Ajuda <ChevronRight className="w-3 h-3" />
+                    </Link>
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
