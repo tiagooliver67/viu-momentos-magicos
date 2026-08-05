@@ -103,7 +103,26 @@ export function useEventVideos(eventId: string | undefined) {
     },
   });
 
-  return { videos: videosQuery.data || [], isLoading: videosQuery.isLoading, deleteVideo };
+  const updateVideoStatus = useMutation({
+    mutationFn: async ({ ids, visibility }: { ids: string[], visibility: "public" | "hidden" }) => {
+      const { error } = await supabase
+        .from("event_videos")
+        .update({ visibility })
+        .in("id", ids);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["event-videos", eventId] });
+    },
+    onError: (e) => toast.error("Erro ao atualizar vídeos: " + e.message),
+  });
+
+  return { 
+    videos: videosQuery.data || [], 
+    isLoading: videosQuery.isLoading, 
+    deleteVideo,
+    updateVideoStatus
+  };
 }
 
 export function useEventOrders(eventId: string | undefined) {

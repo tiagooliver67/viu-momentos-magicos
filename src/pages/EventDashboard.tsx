@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { OrdersModule } from "@/components/event/orders/OrdersModule";
 import { EventFinancialCenter } from "@/components/event/financial/EventFinancialCenter";
 import { PhotoManager } from "@/components/event/photos/PhotoManager";
+import { VideoManager } from "@/components/event/videos/VideoManager";
 import { useParams, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import StatusDropdown from "@/components/event/StatusDropdown";
@@ -67,7 +68,7 @@ const EventDashboard = () => {
   // Data hooks
   const { event, isLoading, updateEvent, deleteEvent, refetch } = useEvent(id);
   const { photos, deletePhoto } = useEventPhotos(id);
-  const { videos, deleteVideo } = useEventVideos(id);
+  const { videos, deleteVideo, updateVideoStatus } = useEventVideos(id);
   const { site: photographerSite } = usePhotographerSite();
   const photosUpload = useUploadWithDupCheck({ eventId: id || "", type: "fotos", watermarkUrl: photographerSite?.watermark_url || undefined, onProgress: (files) => {
     setPhotoUploadProgress(files.map(f => ({
@@ -114,6 +115,7 @@ const EventDashboard = () => {
   const [showOrders, setShowOrders] = useState(false);
   const [showFinancial, setShowFinancial] = useState(false);
   const [showPhotoManager, setShowPhotoManager] = useState(false);
+  const [showVideoManager, setShowVideoManager] = useState(false);
   const { profile } = useAuth();
 
   const runUploadWithDupCheck = async (files: File[], type: "photos" | "videos", album?: string | null) => {
@@ -150,7 +152,7 @@ const EventDashboard = () => {
       case "collab": setShowCollab(true); break;
       case "import": toast.info("Importação de pedidos em breve!"); break;
       case "invite": toast.info("Convite de fotógrafos em breve!"); break;
-      case "videos": setShowVideoGallery(true); break;
+      case "videos": setShowVideoManager(true); break;
       default: break;
     }
   };
@@ -802,6 +804,21 @@ const EventDashboard = () => {
             toast.error("Erro ao atualizar status: " + err.message);
           }
         }}
+        eventId={id || ""}
+      />
+
+      <VideoManager
+        open={showVideoManager}
+        onClose={() => setShowVideoManager(false)}
+        videos={videos.map(v => ({
+          ...v,
+          visibility: (v as any).visibility || "public",
+          sales_count: (v as any).sales_count || 0,
+          downloads_count: (v as any).downloads_count || 0,
+          price: (v as any).price || 0
+        })) as any}
+        onDelete={(videoId) => deleteVideo.mutate(videoId)}
+        onUpdateStatus={(ids, status) => updateVideoStatus.mutate({ ids, visibility: status })}
         eventId={id || ""}
       />
     </div>
