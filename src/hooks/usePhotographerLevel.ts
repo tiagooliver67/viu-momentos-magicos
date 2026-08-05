@@ -28,6 +28,32 @@ export interface Achievement {
   unlocked_at: string | null;
 }
 
+export interface Specialty {
+  id: string;
+  code: string;
+  title: string;
+  icon: string;
+  min_events: number;
+  min_photos_sold: number;
+  min_unique_clients: number;
+}
+
+export interface PhotographerSpecialty extends Specialty {
+  events_count: number;
+  photos_sold_count: number;
+  unique_clients_count: number;
+  unlocked_at: string | null;
+  level: string;
+  progress: number;
+}
+
+export interface Reputation {
+  score: number;
+  rating_avg: number;
+  total_reviews: number;
+  response_rate: number;
+}
+
 export function usePhotographerLevel(userId?: string) {
   const { user } = useAuth();
   const uid = userId ?? user?.id;
@@ -85,14 +111,74 @@ export function usePhotographerLevel(userId?: string) {
     },
   });
 
+  const specialtiesQ = useQuery({
+    queryKey: ["specialties", uid],
+    enabled: !!uid,
+    queryFn: async (): Promise<PhotographerSpecialty[]> => {
+      const [{ data: catalog }, { data: userSpecialties }] = await Promise.all([
+        supabase.from("specialties" as any).select("*").order("sort_order"),
+        supabase.from("photographer_specialties" as any).select("*").eq("user_id", uid!),
+      ]);
+
+      const userMap = new Map<string, any>();
+      (userSpecialties as any[] | null)?.forEach((us) => userMap.set(us.specialty_id, us));
+
+      return ((catalog as any[]) ?? []).map((s) => {
+        const us = userMap.get(s.id) || {
+          events_count: 0,
+          photos_sold_count: 0,
+          unique_clients_count: 0,
+          unlocked_at: null,
+          level: "Especialista",
+        };
+
+        const eventProg = s.min_events > 0 ? Math.min(1, us.events_count / s.min_events) : 1;
+        const salesProg = s.min_photos_sold > 0 ? Math.min(1, us.photos_sold_count / s.min_photos_sold) : 1;
+        const clientProg = s.min_unique_clients > 0 ? Math.min(1, us.unique_clients_count / s.min_unique_clients) : 1;
+
+        // Progress is the minimum of required criteria (AND mode)
+        const progress = Math.min(eventProg, salesProg, clientProg) * 100;
+
+        return {
+          ...s,
+          ...us,
+          progress: Math.round(progress),
+        };
+      });
+    },
+  });
+
+  const reputationQ = useQuery({
+    queryKey: ["reputation", uid],
+    enabled: !!uid,
+    queryFn: async (): Promise<Reputation> => {
+      const { data } = await supabase
+        .from("photographer_reputation" as any)
+        .select("*")
+        .eq("user_id", uid!)
+        .maybeSingle();
+      
+      return (data as any) ?? {
+        score: 0,
+        rating_avg: 0,
+        total_reviews: 0,
+        response_rate: 100,
+      };
+    }
+  });
+
   return {
     level: levelQ.data,
     rules: rulesQ.data ?? [],
     achievements: achievementsQ.data ?? [],
-    isLoading: levelQ.isLoading || rulesQ.isLoading,
+    specialties: specialtiesQ.data ?? [],
+    reputation: reputationQ.data,
+    isLoading: levelQ.isLoading || rulesQ.isLoading || specialtiesQ.isLoading || reputationQ.isLoading,
     refetch: () => {
       levelQ.refetch();
       achievementsQ.refetch();
+      specialtiesQ.refetch();
+      reputationQ.refetch();
     },
   };
 }
