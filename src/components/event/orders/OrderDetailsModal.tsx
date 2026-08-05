@@ -103,11 +103,11 @@ export const OrderDetailsModal = ({ orderId, onClose }: OrderDetailsModalProps) 
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-primary">
                   <ShoppingBag className="w-4 h-4" />
-                  <SectionTitle className="text-sm font-bold uppercase tracking-widest m-0">Itens do Pedido ({order.order_items?.length || 0})</SectionTitle>
+                  <SectionTitle className="text-sm font-bold uppercase tracking-widest m-0">Itens do Pedido ({order.items?.length || 0})</SectionTitle>
                 </div>
                 
                 <div className="bg-card border border-border/60 rounded-xl overflow-hidden shadow-sm">
-                  {order.order_items?.map((item, idx) => (
+                  {order.items?.map((item, idx) => (
                     <div key={idx} className={`p-4 flex items-center gap-4 ${idx !== 0 ? 'border-t border-border/40' : ''}`}>
                       <div className="w-12 h-12 rounded-lg bg-secondary/50 flex items-center justify-center overflow-hidden flex-shrink-0">
                         {item.photo_id ? (
