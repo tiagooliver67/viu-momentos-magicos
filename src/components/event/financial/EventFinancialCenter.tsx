@@ -173,7 +173,7 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="flex flex-col gap-6 p-6">
+        <div className="flex flex-col gap-6 p-6 min-h-[400px]">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-muted animate-pulse rounded-2xl" />)}
           </div>
@@ -182,26 +182,31 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
       );
     }
 
-    if (!data?.orders.length) {
+    if (!data?.orders || data.orders.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <DollarSign className="w-8 h-8 text-primary" />
+        <div className="flex flex-col items-center justify-center py-24 px-4 text-center min-h-[400px]">
+          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-500">
+            <DollarSign className="w-10 h-10 text-primary" />
           </div>
-          <SectionTitle>Sem movimentações financeiras</SectionTitle>
-          <p className="text-muted-foreground max-w-md mt-2">
-            Assim que ocorrer a primeira venda, os dados aparecerão aqui.
+          <SectionTitle className="text-xl md:text-2xl">Sem movimentações financeiras</SectionTitle>
+          <p className="text-muted-foreground max-w-sm mt-3 leading-relaxed">
+            Este evento ainda não registrou vendas. Assim que ocorrer o primeiro pedido, os dados de faturamento e métricas aparecerão aqui.
           </p>
+          {onClose && (
+            <Button variant="outline" onClick={onClose} className="mt-8 rounded-xl px-8">
+              Fechar
+            </Button>
+          )}
         </div>
       );
     }
 
     return (
-      <div className="space-y-8 p-6 pb-10">
+      <div className="space-y-8 p-6 pb-10 animate-in fade-in duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <PageTitle className="text-2xl">Financeiro</PageTitle>
-            <PageSubtitle>{event?.name}</PageSubtitle>
+          <div className="flex-1 min-w-0">
+            <PageTitle className="text-2xl truncate">{event?.name || "Financeiro"}</PageTitle>
+            <PageSubtitle>Gestão de faturamento e performance</PageSubtitle>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/40">
@@ -338,7 +343,7 @@ export const EventFinancialCenter = ({ open, onClose, eventId: propEventId }: Ev
   if (open) {
     return (
       <Dialog open={open} onOpenChange={(o) => !o && onClose?.()}>
-        <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-background border-border">
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] flex flex-col p-0 overflow-hidden bg-background border-border z-[100]">
           <div className="flex-1 overflow-auto scrollbar-thin">
             {renderContent()}
           </div>
