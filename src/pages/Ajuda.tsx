@@ -86,7 +86,7 @@ const categories: Category[] = [
     articles: [
       { 
         q: "Como funciona o Programa de Embaixadores?", 
-        a: "O programa reconhece fotógrafos que trazem novos profissionais para a ViuFoto. Você recebe 1% da receita líquida gerada pela ViuFoto através do fotógrafo indicado durante os primeiros 12 meses dele na plataforma." 
+        a: "O programa reconhece fotógrafos que trazem novos profissionais para a ViuFoto. Você recebe uma comissão sobre a receita gerada pela ViuFoto através do fotógrafo indicado durante o período de validade da indicação." 
       },
       { 
         q: "Quais os critérios para uma indicação ser válida?", 
