@@ -88,8 +88,8 @@ export const EventFinancialCenter = () => {
 
   const chartData = useMemo(() => {
     if (!data) return [];
-    const { orders } = data;
-    const paidOrders = orders.filter(o => o.status === "pago" || o.status === "enviado");
+    const paidOrders = filteredOrders.filter(o => o.status === "pago" || o.status === "enviado");
+
     
     // Group by day for the last 30 days or based on event range
     const groups: Record<string, any> = {};
