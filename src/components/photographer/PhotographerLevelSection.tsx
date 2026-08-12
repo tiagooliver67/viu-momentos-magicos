@@ -4,18 +4,20 @@ import { Trophy, Medal, Sparkles, Crown, Gem, Award, Star, Shield } from "lucide
 
 interface Props { userId: string | undefined }
 
-const LEVEL_GRADIENTS: Record<LevelKey, string> = {
+const LEVEL_GRADIENTS: Record<string, string> = {
   bronze: "from-amber-700 to-amber-500",
   prata: "from-slate-400 to-slate-200",
   ouro: "from-yellow-500 to-amber-300",
   diamante: "from-cyan-400 to-blue-500",
+  embaixador: "from-primary to-violet-400",
 };
 
-const LEVEL_ICON_COMPONENTS: Record<LevelKey, React.ElementType> = {
+const LEVEL_ICON_COMPONENTS: Record<string, React.ElementType> = {
   bronze: Award,
   prata: Medal,
   ouro: Trophy,
   diamante: Gem,
+  embaixador: Crown,
 };
 
 export default function PhotographerLevelSection({ userId }: Props) {
@@ -28,7 +30,10 @@ export default function PhotographerLevelSection({ userId }: Props) {
   if (level.current_level === "bronze" && unlocked.length === 0 && !level.is_ambassador) return null;
 
   const unlockedSpecialties = specialties.filter(s => s.unlocked_at !== null);
-  const LevelIcon = LEVEL_ICON_COMPONENTS[level.current_level];
+  const LevelIcon = LEVEL_ICON_COMPONENTS[level.current_level] ?? Shield;
+  const levelGradient = LEVEL_GRADIENTS[level.current_level] ?? "from-slate-500 to-slate-300";
+  const levelLabel = (LEVEL_LABELS as Record<string, string>)[level.current_level]
+    ?? String(level.current_level || "").replace(/^./, (c) => c.toUpperCase());
 
   return (
     <section className="container mx-auto px-4 py-6">
@@ -60,14 +65,14 @@ export default function PhotographerLevelSection({ userId }: Props) {
             {/* 2. Level & Ambassador Status */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <div
-                className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${LEVEL_GRADIENTS[level.current_level]} flex items-center justify-center text-white shadow-sm`}
+                className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${levelGradient} flex items-center justify-center text-white shadow-sm`}
               >
                 <LevelIcon className="w-6 h-6" strokeWidth={2} />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-bold text-foreground truncate">
-                    Nível {LEVEL_LABELS[level.current_level]}
+                    Nível {levelLabel}
                   </h3>
                   {level.is_ambassador && (
                     <span className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
