@@ -16,8 +16,14 @@ export default function TermsGate() {
 
   // Only enforce on photographers (parceiros)
   const isPhotographer = roles.includes("photographer");
+  
+  // NEVER show TermsGate on subdomains (public athlete view)
+  const isSubdomain = !!new URLSearchParams(window.location.search).get("__tenant") || 
+                     (window.location.hostname.split(".").length > 2 && 
+                      !window.location.hostname.startsWith("www."));
+
   const needsAcceptance =
-    !loading && !!user && !!profile && isPhotographer && !profile.terms_accepted_at;
+    !loading && !!user && !!profile && isPhotographer && !profile.terms_accepted_at && !isSubdomain;
 
   if (!needsAcceptance) return null;
 
