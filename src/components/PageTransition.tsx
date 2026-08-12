@@ -8,7 +8,10 @@ const PageTransition = React.forwardRef<HTMLDivElement, { children: ReactNode }>
 
     useEffect(() => {
       setShow(false);
-      const t = requestAnimationFrame(() => setShow(true));
+      const t = requestAnimationFrame(() => {
+        // Double RAF to ensure browser has processed the opacity 0 state
+        requestAnimationFrame(() => setShow(true));
+      });
       return () => cancelAnimationFrame(t);
     }, [location.pathname]);
 
@@ -19,6 +22,8 @@ const PageTransition = React.forwardRef<HTMLDivElement, { children: ReactNode }>
           opacity: show ? 1 : 0,
           transform: show ? "translateY(0)" : "translateY(8px)",
           transition: "opacity 0.35s ease, transform 0.35s ease",
+          width: "100%",
+          minHeight: "100vh"
         }}
       >
         {children}
