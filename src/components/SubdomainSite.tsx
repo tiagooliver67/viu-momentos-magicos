@@ -50,6 +50,7 @@ export default function SubdomainSite({ slug }: { slug: string }) {
       <Route path="/portfolio" element={<PhotographerPortfolioPage slug={slug} />} />
       <Route path="/evento/:id" element={<EventPage />} />
       <Route path="/foto/:photoId" element={<FotoPage />} />
+      <Route path="/" element={<PhotographerPage slug={slug} />} />
       <Route path="*" element={<PhotographerPage slug={slug} />} />
     </Routes>
   );
