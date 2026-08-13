@@ -222,10 +222,6 @@ Deno.serve(async (req) => {
       const normalize = (s: string | null | undefined) => (s || "").trim().toLowerCase();
       const isSameWallet = normalize(profile.asaas_wallet_id) === normalize(viufotoWalletId);
 
-      if (isSameWallet) {
-        console.warn(`[WALLET_CONFLICT_PREVENTED] Carteiras idênticas detectadas. Pulando split para evitar erro na Asaas. Profile: ${profile.asaas_wallet_id}, ViuFoto: ${viufotoWalletId}`);
-      }
-
       const split = isSameWallet
         ? []
         : [
@@ -233,7 +229,10 @@ Deno.serve(async (req) => {
             { walletId: profile.asaas_wallet_id, remainingValue: true },
           ];
 
-      console.log(`Split: platform=${platformFee} (${commissionRate * 100}%), photographer wallet=${profile.asaas_wallet_id}, total=${total}`);
+      console.log(`[DEBUG_PAYLOAD] values: profile_wallet="${profile.asaas_wallet_id}", viufoto_wallet="${viufotoWalletId}"`);
+      console.log(`[DEBUG_PAYLOAD] normalized: profile_wallet="${normalize(profile.asaas_wallet_id)}", viufoto_wallet="${normalize(viufotoWalletId)}", isSameWallet=${isSameWallet}`);
+      console.log(`[DEBUG_PAYLOAD] split_array: ${JSON.stringify(split)}`);
+      console.log(`[DEBUG_PAYLOAD] PlatformFee=${platformFee}, Total=${total}`);
 
       // 4. Create/find ASAAS customer
       const customer = await getOrCreateCustomer(name, email, cpfCnpj.replace(/\D/g, ""));
