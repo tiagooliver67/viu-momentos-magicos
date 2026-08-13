@@ -20,7 +20,7 @@ const PageTransition = React.forwardRef<HTMLDivElement, { children: ReactNode }>
         ref={ref}
         style={{
           opacity: show ? 1 : 0,
-          transform: show ? "translateY(0)" : "translateY(8px)",
+          transform: show ? "none" : "translateY(8px)",
           transition: "opacity 0.35s ease, transform 0.35s ease",
           width: "100%",
           minHeight: "100vh"
