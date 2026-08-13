@@ -82,6 +82,7 @@ function mapErrorToFriendly(error: any): { status: number; code: string; message
   const raw = String(error?.message || "").toLowerCase();
 
   if (raw.includes("split para sua própria carteira") || raw.includes("split para sua propria carteira")) {
+    console.error(`[WALLET_CONFLICT] Erro de split detectado. Mensagem original: "${error.message}"`);
     return {
       status: 400,
       code: "WALLET_CONFLICT",
@@ -218,7 +219,13 @@ Deno.serve(async (req) => {
 
       // If photographer wallet is the same as platform wallet, skip split
       // (ASAAS doesn't allow splitting to your own wallet)
-      const isSameWallet = profile.asaas_wallet_id === viufotoWalletId;
+      const normalize = (s: string | null | undefined) => (s || "").trim().toLowerCase();
+      const isSameWallet = normalize(profile.asaas_wallet_id) === normalize(viufotoWalletId);
+
+      if (isSameWallet) {
+        console.warn(`[WALLET_CONFLICT_PREVENTED] Carteiras idênticas detectadas. Pulando split para evitar erro na Asaas. Profile: ${profile.asaas_wallet_id}, ViuFoto: ${viufotoWalletId}`);
+      }
+
       const split = isSameWallet
         ? []
         : [
