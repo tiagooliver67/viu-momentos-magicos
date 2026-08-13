@@ -94,7 +94,10 @@ function mapErrorToFriendly(error: any): { status: number; code: string; message
   if (raw.includes("email")) {
     return { status: 400, code: "INVALID_EMAIL", message: "E-mail inválido. Verifique e tente novamente." };
   }
-  if (raw.includes("value") && (raw.includes("mínim") || raw.includes("minim") || raw.includes("invalid"))) {
+  const isAsaasError = error?.asaasCode || error?.asaasStatus || raw.includes("asaas");
+  const isDbOrOrderError = raw.includes("order error") || raw.includes("invalid input value for enum");
+
+  if (raw.includes("value") && (raw.includes("mínim") || raw.includes("minim") || raw.includes("invalid")) && isAsaasError && !isDbOrOrderError) {
     return { status: 400, code: "INVALID_VALUE", message: "Valor da compra inválido. Atualize o carrinho e tente novamente." };
   }
   if (raw.includes("customer")) {
