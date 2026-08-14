@@ -531,10 +531,6 @@ const EventDashboard = () => {
           ))}
         </div>
         
-        {/* Financial Inline View */}
-        <div className="mb-6 bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-          <EventFinancialCenter eventId={id} />
-        </div>
 
         {/* Coupons List */}
         {coupons.length > 0 && (
