@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, PlusCircle, Check, X, Shield, Award, Mail, Send, Trash2, UserPlus, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { Typography } from "@/components/Typography";
+import { Typography } from "@/components/ui/Typography";
 
 const MeuColetivo = () => {
   const { user } = useAuth();
