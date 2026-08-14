@@ -11,6 +11,7 @@ import {
   Briefcase, Calendar, MapPin, Lightbulb, ArrowRight,
   PlusCircle, FileText, Award, BookOpen, Image as ImageIcon,
   Megaphone, Sparkles, TrendingUp, Search, Handshake, Send,
+  Shield,
 } from "lucide-react";
 
 /* ──────────────────────────────────────────────────────────
