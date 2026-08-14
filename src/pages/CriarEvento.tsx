@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle, Info, Wallet, Users, Split } from "lucide-react";
+import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle, Info, Wallet, Users, Split, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const steps = ["Monetização", "Informações", "Busca", "Visibilidade", "Resumo"];
 
@@ -54,9 +55,22 @@ const CriarEvento = () => {
   const [eventCategory, setEventCategory] = useState("");
   const [selectedSearchTypes, setSelectedSearchTypes] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<boolean | null>(null);
+  const [coletivoId, setColetivoId] = useState<string | null>(null);
+  const [priorityDate, setPriorityDate] = useState("");
+  const [priorityTime, setPriorityTime] = useState("");
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
+  const { data: meusColetivos = [] } = useQuery({
+    queryKey: ["my-coletivos"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase.from("coletivos").select("id, name").eq("owner_id", user.id);
+      return data || [];
+    }
+  });
 
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -130,6 +144,7 @@ const CriarEvento = () => {
         return;
       }
 
+      const priorityUntil = priorityDate && priorityTime ? `${priorityDate}T${priorityTime}:00` : null;
       const { data, error } = await supabase.from("events").insert({
         organizer_id: user.id,
         name: eventName,
@@ -142,6 +157,8 @@ const CriarEvento = () => {
         plan_type: "profissional",
         commission_photographer_share: 10 - clientShare,
         commission_client_share: clientShare,
+        coletivo_id: coletivoId,
+        coletivo_priority_until: priorityUntil,
       } as any).select().single();
 
       if (error) throw error;
@@ -505,6 +522,53 @@ const CriarEvento = () => {
                     : "🔒 Seu evento ficará oculto. Somente pessoas com o link direto poderão acessá-lo."}
                 </p>
               )}
+            </div>
+
+            {/* Coletivo Priority (opcional) */}
+            <div className="glass-card p-5 sm:p-6 mt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-5 h-5 text-primary" />
+                <h3 className="font-bold text-foreground text-sm sm:text-base">Coletivo (Opcional)</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Vincular a um coletivo</label>
+                  <select 
+                    value={coletivoId || ""} 
+                    onChange={(e) => setColetivoId(e.target.value || null)}
+                    className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground outline-none focus:border-primary text-sm min-h-[48px]"
+                  >
+                    <option value="">Nenhum coletivo</option>
+                    {meusColetivos.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {coletivoId && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                    <div>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Prioridade até (Data)</label>
+                      <input 
+                        type="date" 
+                        value={priorityDate} 
+                        onChange={(e) => setPriorityDate(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground text-sm min-h-[48px]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Prioridade até (Hora)</label>
+                      <input 
+                        type="time" 
+                        value={priorityTime} 
+                        onChange={(e) => setPriorityTime(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground text-sm min-h-[48px]"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -17,6 +17,7 @@ import Pedidos from "./pages/Pedidos";
 import Clientes from "./pages/Clientes";
 import Configuracoes from "./pages/Configuracoes";
 import Oportunidades from "./pages/Oportunidades";
+import MeuColetivo from "./pages/MeuColetivo";
 import Propostas from "./pages/Propostas";
 import EventDashboard from "./pages/EventDashboard";
 import Login from "./pages/Login";
@@ -125,6 +126,7 @@ const AppRoutes = () => {
       <Route path="/dashboard/propostas" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Propostas /></ProtectedRoute>} />
       <Route path="/dashboard/configuracoes" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Configuracoes /></ProtectedRoute>} />
       <Route path="/dashboard/embaixador" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><Embaixador /></ProtectedRoute>} />
+      <Route path="/dashboard/coletivo" element={<ProtectedRoute requiredRoles={["photographer", "organizer"]}><MeuColetivo /></ProtectedRoute>} />
       <Route path="/dashboard/nivel" element={
         <ProtectedRoute requiredRoles={["photographer", "organizer"]}>
           <div className="flex min-h-screen bg-background">

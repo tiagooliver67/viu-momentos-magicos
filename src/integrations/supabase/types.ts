@@ -328,6 +328,83 @@ export type Database = {
           },
         ]
       }
+      coletivo_members: {
+        Row: {
+          coletivo_id: string
+          commission_pct: number
+          id: string
+          invited_at: string
+          invited_by: string | null
+          joined_at: string | null
+          status: Database["public"]["Enums"]["coletivo_member_status"]
+          user_id: string
+        }
+        Insert: {
+          coletivo_id: string
+          commission_pct?: number
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          joined_at?: string | null
+          status?: Database["public"]["Enums"]["coletivo_member_status"]
+          user_id: string
+        }
+        Update: {
+          coletivo_id?: string
+          commission_pct?: number
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          joined_at?: string | null
+          status?: Database["public"]["Enums"]["coletivo_member_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coletivo_members_coletivo_id_fkey"
+            columns: ["coletivo_id"]
+            isOneToOne: false
+            referencedRelation: "coletivos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coletivos: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          owner_asaas_wallet_id: string | null
+          owner_id: string
+          slug: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          owner_asaas_wallet_id?: string | null
+          owner_id: string
+          slug?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          owner_asaas_wallet_id?: string | null
+          owner_id?: string
+          slug?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       custom_links: {
         Row: {
           created_at: string
@@ -1070,6 +1147,8 @@ export type Database = {
           bib_number_pattern: string
           bib_search_enabled: boolean
           category: string
+          coletivo_id: string | null
+          coletivo_priority_until: string | null
           collab_note: string | null
           commission_client_share: number
           commission_photographer_share: number
@@ -1098,6 +1177,8 @@ export type Database = {
           bib_number_pattern?: string
           bib_search_enabled?: boolean
           category?: string
+          coletivo_id?: string | null
+          coletivo_priority_until?: string | null
           collab_note?: string | null
           commission_client_share?: number
           commission_photographer_share?: number
@@ -1126,6 +1207,8 @@ export type Database = {
           bib_number_pattern?: string
           bib_search_enabled?: boolean
           category?: string
+          coletivo_id?: string | null
+          coletivo_priority_until?: string | null
           collab_note?: string | null
           commission_client_share?: number
           commission_photographer_share?: number
@@ -1150,7 +1233,15 @@ export type Database = {
           updated_at?: string
           visibility?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_coletivo_id_fkey"
+            columns: ["coletivo_id"]
+            isOneToOne: false
+            referencedRelation: "coletivos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       face_search_logs: {
         Row: {
@@ -3535,6 +3626,7 @@ export type Database = {
     Enums: {
       app_role: "user" | "photographer" | "organizer" | "super_admin"
       application_status: "pendente" | "aceita" | "rejeitada" | "cancelada"
+      coletivo_member_status: "convidado" | "ativo" | "removido"
       discount_type: "percentual" | "valor_fixo"
       event_status: "ativo" | "em_breve" | "inativo" | "agendado"
       order_status: "aguardando_pagamento" | "pago" | "enviado" | "cancelado"
@@ -3696,6 +3788,7 @@ export const Constants = {
     Enums: {
       app_role: ["user", "photographer", "organizer", "super_admin"],
       application_status: ["pendente", "aceita", "rejeitada", "cancelada"],
+      coletivo_member_status: ["convidado", "ativo", "removido"],
       discount_type: ["percentual", "valor_fixo"],
       event_status: ["ativo", "em_breve", "inativo", "agendado"],
       order_status: ["aguardando_pagamento", "pago", "enviado", "cancelado"],

@@ -11,6 +11,7 @@ import {
   Briefcase, Calendar, MapPin, Lightbulb, ArrowRight,
   PlusCircle, FileText, Award, BookOpen, Image as ImageIcon,
   Megaphone, Sparkles, TrendingUp, Search, Handshake, Send,
+  Shield,
 } from "lucide-react";
 
 /* ──────────────────────────────────────────────────────────
@@ -27,19 +28,52 @@ const Oportunidades = () => {
 
   /* ── Eventos abertos: upcoming + status público (em_breve / ativo) ── */
   const { data: openEvents = [], isLoading: loadingEvents } = useQuery({
-    queryKey: ["open-events"],
+    queryKey: ["open-events", user?.id],
     queryFn: async () => {
       const today = new Date().toISOString();
+      const now = new Date();
+
+      // 1. Buscar meus coletivos ativos
+      let myColetivoIds: string[] = [];
+      if (user?.id) {
+        const { data: memberships } = await supabase
+          .from("coletivo_members")
+          .select("coletivo_id")
+          .eq("user_id", user.id)
+          .eq("status", "ativo");
+        myColetivoIds = (memberships || []).map(m => m.coletivo_id);
+      }
+
+      // 2. Buscar eventos
       const { data, error } = await supabase
         .from("events")
-        .select("id, name, location, event_date, category, status, cover_url")
+        .select(`
+          id, name, location, event_date, category, status, cover_url, 
+          coletivo_id, coletivo_priority_until
+        `)
         .in("status", ["em_breve", "ativo"])
         .gte("event_date", today)
-        .order("event_date", { ascending: true })
-        .limit(12);
+        .order("event_date", { ascending: true });
+
       if (error) throw error;
-      return data || [];
+
+      // 3. Filtrar prioridade do coletivo
+      const filtered = (data || []).filter(ev => {
+        // Sem coletivo -> Público
+        if (!ev.coletivo_id) return true;
+        
+        const priorityUntil = ev.coletivo_priority_until ? new Date(ev.coletivo_priority_until) : null;
+        
+        // Prioridade expirou -> Público
+        if (!priorityUntil || now > priorityUntil) return true;
+
+        // Na prioridade -> Só membros ativos
+        return myColetivoIds.includes(ev.coletivo_id);
+      });
+
+      return filtered.slice(0, 12);
     },
+    enabled: true
   });
 
   /* ── IDs de eventos onde já me candidatei (para esconder botão) ── */
@@ -151,9 +185,16 @@ const Oportunidades = () => {
                 />
               ) : (
                 <ul className="space-y-2">
-                  {openEvents.map((ev) => (
+                  {openEvents.map((ev: any) => (
                     <li key={ev.id}>
-                    <div className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-all">
+                    <div className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-all relative">
+                      {ev.coletivo_id && (
+                        <div className="absolute -top-2 -right-1 z-10">
+                          <span className="flex items-center gap-1 text-[9px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-lg">
+                            <Shield className="w-2.5 h-2.5" /> EXCLUSIVO COLETIVO
+                          </span>
+                        </div>
+                      )}
                       <Link to={`/evento/${ev.id}`} className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                           {ev.cover_url ? (
                             <img src={getCoverUrl(ev.cover_url, 600) ?? undefined} alt={ev.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
