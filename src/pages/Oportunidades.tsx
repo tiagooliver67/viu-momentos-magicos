@@ -186,7 +186,14 @@ const Oportunidades = () => {
                 <ul className="space-y-2">
                   {openEvents.map((ev: any) => (
                     <li key={ev.id}>
-                    <div className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-all">
+                    <div className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-all relative">
+                      {ev.coletivo_id && (
+                        <div className="absolute -top-2 -right-1 z-10">
+                          <span className="flex items-center gap-1 text-[9px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full shadow-lg">
+                            <Shield className="w-2.5 h-2.5" /> EXCLUSIVO COLETIVO
+                          </span>
+                        </div>
+                      )}
                       <Link to={`/evento/${ev.id}`} className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                           {ev.cover_url ? (
                             <img src={getCoverUrl(ev.cover_url, 600) ?? undefined} alt={ev.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
