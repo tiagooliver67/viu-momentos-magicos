@@ -184,7 +184,7 @@ const Oportunidades = () => {
                 />
               ) : (
                 <ul className="space-y-2">
-                  {openEvents.map((ev) => (
+                  {openEvents.map((ev: any) => (
                     <li key={ev.id}>
                     <div className="group flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-muted/40 transition-all">
                       <Link to={`/evento/${ev.id}`} className="w-12 h-12 rounded-lg bg-muted overflow-hidden flex-shrink-0">
