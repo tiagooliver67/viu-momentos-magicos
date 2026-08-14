@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle, Info, Wallet, Users, Split } from "lucide-react";
+import { Check, ChevronRight, ScanFace, Image, Eye, Camera, MapPin, AlertCircle, Info, Wallet, Users, Split, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const steps = ["Monetização", "Informações", "Busca", "Visibilidade", "Resumo"];
 
