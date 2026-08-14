@@ -144,6 +144,7 @@ const CriarEvento = () => {
         return;
       }
 
+      const priorityUntil = priorityDate && priorityTime ? `${priorityDate}T${priorityTime}:00` : null;
       const { data, error } = await supabase.from("events").insert({
         organizer_id: user.id,
         name: eventName,
@@ -156,6 +157,8 @@ const CriarEvento = () => {
         plan_type: "profissional",
         commission_photographer_share: 10 - clientShare,
         commission_client_share: clientShare,
+        coletivo_id: coletivoId,
+        coletivo_priority_until: priorityUntil,
       } as any).select().single();
 
       if (error) throw error;
