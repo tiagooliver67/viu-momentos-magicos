@@ -55,9 +55,22 @@ const CriarEvento = () => {
   const [eventCategory, setEventCategory] = useState("");
   const [selectedSearchTypes, setSelectedSearchTypes] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<boolean | null>(null);
+  const [coletivoId, setColetivoId] = useState<string | null>(null);
+  const [priorityDate, setPriorityDate] = useState("");
+  const [priorityTime, setPriorityTime] = useState("");
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [categorySearch, setCategorySearch] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
+  const { data: meusColetivos = [] } = useQuery({
+    queryKey: ["my-coletivos"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase.from("coletivos").select("id, name").eq("owner_id", user.id);
+      return data || [];
+    }
+  });
 
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
