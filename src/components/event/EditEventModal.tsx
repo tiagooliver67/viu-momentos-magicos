@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
-import { X, ScanFace, Image as ImageIcon, Eye, Camera } from "lucide-react";
+import { X, ScanFace, Image as ImageIcon, Eye, Camera, Shield } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface EventData {
   name: string;
@@ -9,6 +12,8 @@ interface EventData {
   category: string;
   search_type: string[];
   visibility: boolean;
+  coletivo_id?: string | null;
+  coletivo_priority_until?: string | null;
 }
 
 const categories = ["Futebol", "Futsal", "Vôlei", "Basquete", "Corrida", "Ciclismo", "Natação", "Crossfit", "Judô", "MMA", "Tênis", "Outros"];
@@ -29,13 +34,45 @@ interface Props {
 }
 
 export default function EditEventModal({ open, onClose, onSave, initial, isSaving }: Props) {
+  const { user } = useAuth();
   const [form, setForm] = useState<EventData>({
-    name: "", event_date: "", event_time: "", location: "", category: "Outros", search_type: [], visibility: true,
+    name: "", event_date: "", event_time: "", location: "", category: "Outros", search_type: [], visibility: true, coletivo_id: null, coletivo_priority_until: null
+  });
+
+  const [priorityDate, setPriorityDate] = useState("");
+  const [priorityTime, setPriorityTime] = useState("");
+
+  const { data: meusColetivos = [] } = useQuery({
+    queryKey: ["meus-coletivos", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("coletivos")
+        .select("id, name")
+        .eq("owner_id", user?.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id && open
   });
 
   useEffect(() => {
-    if (initial) setForm(prev => ({ ...prev, ...initial }));
+    if (initial) {
+      setForm(prev => ({ ...prev, ...initial }));
+      if (initial.coletivo_priority_until) {
+        const dt = new Date(initial.coletivo_priority_until);
+        setPriorityDate(dt.toISOString().split('T')[0]);
+        setPriorityTime(dt.toTimeString().split(' ')[0].substring(0, 5));
+      }
+    }
   }, [initial]);
+
+  useEffect(() => {
+    if (priorityDate && priorityTime) {
+      setForm(prev => ({ ...prev, coletivo_priority_until: `${priorityDate}T${priorityTime}:00` }));
+    } else {
+      setForm(prev => ({ ...prev, coletivo_priority_until: null }));
+    }
+  }, [priorityDate, priorityTime]);
 
   if (!open) return null;
 
@@ -84,6 +121,36 @@ export default function EditEventModal({ open, onClose, onSave, initial, isSavin
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
+
+          <div className="p-4 border border-dashed border-border rounded-xl space-y-3">
+            <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+              <Shield className="w-4 h-4" /> Coletivo (Opcional)
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground uppercase font-bold">Vincular a um coletivo</label>
+              <select 
+                value={form.coletivo_id || ""} 
+                onChange={e => set("coletivo_id", e.target.value || null)}
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm"
+              >
+                <option value="">Nenhum</option>
+                {meusColetivos.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            {form.coletivo_id && (
+              <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2">
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase font-bold">Prioridade até (Data)</label>
+                  <input type="date" value={priorityDate} onChange={e => setPriorityDate(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase font-bold">Prioridade até (Hora)</label>
+                  <input type="time" value={priorityTime} onChange={e => setPriorityTime(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg bg-secondary border border-border text-foreground text-sm" />
+                </div>
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="text-xs text-muted-foreground">Tipo de busca</label>
             <div className="grid grid-cols-2 gap-2 mt-1">
