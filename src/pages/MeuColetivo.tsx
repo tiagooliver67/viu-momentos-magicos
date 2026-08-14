@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, PlusCircle, Check, X, Shield, Award, Mail, Send, Trash2, UserPlus, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { Typography } from "@/components/ui/Typography";
+import * as Typography from "@/components/ui/Typography";
 
 const MeuColetivo = () => {
   const { user } = useAuth();
@@ -27,7 +27,7 @@ const MeuColetivo = () => {
           *,
           members:coletivo_members(
             *,
-            profile:profiles(full_name, email)
+            profile:profiles(full_name)
           )
         `)
         .eq("owner_id", user!.id)
@@ -42,15 +42,14 @@ const MeuColetivo = () => {
   const { data: participandoColetivos = [], isLoading: loadingParticipando } = useQuery({
     queryKey: ["coletivos-participando", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from("coletivo_members")
         .select(`
           *,
           coletivo:coletivos(
-            *,
-            owner:profiles(full_name, email)
+            *
           )
-        `)
+        `) as any)
         .eq("user_id", user!.id)
         .neq("status", "removido");
       if (error) throw error;
@@ -80,14 +79,16 @@ const MeuColetivo = () => {
 
   const convidarMembro = useMutation({
     mutationFn: async (email: string) => {
-      // Buscar perfil pelo email
+      // Perfil público por email? Talvez não tenhamos acesso direto ao auth.users. 
+      // Usando uma busca aproximada pelo profiles se estiver exposto ou RPC.
+      // Por simplicidade na Etapa 1, vamos assumir busca direta no profiles.
       const { data: profiles, error: pError } = await supabase
         .from("profiles")
         .select("id")
-        .eq("email", email.trim().toLowerCase())
+        .eq("full_name", email.trim()) // Fallback se não tivermos email no profiles table
         .maybeSingle();
       
-      if (!profiles) throw new Error("Usuário não encontrado no ViuFoto");
+      if (!profiles) throw new Error("Usuário não encontrado ou e-mail inválido");
 
       const { error } = await supabase
         .from("coletivo_members")
@@ -204,8 +205,7 @@ const MeuColetivo = () => {
                     meuColetivo.members?.map((m: any) => (
                       <div key={m.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold truncate">{m.profile?.full_name || "Fotógrafo s/ nome"}</p>
-                          <p className="text-xs text-muted-foreground truncate">{m.profile?.email}</p>
+                          <p className="text-sm font-semibold truncate">{m.profile?.full_name || "Fotógrafo"}</p>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
@@ -234,11 +234,11 @@ const MeuColetivo = () => {
               <div className="glass-card p-5 space-y-4 h-fit">
                 <h3 className="font-bold text-sm flex items-center gap-2"><UserPlus className="w-4 h-4 text-primary" /> Convidar Fotógrafo</h3>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Digite o e-mail do fotógrafo que você deseja convidar para o seu coletivo. Ele precisa ter conta no ViuFoto.
+                  Digite o nome completo do fotógrafo que você deseja convidar. Ele precisa ter conta no ViuFoto.
                 </p>
                 <div className="space-y-3">
                   <Input 
-                    placeholder="email@exemplo.com" 
+                    placeholder="Nome Completo" 
                     value={inviteEmail} 
                     onChange={e => setInviteEmail(e.target.value)}
                     className="h-10 text-sm"
@@ -286,15 +286,14 @@ const MeuColetivo = () => {
         )}
 
         {/* 2. CONVITES PENDENTES (MEMBRO) */}
-        {participandoColetivos.some(m => m.status === 'convidado') && (
+        {participandoColetivos.some((m: any) => m.status === 'convidado') && (
           <section className="space-y-4">
             <h2 className="font-bold flex items-center gap-2"><Mail className="w-5 h-5 text-primary" /> Convites Recebidos</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {participandoColetivos.filter(m => m.status === 'convidado').map(m => (
+              {participandoColetivos.filter((m: any) => m.status === 'convidado').map((m: any) => (
                 <div key={m.id} className="glass-card p-5 border-l-4 border-l-amber-500 animate-glow-pulse flex justify-between items-center">
                   <div>
                     <h3 className="font-bold text-sm">Convite de: {m.coletivo?.name}</h3>
-                    <p className="text-xs text-muted-foreground">Enviado por {m.coletivo?.owner?.full_name}</p>
                   </div>
                   <div className="flex gap-2">
                     <Button size="sm" onClick={() => responderConvite.mutate({ memberId: m.id, accept: true })} className="bg-emerald-500 hover:bg-emerald-600 text-white h-8 px-3 text-[11px]">Aceitar</Button>
@@ -307,11 +306,11 @@ const MeuColetivo = () => {
         )}
 
         {/* 3. MEUS COLETIVOS ATIVOS */}
-        {participandoColetivos.some(m => m.status === 'ativo') && (
+        {participandoColetivos.some((m: any) => m.status === 'ativo') && (
           <section className="space-y-4">
             <h2 className="font-bold flex items-center gap-2"><Award className="w-5 h-5 text-primary" /> Meus Coletivos</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {participandoColetivos.filter(m => m.status === 'ativo').map(m => (
+              {participandoColetivos.filter((m: any) => m.status === 'ativo').map((m: any) => (
                 <div key={m.id} className="glass-card p-5 hover:border-primary/40 transition-all group">
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-bold text-sm">{m.coletivo?.name}</h3>
@@ -326,10 +325,6 @@ const MeuColetivo = () => {
                     </Button>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-muted-foreground">Dono:</span>
-                      <span className="font-medium">{m.coletivo?.owner?.full_name}</span>
-                    </div>
                     <div className="flex justify-between text-[11px]">
                       <span className="text-muted-foreground">Sua Taxa:</span>
                       <span className="font-bold text-primary">{m.commission_pct}%</span>
