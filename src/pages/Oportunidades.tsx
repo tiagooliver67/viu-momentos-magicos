@@ -27,9 +27,23 @@ const Oportunidades = () => {
 
   /* ── Eventos abertos: upcoming + status público (em_breve / ativo) ── */
   const { data: openEvents = [], isLoading: loadingEvents } = useQuery({
-    queryKey: ["open-events"],
+    queryKey: ["open-events", user?.id],
     queryFn: async () => {
       const today = new Date().toISOString();
+      const now = new Date();
+
+      // 1. Buscar meus coletivos ativos
+      let myColetivoIds: string[] = [];
+      if (user?.id) {
+        const { data: memberships } = await supabase
+          .from("coletivo_members")
+          .select("coletivo_id")
+          .eq("user_id", user.id)
+          .eq("status", "ativo");
+        myColetivoIds = (memberships || []).map(m => m.coletivo_id);
+      }
+
+      // 2. Buscar eventos
       const { data, error } = await supabase
         .from("events")
         .select(`
@@ -42,23 +56,23 @@ const Oportunidades = () => {
 
       if (error) throw error;
 
-      // Filtrar prioridade do coletivo
+      // 3. Filtrar prioridade do coletivo
       const filtered = (data || []).filter(ev => {
+        // Sem coletivo -> Público
         if (!ev.coletivo_id) return true;
-        const now = new Date();
+        
         const priorityUntil = ev.coletivo_priority_until ? new Date(ev.coletivo_priority_until) : null;
         
-        // Se a prioridade expirou, é público
-        if (priorityUntil && now > priorityUntil) return true;
+        // Prioridade expirou -> Público
+        if (!priorityUntil || now > priorityUntil) return true;
 
-        // Se ainda está na prioridade, checar se o usuário é membro ativo
-        // Nota: Idealmente faríamos isso no SQL, mas como precisamos de um check lateral em coletivo_members, 
-        // e o status 'ativo' é fundamental, vamos buscar a lista de coletivos do usuário primeiro ou fazer post-filter.
-        return false; // Bloqueado por padrão se tiver coletivo e estiver na prioridade (resolveremos abaixo com query melhorada)
+        // Na prioridade -> Só membros ativos
+        return myColetivoIds.includes(ev.coletivo_id);
       });
 
       return filtered.slice(0, 12);
     },
+    enabled: true
   });
 
   /* ── IDs de eventos onde já me candidatei (para esconder botão) ── */
