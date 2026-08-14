@@ -523,6 +523,53 @@ const CriarEvento = () => {
                 </p>
               )}
             </div>
+
+            {/* Coletivo Priority (opcional) */}
+            <div className="glass-card p-5 sm:p-6 mt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-5 h-5 text-primary" />
+                <h3 className="font-bold text-foreground text-sm sm:text-base">Coletivo (Opcional)</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Vincular a um coletivo</label>
+                  <select 
+                    value={coletivoId || ""} 
+                    onChange={(e) => setColetivoId(e.target.value || null)}
+                    className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground outline-none focus:border-primary text-sm min-h-[48px]"
+                  >
+                    <option value="">Nenhum coletivo</option>
+                    {meusColetivos.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {coletivoId && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                    <div>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Prioridade até (Data)</label>
+                      <input 
+                        type="date" 
+                        value={priorityDate} 
+                        onChange={(e) => setPriorityDate(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground text-sm min-h-[48px]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Prioridade até (Hora)</label>
+                      <input 
+                        type="time" 
+                        value={priorityTime} 
+                        onChange={(e) => setPriorityTime(e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg bg-secondary border border-border text-foreground text-sm min-h-[48px]"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
