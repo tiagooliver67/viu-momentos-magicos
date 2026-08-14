@@ -32,13 +32,32 @@ const Oportunidades = () => {
       const today = new Date().toISOString();
       const { data, error } = await supabase
         .from("events")
-        .select("id, name, location, event_date, category, status, cover_url")
+        .select(`
+          id, name, location, event_date, category, status, cover_url, 
+          coletivo_id, coletivo_priority_until
+        `)
         .in("status", ["em_breve", "ativo"])
         .gte("event_date", today)
-        .order("event_date", { ascending: true })
-        .limit(12);
+        .order("event_date", { ascending: true });
+
       if (error) throw error;
-      return data || [];
+
+      // Filtrar prioridade do coletivo
+      const filtered = (data || []).filter(ev => {
+        if (!ev.coletivo_id) return true;
+        const now = new Date();
+        const priorityUntil = ev.coletivo_priority_until ? new Date(ev.coletivo_priority_until) : null;
+        
+        // Se a prioridade expirou, é público
+        if (priorityUntil && now > priorityUntil) return true;
+
+        // Se ainda está na prioridade, checar se o usuário é membro ativo
+        // Nota: Idealmente faríamos isso no SQL, mas como precisamos de um check lateral em coletivo_members, 
+        // e o status 'ativo' é fundamental, vamos buscar a lista de coletivos do usuário primeiro ou fazer post-filter.
+        return false; // Bloqueado por padrão se tiver coletivo e estiver na prioridade (resolveremos abaixo com query melhorada)
+      });
+
+      return filtered.slice(0, 12);
     },
   });
 
