@@ -15,6 +15,7 @@ const menuItemsBase = [
   { label: "Oportunidades", icon: Briefcase, path: "/dashboard/oportunidades", roles: ["photographer", "organizer"] },
   { label: "Propostas", icon: Handshake, path: "/dashboard/propostas", roles: ["photographer", "organizer"] },
   { label: "Programa Embaixador", icon: Share2, path: "/dashboard/embaixador", roles: ["photographer", "organizer"] },
+  { label: "Meu Coletivo", icon: Users, path: "/dashboard/coletivo", roles: ["photographer", "organizer"] },
   { label: "Nível & Especialidades", icon: Trophy, path: "/dashboard/nivel", roles: ["photographer", "organizer"] },
   { label: "Chamados", icon: ShieldAlert, path: "/dashboard/chamados", roles: ["photographer", "organizer"] },
   { label: "Configurações", icon: Settings, path: "/dashboard/configuracoes", roles: ["photographer", "organizer"] },
