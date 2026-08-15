@@ -43,14 +43,24 @@ export default function EditEventModal({ open, onClose, onSave, initial, isSavin
   const [priorityTime, setPriorityTime] = useState("");
 
   const { data: meusColetivos = [] } = useQuery({
-    queryKey: ["meus-coletivos", user?.id],
+    queryKey: ["meus-coletivos-eligible", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("coletivos")
-        .select("id, name")
-        .eq("owner_id", user?.id);
-      if (error) throw error;
-      return data || [];
+      if (!user?.id) return [];
+      
+      const { data: asOwner } = await supabase.from("coletivos").select("id, name").eq("owner_id", user.id);
+      const { data: asMember } = await supabase
+        .from("coletivo_members")
+        .select("coletivo:coletivos(id, name)")
+        .eq("user_id", user.id)
+        .eq("status", "ativo");
+      
+      const ownerList = asOwner || [];
+      const memberList = (asMember || []).map((m: any) => m.coletivo).filter(Boolean);
+      
+      const combined = [...ownerList, ...memberList];
+      const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
+      
+      return unique;
     },
     enabled: !!user?.id && open
   });
