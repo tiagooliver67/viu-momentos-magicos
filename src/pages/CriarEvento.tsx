@@ -63,12 +63,27 @@ const CriarEvento = () => {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const { data: meusColetivos = [] } = useQuery({
-    queryKey: ["my-coletivos"],
+    queryKey: ["my-coletivos-eligible"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
-      const { data } = await supabase.from("coletivos").select("id, name").eq("owner_id", user.id);
-      return data || [];
+      
+      // Um fotógrafo pode vincular evento a um coletivo se for DONO ou MEMBRO ATIVO
+      const { data: asOwner } = await supabase.from("coletivos").select("id, name").eq("owner_id", user.id);
+      const { data: asMember } = await supabase
+        .from("coletivo_members")
+        .select("coletivo:coletivos(id, name)")
+        .eq("user_id", user.id)
+        .eq("status", "ativo");
+      
+      const ownerList = asOwner || [];
+      const memberList = (asMember || []).map((m: any) => m.coletivo).filter(Boolean);
+      
+      // Deduplicar e formatar
+      const combined = [...ownerList, ...memberList];
+      const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
+      
+      return unique;
     }
   });
 
