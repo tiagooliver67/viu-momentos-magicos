@@ -185,10 +185,10 @@ Deno.serve(async (req) => {
         });
       }
 
-      // 1. Get event to determine plan_type and organizer
+      // 1. Get event to determine plan_type, organizer, and collective info
       const { data: event, error: eventError } = await supabaseAdmin
         .from("events")
-        .select("organizer_id, plan_type")
+        .select("organizer_id, plan_type, coletivo_id")
         .eq("id", eventId)
         .single();
 
@@ -211,28 +211,78 @@ Deno.serve(async (req) => {
         });
       }
 
-      // 3. Calculate split (commission rate loaded from eligibility_rules)
+      // 3. Calculate split (Platform, Collective, Photographer)
       const commissionRate = await getCommissionRate(supabaseAdmin, event.plan_type);
       const platformFee = Math.round(total * commissionRate * 100) / 100;
+      
+      let collectiveFee = 0;
+      let collectiveWalletId = null;
+
+      // Handle Collective Split if event belongs to one
+      if (event.coletivo_id) {
+        const { data: coletivo } = await supabaseAdmin
+          .from("coletivos")
+          .select("owner_asaas_wallet_id, owner_id")
+          .eq("id", event.coletivo_id)
+          .single();
+
+        const { data: member } = await supabaseAdmin
+          .from("coletivo_members")
+          .select("commission_pct")
+          .eq("coletivo_id", event.coletivo_id)
+          .eq("user_id", event.organizer_id)
+          .eq("status", "ativo")
+          .single();
+
+        if (coletivo?.owner_asaas_wallet_id && member?.commission_pct) {
+          // Calculation: total * (commission_pct / 100)
+          collectiveFee = Math.round(total * (Number(member.commission_pct) / 100) * 100) / 100;
+          collectiveWalletId = coletivo.owner_asaas_wallet_id;
+          
+          // If the photographer IS the collective owner, we don't split to themselves
+          if (coletivo.owner_id === event.organizer_id) {
+            collectiveFee = 0;
+            collectiveWalletId = null;
+          }
+        }
+      }
 
       const viufotoWalletId = getViufotoWalletId();
-
-      // If photographer wallet is the same as platform wallet, skip split
-      // (ASAAS doesn't allow splitting to your own wallet)
       const normalize = (s: string | null | undefined) => (s || "").trim().toLowerCase();
-      const isSameWallet = normalize(profile.asaas_wallet_id) === normalize(viufotoWalletId);
+      
+      const split = [];
+      
+      // Platform Split
+      const isPlatformSameAsPhotographer = normalize(profile.asaas_wallet_id) === normalize(viufotoWalletId);
+      if (!isPlatformSameAsPhotographer) {
+        split.push({ walletId: viufotoWalletId, fixedValue: platformFee });
+      }
 
-      const split = isSameWallet
-        ? []
-        : [
-            { walletId: viufotoWalletId, fixedValue: platformFee },
-            { walletId: profile.asaas_wallet_id, remainingValue: true },
-          ];
+      // Collective Split
+      if (collectiveWalletId && collectiveFee > 0) {
+        const isCollectiveSameAsPhotographer = normalize(profile.asaas_wallet_id) === normalize(collectiveWalletId);
+        const isCollectiveSameAsPlatform = normalize(collectiveWalletId) === normalize(viufotoWalletId);
 
-      console.log(`[DEBUG_PAYLOAD] values: profile_wallet="${profile.asaas_wallet_id}", viufoto_wallet="${viufotoWalletId}"`);
-      console.log(`[DEBUG_PAYLOAD] normalized: profile_wallet="${normalize(profile.asaas_wallet_id)}", viufoto_wallet="${normalize(viufotoWalletId)}", isSameWallet=${isSameWallet}`);
-      console.log(`[DEBUG_PAYLOAD] split_array: ${JSON.stringify(split)}`);
-      console.log(`[DEBUG_PAYLOAD] PlatformFee=${platformFee}, Total=${total}`);
+        if (isCollectiveSameAsPlatform) {
+          // Combine collective fee into platform split if already added
+          const platIndex = split.findIndex(s => normalize(s.walletId) === normalize(viufotoWalletId));
+          if (platIndex !== -1) {
+            split[platIndex].fixedValue = (split[platIndex].fixedValue || 0) + collectiveFee;
+          } else {
+            split.push({ walletId: viufotoWalletId, fixedValue: collectiveFee });
+          }
+        } else if (!isCollectiveSameAsPhotographer) {
+          split.push({ walletId: collectiveWalletId, fixedValue: collectiveFee });
+        }
+      }
+
+      // Remaining goes to Photographer
+      split.push({ walletId: profile.asaas_wallet_id, remainingValue: true });
+
+      console.log(`[DEBUG_PAYLOAD] Event=${eventId}, Coletivo=${event.coletivo_id}`);
+      console.log(`[DEBUG_PAYLOAD] Wallets: platform="${viufotoWalletId}", coletivo="${collectiveWalletId}", photographer="${profile.asaas_wallet_id}"`);
+      console.log(`[DEBUG_PAYLOAD] Fees: platform=${platformFee}, coletivo=${collectiveFee}`);
+      console.log(`[DEBUG_PAYLOAD] Split: ${JSON.stringify(split)}`);
 
       // 4. Create/find ASAAS customer
       const customer = await getOrCreateCustomer(name, email, cpfCnpj.replace(/\D/g, ""));
